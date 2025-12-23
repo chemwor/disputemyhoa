@@ -1,0 +1,327 @@
+<!-- Preview Section -->
+<section class="xl:pt-[180px] lg:pt-[140px] pt-[100px] pb-16 lg:pb-24">
+  <div class="main-container">
+    <div id="error-state" class="hidden max-w-2xl mx-auto">
+      <div class="bg-white rounded-[20px] border border-stroke-1 p-8 text-center">
+        <h1 class="text-heading-3 mb-4">Case Not Found</h1>
+        <p class="text-tagline-1 text-secondary/80 mb-6">We couldn't find your case. Please start again.</p>
+        <a href="start-case.html" class="inline-block px-8 py-3 bg-secondary text-white rounded-lg hover:bg-secondary/90 transition-colors">Start New Case</a>
+      </div>
+    </div>
+
+    <div id="main-content" class="max-w-6xl mx-auto">
+      <!-- Header -->
+      <div class="text-center mb-8 lg:mb-12">
+        <div class="flex items-center justify-center gap-3 mb-4">
+          <h1 class="text-heading-3 lg:text-heading-2">Your Free Preview</h1>
+          <span class="badge badge-gray-light-v2 font-normal">Preview generated</span>
+        </div>
+        <p class="text-tagline-1 text-secondary/80 mb-2">Unlock to get full drafts, checklist, and next steps.</p>
+        <p class="text-tagline-2 text-secondary/60">Case ID: <span id="case-id" class="font-mono"></span></p>
+      </div>
+
+      <!-- Main Content Grid -->
+      <div class="grid lg:grid-cols-3 gap-6 lg:gap-8">
+        <!-- Left Column - Results -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Plain-English Summary Card -->
+          <div class="bg-white rounded-[20px] border border-stroke-1 p-6 lg:p-8">
+            <h2 class="text-heading-5 mb-4">Plain-English Summary</h2>
+            <div id="summary-content" class="space-y-2 text-tagline-1">
+              <!-- Will be populated by JS -->
+            </div>
+          </div>
+
+          <!-- Key Dates & Risk Card -->
+          <div class="bg-white rounded-[20px] border border-stroke-1 p-6 lg:p-8">
+            <h2 class="text-heading-5 mb-4">Key Dates & Risk Assessment</h2>
+            <div class="space-y-4">
+              <div class="grid md:grid-cols-2 gap-4">
+                <div>
+                  <h3 class="text-tagline-1 font-medium mb-2">Deadline</h3>
+                  <p id="deadline-info" class="text-tagline-1 text-secondary/80">Not provided</p>
+                </div>
+                <div>
+                  <h3 class="text-tagline-1 font-medium mb-2">Risk Level</h3>
+                  <p id="risk-level" class="text-tagline-1">
+                    <span class="inline-block px-2 py-1 rounded text-tagline-2 bg-yellow-100 text-yellow-800">Medium</span>
+                  </p>
+                </div>
+              </div>
+              <div>
+                <h3 class="text-tagline-1 font-medium mb-2">Recommended Next Step</h3>
+                <p id="next-step" class="text-tagline-1 text-secondary/80">
+                  <!-- Will be populated by JS -->
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Locked Features Card -->
+          <div class="bg-background-3 rounded-[20px] border border-stroke-1 p-6 lg:p-8">
+            <div class="flex items-center mb-4">
+              <svg class="w-5 h-5 text-secondary/60 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+              </svg>
+              <h2 class="text-heading-5">What You'll Get When You Unlock</h2>
+            </div>
+            <ul class="space-y-3">
+              <li class="flex items-center text-tagline-1 text-secondary/80">
+                <svg class="w-4 h-4 mr-3 text-secondary/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                </svg>
+                Full action plan + checklist
+              </li>
+              <li class="flex items-center text-tagline-1 text-secondary/80">
+                <svg class="w-4 h-4 mr-3 text-secondary/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                </svg>
+                Ready-to-send draft response email
+              </li>
+              <li class="flex items-center text-tagline-1 text-secondary/80">
+                <svg class="w-4 h-4 mr-3 text-secondary/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                </svg>
+                Certified-letter version
+              </li>
+              <li class="flex items-center text-tagline-1 text-secondary/80">
+                <svg class="w-4 h-4 mr-3 text-secondary/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                </svg>
+                Negotiation options (extension / proof / alternatives)
+              </li>
+              <li class="flex items-center text-tagline-1 text-secondary/80">
+                <svg class="w-4 h-4 mr-3 text-secondary/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                </svg>
+                Ongoing chat refinements
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Right Column - Unlock Card -->
+        <div class="lg:col-span-1">
+          <div class="bg-white rounded-[20px] border border-stroke-1 p-6 lg:p-8 sticky top-8">
+            <h2 class="text-heading-5 mb-6">Unlock Full Response</h2>
+
+            <!-- Pricing -->
+            <div class="mb-6">
+              <div class="text-heading-4 text-secondary mb-2">Case Pass — $29</div>
+              <p class="text-tagline-2 text-secondary/60">One case • Drafts + checklist</p>
+            </div>
+
+            <!-- Unlock Form -->
+            <div id="unlock-form">
+              <!-- Initial state -->
+              <div id="unlock-initial">
+                <button id="unlock-btn" class="w-full px-6 py-3 bg-ns-green text-white rounded-lg hover:bg-ns-green/90 transition-colors font-medium">
+                  Unlock
+                </button>
+              </div>
+
+              <!-- Email collection state -->
+              <div id="unlock-expanded" class="hidden space-y-4">
+                <div>
+                  <label for="unlock-email" class="block text-tagline-1 font-medium mb-2">Email Address <span class="text-red-500">*</span></label>
+                  <input type="email" id="unlock-email" name="email" class="w-full px-4 py-3 border border-stroke-1 rounded-lg focus:outline-none focus:border-ns-green" placeholder="your.email@example.com">
+                </div>
+
+                <div>
+                  <label class="flex items-start cursor-pointer">
+                    <input type="checkbox" id="legal-disclaimer" name="legalDisclaimer" class="mt-1 mr-3">
+                    <span class="text-tagline-2">I understand this is drafting and educational assistance — not legal advice. <span class="text-red-500">*</span></span>
+                  </label>
+                </div>
+
+                <button id="checkout-btn" class="w-full px-6 py-3 bg-ns-green text-white rounded-lg hover:bg-ns-green/90 transition-colors font-medium">
+                  Continue to Checkout
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+class CasePreview {
+  constructor() {
+    this.caseToken = null;
+    this.caseData = null;
+    this.init();
+  }
+
+  init() {
+    this.loadCaseFromURL();
+    this.bindEvents();
+  }
+
+  loadCaseFromURL() {
+    const urlParams = new URLSearchParams(window.location.search);
+    this.caseToken = urlParams.get('case');
+
+    if (!this.caseToken) {
+      this.showError();
+      return;
+    }
+
+    // Load case data from localStorage
+    const caseDataStr = localStorage.getItem('dmhoa_case_' + this.caseToken);
+    if (!caseDataStr) {
+      this.showError();
+      return;
+    }
+
+    try {
+      this.caseData = JSON.parse(caseDataStr);
+      this.populatePreview();
+    } catch (e) {
+      console.error('Error loading case data:', e);
+      this.showError();
+    }
+  }
+
+  showError() {
+    document.getElementById('error-state').classList.remove('hidden');
+    document.getElementById('main-content').classList.add('hidden');
+  }
+
+  populatePreview() {
+    // Set case ID
+    document.getElementById('case-id').textContent = this.caseToken;
+
+    // Populate summary
+    this.populateSummary();
+
+    // Populate dates and risk
+    this.populateDatesAndRisk();
+
+    // Populate next step
+    this.populateNextStep();
+  }
+
+  populateSummary() {
+    const summaryContent = document.getElementById('summary-content');
+    const data = this.caseData;
+
+    const bullets = [
+      `<div>• <strong>Notice type:</strong> ${this.formatValue(data.noticeType)}</div>`,
+      `<div>• <strong>The HOA claims the issue involves:</strong> ${this.truncateText(data.issueText, 100)}</div>`,
+      `<div>• <strong>You want to:</strong> ${this.formatValue(data.outcome)}</div>`,
+      `<div>• <strong>Property:</strong> ${this.formatValue(data.propertyType)} in ${data.state}</div>`,
+      `<div>• <strong>Your role:</strong> ${this.formatValue(data.role)}</div>`,
+      `<div>• <strong>Recommended approach:</strong> Keep communication clear and request specifics if anything is unclear.</div>`
+    ];
+
+    summaryContent.innerHTML = bullets.join('');
+  }
+
+  populateDatesAndRisk() {
+    const deadlineInfo = document.getElementById('deadline-info');
+    const riskLevel = document.getElementById('risk-level');
+
+    // Set deadline
+    if (this.caseData.deadline) {
+      const deadlineDate = new Date(this.caseData.deadline);
+      deadlineInfo.textContent = deadlineDate.toLocaleDateString();
+    } else {
+      deadlineInfo.textContent = 'Not provided';
+    }
+
+    // Set risk level based on notice type
+    const highRiskTypes = ['fine', 'hearing', 'collections'];
+    const isHighRisk = highRiskTypes.includes(this.caseData.noticeType);
+
+    if (isHighRisk) {
+      riskLevel.innerHTML = '<span class="inline-block px-2 py-1 rounded text-tagline-2 bg-red-100 text-red-800">High</span>';
+    } else {
+      riskLevel.innerHTML = '<span class="inline-block px-2 py-1 rounded text-tagline-2 bg-yellow-100 text-yellow-800">Low-Medium</span>';
+    }
+  }
+
+  populateNextStep() {
+    const nextStepEl = document.getElementById('next-step');
+    const outcome = this.caseData.outcome;
+
+    const nextSteps = {
+      'clarification': 'Request clarification and confirm what proof is required',
+      'extension': 'Request an extension and ask what satisfies compliance',
+      'alternative': 'Propose specific alternatives and ask if they would be acceptable',
+      'comply': 'Ask if lower-cost compliant alternatives are acceptable',
+      'dispute': 'Request evidence and cite the specific rule being enforced',
+      'not-sure': 'Ask for the exact requirement, deadline, and acceptable remedy'
+    };
+
+    nextStepEl.textContent = nextSteps[outcome] || 'Review the notice carefully and consider your options';
+  }
+
+  bindEvents() {
+    // Unlock button
+    document.getElementById('unlock-btn').addEventListener('click', () => {
+      this.showUnlockForm();
+    });
+
+    // Checkout button
+    document.getElementById('checkout-btn').addEventListener('click', () => {
+      this.proceedToCheckout();
+    });
+  }
+
+  showUnlockForm() {
+    document.getElementById('unlock-initial').classList.add('hidden');
+    document.getElementById('unlock-expanded').classList.remove('hidden');
+  }
+
+  proceedToCheckout() {
+    const email = document.getElementById('unlock-email').value.trim();
+    const disclaimer = document.getElementById('legal-disclaimer').checked;
+
+    if (!email) {
+      alert('Please enter your email address.');
+      return;
+    }
+
+    if (!this.isValidEmail(email)) {
+      alert('Please enter a valid email address.');
+      return;
+    }
+
+    if (!disclaimer) {
+      alert('Please accept the legal disclaimer.');
+      return;
+    }
+
+    // Save email to case data
+    this.caseData.email = email;
+    this.caseData.unlockIntent = true;
+    localStorage.setItem('dmhoa_case_' + this.caseToken, JSON.stringify(this.caseData));
+
+    // Simulate checkout - route to case page with success
+    window.location.href = 'case.html?case=' + encodeURIComponent(this.caseToken) + '&success=1';
+  }
+
+  isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+
+  formatValue(value) {
+    if (!value) return 'Not specified';
+    return value.charAt(0).toUpperCase() + value.slice(1).replace('-', ' ');
+  }
+
+  truncateText(text, maxLength) {
+    if (!text) return 'Not provided';
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+  }
+}
+
+// Initialize preview when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+  new CasePreview();
+});
+</script>

@@ -1,0 +1,480 @@
+<!-- Start Case Wizard -->
+<section class="xl:pt-[180px] lg:pt-[140px] pt-[100px] pb-16 lg:pb-24">
+  <div class="main-container">
+    <div class="max-w-4xl mx-auto">
+      <!-- Header -->
+      <div class="text-center mb-8 lg:mb-12">
+        <h1 class="text-heading-3 lg:text-heading-2 mb-4">Start Your Case</h1>
+        <p class="text-tagline-1 text-secondary/80">Get a free preview of your HOA dispute response in minutes</p>
+      </div>
+
+      <!-- Progress Indicator -->
+      <div class="mb-8">
+        <div class="flex items-center justify-between mb-4">
+          <span id="step-indicator" class="text-tagline-1 text-secondary/80">Step 1 of 4</span>
+        </div>
+        <div class="w-full bg-stroke-1 rounded-full h-2">
+          <div id="progress-bar" class="bg-ns-green h-2 rounded-full transition-all duration-300" style="width: 25%"></div>
+        </div>
+      </div>
+
+      <!-- Wizard Container -->
+      <div class="bg-white rounded-[20px] border border-stroke-1 p-6 lg:p-8">
+        <!-- Step 1: Case Basics -->
+        <div id="step-1" class="wizard-step">
+          <h2 class="text-heading-5 mb-6">Case Basics</h2>
+          <div class="space-y-6">
+            <div>
+              <label for="property-type" class="block text-tagline-1 font-medium mb-2">Property Type <span class="text-red-500">*</span></label>
+              <select id="property-type" name="propertyType" class="w-full px-4 py-3 border border-stroke-1 rounded-lg focus:outline-none focus:border-ns-green">
+                <option value="">Select property type</option>
+                <option value="condo">Condo</option>
+                <option value="townhome">Townhome</option>
+                <option value="single-family">Single-family</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="role" class="block text-tagline-1 font-medium mb-2">I am the <span class="text-red-500">*</span></label>
+              <select id="role" name="role" class="w-full px-4 py-3 border border-stroke-1 rounded-lg focus:outline-none focus:border-ns-green">
+                <option value="">Select your role</option>
+                <option value="homeowner">Homeowner</option>
+                <option value="tenant">Tenant</option>
+                <option value="landlord">Landlord</option>
+                <option value="seller">Seller</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="state" class="block text-tagline-1 font-medium mb-2">State <span class="text-red-500">*</span></label>
+              <select id="state" name="state" class="w-full px-4 py-3 border border-stroke-1 rounded-lg focus:outline-none focus:border-ns-green">
+                <option value="">Select state</option>
+                <option value="AL">Alabama</option>
+                <option value="AK">Alaska</option>
+                <option value="AZ">Arizona</option>
+                <option value="AR">Arkansas</option>
+                <option value="CA">California</option>
+                <option value="CO">Colorado</option>
+                <option value="CT">Connecticut</option>
+                <option value="DE">Delaware</option>
+                <option value="FL">Florida</option>
+                <option value="GA">Georgia</option>
+                <option value="HI">Hawaii</option>
+                <option value="ID">Idaho</option>
+                <option value="IL">Illinois</option>
+                <option value="IN">Indiana</option>
+                <option value="IA">Iowa</option>
+                <option value="KS">Kansas</option>
+                <option value="KY">Kentucky</option>
+                <option value="LA">Louisiana</option>
+                <option value="ME">Maine</option>
+                <option value="MD">Maryland</option>
+                <option value="MA">Massachusetts</option>
+                <option value="MI">Michigan</option>
+                <option value="MN">Minnesota</option>
+                <option value="MS">Mississippi</option>
+                <option value="MO">Missouri</option>
+                <option value="MT">Montana</option>
+                <option value="NE">Nebraska</option>
+                <option value="NV">Nevada</option>
+                <option value="NH">New Hampshire</option>
+                <option value="NJ">New Jersey</option>
+                <option value="NM">New Mexico</option>
+                <option value="NY">New York</option>
+                <option value="NC">North Carolina</option>
+                <option value="ND">North Dakota</option>
+                <option value="OH">Ohio</option>
+                <option value="OK">Oklahoma</option>
+                <option value="OR">Oregon</option>
+                <option value="PA">Pennsylvania</option>
+                <option value="RI">Rhode Island</option>
+                <option value="SC">South Carolina</option>
+                <option value="SD">South Dakota</option>
+                <option value="TN">Tennessee</option>
+                <option value="TX">Texas</option>
+                <option value="UT">Utah</option>
+                <option value="VT">Vermont</option>
+                <option value="VA">Virginia</option>
+                <option value="WA">Washington</option>
+                <option value="WV">West Virginia</option>
+                <option value="WI">Wisconsin</option>
+                <option value="WY">Wyoming</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="deadline" class="block text-tagline-1 font-medium mb-2">Deadline Date (if provided)</label>
+              <input type="date" id="deadline" name="deadline" class="w-full px-4 py-3 border border-stroke-1 rounded-lg focus:outline-none focus:border-ns-green">
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Notice Details -->
+        <div id="step-2" class="wizard-step hidden">
+          <h2 class="text-heading-5 mb-6">Notice Details</h2>
+          <div class="space-y-6">
+            <div>
+              <label for="notice-type" class="block text-tagline-1 font-medium mb-2">Notice Type <span class="text-red-500">*</span></label>
+              <select id="notice-type" name="noticeType" class="w-full px-4 py-3 border border-stroke-1 rounded-lg focus:outline-none focus:border-ns-green">
+                <option value="">Select notice type</option>
+                <option value="violation">Violation notice</option>
+                <option value="fine">Fine</option>
+                <option value="hearing">Hearing notice</option>
+                <option value="architectural">Architectural request</option>
+                <option value="maintenance">Maintenance issue</option>
+                <option value="collections">Collections</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="issue-text" class="block text-tagline-1 font-medium mb-2">What does the HOA say the issue is? <span class="text-red-500">*</span></label>
+              <textarea id="issue-text" name="issueText" rows="4" class="w-full px-4 py-3 border border-stroke-1 rounded-lg focus:outline-none focus:border-ns-green" placeholder="Describe the issue as stated in the HOA notice..."></textarea>
+              <p class="text-tagline-2 text-secondary/60 mt-1">Minimum 20 characters required</p>
+            </div>
+
+            <div>
+              <label for="outcome" class="block text-tagline-1 font-medium mb-2">What do you want to do? <span class="text-red-500">*</span></label>
+              <select id="outcome" name="outcome" class="w-full px-4 py-3 border border-stroke-1 rounded-lg focus:outline-none focus:border-ns-green">
+                <option value="">Select desired outcome</option>
+                <option value="clarification">Get clarification</option>
+                <option value="extension">Request an extension</option>
+                <option value="alternative">Propose an alternative</option>
+                <option value="comply">Comply at lowest cost</option>
+                <option value="dispute">Dispute the notice</option>
+                <option value="not-sure">Not sure</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Upload / Paste -->
+        <div id="step-3" class="wizard-step hidden">
+          <h2 class="text-heading-5 mb-6">Upload or Paste Your Notice</h2>
+          <p class="text-tagline-1 text-secondary/80 mb-6">Provide your HOA letter or notice (choose one method)</p>
+
+          <div class="space-y-6">
+            <div>
+              <label for="file-upload" class="block text-tagline-1 font-medium mb-2">Upload your HOA letter/notice</label>
+              <input type="file" id="file-upload" name="fileUpload" accept=".pdf,.png,.jpg,.jpeg" class="w-full px-4 py-3 border border-stroke-1 rounded-lg focus:outline-none focus:border-ns-green">
+            </div>
+
+            <div class="text-center text-secondary/60">
+              <span>OR</span>
+            </div>
+
+            <div>
+              <label for="paste-text" class="block text-tagline-1 font-medium mb-2">Paste the letter text here</label>
+              <textarea id="paste-text" name="pasteText" rows="6" class="w-full px-4 py-3 border border-stroke-1 rounded-lg focus:outline-none focus:border-ns-green" placeholder="Copy and paste your HOA notice text here..."></textarea>
+              <p class="text-tagline-2 text-secondary/60 mt-1">Minimum 50 characters if used</p>
+            </div>
+
+            <div>
+              <label for="additional-docs" class="block text-tagline-1 font-medium mb-2">Additional Documents (optional)</label>
+              <input type="file" id="additional-docs" name="additionalDocs" multiple accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" class="w-full px-4 py-3 border border-stroke-1 rounded-lg focus:outline-none focus:border-ns-green">
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4: Confirm & Generate -->
+        <div id="step-4" class="wizard-step hidden">
+          <h2 class="text-heading-5 mb-6">Review & Generate Preview</h2>
+          <div class="bg-background-3 rounded-lg p-6 mb-6">
+            <h3 class="text-tagline-1 font-medium mb-4">Case Summary</h3>
+            <div id="review-summary" class="space-y-2 text-tagline-1 text-secondary/80">
+              <!-- Will be populated by JS -->
+            </div>
+          </div>
+          <p class="text-tagline-1 text-secondary/80 mb-6">Click below to generate your free preview with plain-English analysis and recommended next steps.</p>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="flex justify-between mt-8 pt-6 border-t border-stroke-1">
+          <button id="back-btn" class="px-6 py-3 border border-stroke-1 text-secondary rounded-lg hover:bg-background-3 transition-colors hidden">
+            Back
+          </button>
+          <div class="flex-1"></div>
+          <button id="next-btn" class="px-6 py-3 bg-ns-green text-white rounded-lg hover:bg-ns-green/90 transition-colors">
+            Next
+          </button>
+          <button id="generate-btn" class="px-6 py-3 bg-ns-green text-white rounded-lg hover:bg-ns-green/90 transition-colors hidden">
+            Generate Free Preview
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+class StartCaseWizard {
+  constructor() {
+    this.currentStep = 1;
+    this.totalSteps = 4;
+    this.formData = {};
+    this.init();
+  }
+
+  init() {
+    this.bindEvents();
+    this.updateUI();
+  }
+
+  bindEvents() {
+    // Navigation buttons
+    document.getElementById('next-btn').addEventListener('click', () => {
+      this.nextStep();
+    });
+
+    document.getElementById('back-btn').addEventListener('click', () => {
+      this.previousStep();
+    });
+
+    document.getElementById('generate-btn').addEventListener('click', () => {
+      this.generatePreview();
+    });
+
+    // Form validation on change
+    this.bindFormValidation();
+  }
+
+  bindFormValidation() {
+    // Step 1 validation
+    ['property-type', 'role', 'state'].forEach(id => {
+      document.getElementById(id).addEventListener('change', () => {
+        this.validateCurrentStep();
+      });
+    });
+
+    // Step 2 validation
+    ['notice-type', 'issue-text', 'outcome'].forEach(id => {
+      document.getElementById(id).addEventListener('input', () => {
+        this.validateCurrentStep();
+      });
+    });
+
+    // Step 3 validation
+    document.getElementById('file-upload').addEventListener('change', () => {
+      this.validateCurrentStep();
+    });
+
+    document.getElementById('paste-text').addEventListener('input', () => {
+      this.validateCurrentStep();
+    });
+  }
+
+  nextStep() {
+    if (!this.validateCurrentStep()) {
+      return;
+    }
+
+    this.collectCurrentStepData();
+
+    if (this.currentStep < this.totalSteps) {
+      this.currentStep++;
+      this.updateUI();
+
+      if (this.currentStep === 4) {
+        this.populateReview();
+      }
+    }
+  }
+
+  previousStep() {
+    if (this.currentStep > 1) {
+      this.currentStep--;
+      this.updateUI();
+    }
+  }
+
+  validateCurrentStep() {
+    let isValid = true;
+
+    if (this.currentStep === 1) {
+      const required = ['property-type', 'role', 'state'];
+      isValid = required.every(id => {
+        const element = document.getElementById(id);
+        const valid = element.value.trim() !== '';
+        this.toggleFieldError(element, !valid);
+        return valid;
+      });
+    }
+
+    if (this.currentStep === 2) {
+      const noticeType = document.getElementById('notice-type').value.trim();
+      const issueText = document.getElementById('issue-text').value.trim();
+      const outcome = document.getElementById('outcome').value.trim();
+
+      const noticeValid = noticeType !== '';
+      const issueValid = issueText.length >= 20;
+      const outcomeValid = outcome !== '';
+
+      this.toggleFieldError(document.getElementById('notice-type'), !noticeValid);
+      this.toggleFieldError(document.getElementById('issue-text'), !issueValid);
+      this.toggleFieldError(document.getElementById('outcome'), !outcomeValid);
+
+      isValid = noticeValid && issueValid && outcomeValid;
+    }
+
+    if (this.currentStep === 3) {
+      const fileUpload = document.getElementById('file-upload').files.length > 0;
+      const pasteText = document.getElementById('paste-text').value.trim();
+      const pasteValid = pasteText.length >= 50;
+
+      isValid = fileUpload || pasteValid;
+
+      if (!isValid) {
+        this.showError('Please either upload a file or paste text (minimum 50 characters).');
+      }
+    }
+
+    return isValid;
+  }
+
+  toggleFieldError(element, hasError) {
+    if (hasError) {
+      element.classList.add('border-red-500');
+      element.classList.remove('border-stroke-1');
+    } else {
+      element.classList.remove('border-red-500');
+      element.classList.add('border-stroke-1');
+    }
+  }
+
+  showError(message) {
+    // Simple alert for now - could be enhanced with better UI
+    alert(message);
+  }
+
+  collectCurrentStepData() {
+    if (this.currentStep === 1) {
+      this.formData.propertyType = document.getElementById('property-type').value;
+      this.formData.role = document.getElementById('role').value;
+      this.formData.state = document.getElementById('state').value;
+      this.formData.deadline = document.getElementById('deadline').value;
+    }
+
+    if (this.currentStep === 2) {
+      this.formData.noticeType = document.getElementById('notice-type').value;
+      this.formData.issueText = document.getElementById('issue-text').value.trim();
+      this.formData.outcome = document.getElementById('outcome').value;
+    }
+
+    if (this.currentStep === 3) {
+      this.formData.hasUpload = document.getElementById('file-upload').files.length > 0;
+      this.formData.pastedText = document.getElementById('paste-text').value.trim();
+    }
+  }
+
+  updateUI() {
+    // Hide all steps
+    for (let i = 1; i <= this.totalSteps; i++) {
+      document.getElementById(`step-${i}`).classList.add('hidden');
+    }
+
+    // Show current step
+    document.getElementById(`step-${this.currentStep}`).classList.remove('hidden');
+
+    // Update progress indicator
+    document.getElementById('step-indicator').textContent = `Step ${this.currentStep} of ${this.totalSteps}`;
+    const progress = (this.currentStep / this.totalSteps) * 100;
+    document.getElementById('progress-bar').style.width = `${progress}%`;
+
+    // Update navigation buttons
+    const backBtn = document.getElementById('back-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const generateBtn = document.getElementById('generate-btn');
+
+    if (this.currentStep === 1) {
+      backBtn.classList.add('hidden');
+    } else {
+      backBtn.classList.remove('hidden');
+    }
+
+    if (this.currentStep === this.totalSteps) {
+      nextBtn.classList.add('hidden');
+      generateBtn.classList.remove('hidden');
+    } else {
+      nextBtn.classList.remove('hidden');
+      generateBtn.classList.add('hidden');
+    }
+  }
+
+  populateReview() {
+    const reviewSummary = document.getElementById('review-summary');
+    const data = this.formData;
+
+    const summaryItems = [
+      `<div><strong>Property:</strong> ${this.formatValue(data.propertyType)} in ${data.state}</div>`,
+      `<div><strong>Role:</strong> ${this.formatValue(data.role)}</div>`,
+      `<div><strong>Notice Type:</strong> ${this.formatValue(data.noticeType)}</div>`,
+      `<div><strong>Issue:</strong> ${this.truncateText(data.issueText, 100)}</div>`,
+      `<div><strong>Desired Outcome:</strong> ${this.formatValue(data.outcome)}</div>`,
+      `<div><strong>Deadline:</strong> ${data.deadline || 'Not provided'}</div>`,
+      `<div><strong>Documents:</strong> ${data.hasUpload ? 'File uploaded' : 'Text pasted'}</div>`
+    ];
+
+    reviewSummary.innerHTML = summaryItems.join('');
+  }
+
+  generatePreview() {
+    if (!this.validateCurrentStep()) {
+      return;
+    }
+
+    this.collectCurrentStepData();
+
+    // Generate case token
+    const token = 'case_' + Date.now() + '_' + this.generateRandomString(6);
+
+    // Create case object
+    const caseData = {
+      token: token,
+      createdAt: new Date().toISOString(),
+      propertyType: this.formData.propertyType,
+      role: this.formData.role,
+      state: this.formData.state,
+      deadline: this.formData.deadline || null,
+      noticeType: this.formData.noticeType,
+      issueText: this.formData.issueText,
+      outcome: this.formData.outcome,
+      hasUpload: this.formData.hasUpload,
+      pastedText: this.formData.pastedText,
+      email: null,
+      unlocked: false
+    };
+
+    // Save to localStorage
+    localStorage.setItem('dmhoa_case_' + token, JSON.stringify(caseData));
+
+    // Route to preview page
+    window.location.href = 'case-preview.html?case=' + encodeURIComponent(token);
+  }
+
+  generateRandomString(length) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  }
+
+  formatValue(value) {
+    if (!value) return 'Not specified';
+    return value.charAt(0).toUpperCase() + value.slice(1).replace('-', ' ');
+  }
+
+  truncateText(text, maxLength) {
+    if (!text) return 'Not provided';
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+  }
+}
+
+// Initialize wizard when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+  new StartCaseWizard();
+});
+</script>

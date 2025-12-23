@@ -1,0 +1,435 @@
+<!-- =========================
+Mobile Menu
+===========================-->
+
+<aside
+  class="sidebar fixed top-0 right-0 w-full sm:w-1/2 translate-x-full transition-all duration-300 h-screen bg-white dark:bg-background-8 rounded-l-3xl xl:hidden z-[9999] scroll-bar"
+>
+  <div class="lg:p-9 sm:p-8 p-5 space-y-4">
+    <div class="flex items-center justify-between">
+      <a href="./email-marketing.html">
+        <span class="sr-only">Home</span>
+        <figure class="max-w-[44px]">
+          <img src="./images/shared/logo.svg" alt="NextSaaS" class="w-full dark:hidden block" />
+          <img
+            src="./images/shared/logo-dark.svg"
+            alt="NextSaaS"
+            class="w-full dark:block hidden"
+          />
+        </figure>
+      </a>
+      <button
+        class="nav-hamburger-close flex flex-col gap-1.5 size-10 bg-background-4 dark:bg-background-9 rounded-full items-center justify-center cursor-pointer relative"
+      >
+        <span class="sr-only">Close Menu</span>
+        <span class="block w-4 h-0.5 bg-stroke-9/60 dark:bg-stroke-1 rotate-45 absolute"></span>
+        <span class="block w-4 h-0.5 bg-stroke-9/60 dark:bg-stroke-1 -rotate-45 absolute"></span>
+      </button>
+    </div>
+    <div class="mt-6 h-[85vh] w-full overflow-y-auto overflow-x-hidden pb-10 scroll-bar">
+      <p
+        class="text-secondary dark:text-accent font-normal text-tagline-1 block before:content-[''] before:w-full before:-right-16 before:top-1/2 before:-translate-y-1/2 before:h-px before:bg-stroke-4 dark:before:bg-stroke-6 before:absolute relative mb-2"
+      >
+        Menu
+      </p>
+      <ul class="space-y-2">
+        <li class="space-y-2">
+          <button
+            class="mobile-menu-toggle flex items-center justify-between w-full py-2.5 cursor-pointer"
+            data-menu="company"
+          >
+            <span class="text-secondary/60 dark:text-accent/60 font-normal text-tagline-1 block"
+              >Company</span
+            >
+
+            <span class="menu-arrow transition-transform duration-300 rotate-90">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+              >
+                <path
+                  d="M10 12L14 8L10 4"
+                  class="stroke-secondary/60 dark:stroke-accent/60"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </span>
+          </button>
+          <ul class="mobile-submenu block" data-submenu="company">
+            <li>
+              <a
+                href="./email-marketing-about.html"
+                class="text-tagline-1 font-normal text-secondary dark:text-accent transition-all duration-200 py-2.5 text-left block ml-4"
+                >About Us</a
+              >
+            </li>
+            <li>
+              <a
+                href="./email-marketing-team.html"
+                class="text-tagline-1 font-normal text-secondary dark:text-accent transition-all duration-200 py-2.5 text-left block ml-4"
+                >Our Team</a
+              >
+            </li>
+            <li>
+              <a
+                href="./email-marketing-career.html"
+                class="text-tagline-1 font-normal text-secondary dark:text-accent transition-all duration-200 py-2.5 text-left block ml-4"
+                >Career</a
+              >
+            </li>
+            <li>
+              <a
+                href="./email-marketing-why-choose-us.html"
+                class="text-tagline-1 font-normal text-secondary dark:text-accent transition-all duration-200 py-2.5 text-left block ml-4"
+                >Why Choose Us</a
+              >
+            </li>
+            <li>
+              <a
+                href="./email-marketing-our-manifesto.html"
+                class="text-tagline-1 font-normal text-secondary dark:text-accent transition-all duration-200 py-2.5 text-left block ml-4"
+                >Our Manifesto</a
+              >
+            </li>
+            <li>
+              <a
+                href="./email-marketing-customer.html"
+                class="text-tagline-1 font-normal text-secondary dark:text-accent transition-all duration-200 py-2.5 text-left block ml-4"
+                >Customers</a
+              >
+            </li>
+            <li>
+              <a
+                href="./email-marketing-testimonial.html"
+                class="text-tagline-1 font-normal text-secondary dark:text-accent transition-all duration-200 py-2.5 text-left block ml-4"
+                >Testimonials</a
+              >
+            </li>
+            <li>
+              <a
+                href="./email-marketing-case-study.html"
+                class="text-tagline-1 font-normal text-secondary dark:text-accent transition-all duration-200 py-2.5 text-left block ml-4"
+                >Case Studies</a
+              >
+            </li>
+            <li>
+              <a
+                href="./email-marketing-services.html"
+                class="text-tagline-1 font-normal text-secondary dark:text-accent transition-all duration-200 py-2.5 text-left block ml-4"
+                >Services</a
+              >
+            </li>
+            <li>
+              <a
+                href="./email-marketing-use-case.html"
+                class="text-tagline-1 font-normal text-secondary dark:text-accent transition-all duration-200 py-2.5 text-left block ml-4"
+                >Use Cases</a
+              >
+            </li>
+          </ul>
+        </li>
+        <li class="space-y-2">
+          <button
+            class="mobile-menu-toggle flex items-center justify-between w-full py-2.5 cursor-pointer"
+            data-menu="platform"
+          >
+            <span
+              class="text-secondary/60 dark:text-accent/60 font-normal text-tagline-1 block relative"
+              >Platform</span
+            >
+
+            <span class="menu-arrow transition-transform duration-300">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+              >
+                <path
+                  d="M10 12L14 8L10 4"
+                  class="stroke-secondary/60 dark:stroke-accent/60"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </span>
+          </button>
+          <ul class="mobile-submenu hidden" data-submenu="platform">
+            <li>
+              <a
+                href="./email-marketing-features.html"
+                class="text-tagline-1 font-normal text-secondary dark:text-accent transition-all duration-200 py-2.5 text-left block ml-4"
+                >Features & Capabilities</a
+              >
+            </li>
+            <li>
+              <a
+                href="./email-marketing-process.html"
+                class="text-tagline-1 font-normal text-secondary dark:text-accent transition-all duration-200 py-2.5 text-left block ml-4"
+                >Process & Workflow</a
+              >
+            </li>
+            <li>
+              <a
+                href="./email-marketing-security.html"
+                class="text-tagline-1 font-normal text-secondary dark:text-accent transition-all duration-200 py-2.5 text-left block ml-4"
+                >Security & Compliance</a
+              >
+            </li>
+            <li>
+              <a
+                href="./email-marketing-brandkit.html"
+                class="text-tagline-1 font-normal text-secondary dark:text-accent transition-all duration-200 py-2.5 text-left block ml-4"
+                >Our Brandkit</a
+              >
+            </li>
+            <li>
+              <a
+                href="./email-marketing-download.html"
+                class="text-tagline-1 font-normal text-secondary dark:text-accent transition-all duration-200 py-2.5 text-left block ml-4"
+                >Download App</a
+              >
+            </li>
+            <li>
+              <a
+                href="./email-marketing-pricing.html"
+                class="text-tagline-1 font-normal text-secondary dark:text-accent transition-all duration-200 py-2.5 text-left block ml-4"
+                >Pricing</a
+              >
+            </li>
+            <li>
+              <a
+                href="./email-marketing-integration.html"
+                class="text-tagline-1 font-normal text-secondary dark:text-accent transition-all duration-200 py-2.5 text-left block ml-4"
+                >HR & Payroll</a
+              >
+            </li>
+            <li>
+              <a
+                href="./email-marketing-support.html"
+                class="text-tagline-1 font-normal text-secondary dark:text-accent transition-all duration-200 py-2.5 text-left block ml-4"
+                >Customer Support</a
+              >
+            </li>
+            <li>
+              <a
+                href="./email-marketing-analytics.html"
+                class="text-tagline-1 font-normal text-secondary dark:text-accent transition-all duration-200 py-2.5 text-left block ml-4"
+                >Analytics & Reporting</a
+              >
+            </li>
+            <li>
+              <a
+                href="./email-marketing-whitepaper.html"
+                class="text-tagline-1 font-normal text-secondary dark:text-accent transition-all duration-200 py-2.5 text-left block ml-4"
+                >Whitepaper & Reports</a
+              >
+            </li>
+            <li>
+              <a
+                href="./email-marketing-integration.html"
+                class="text-tagline-1 font-normal text-secondary dark:text-accent transition-all duration-200 py-2.5 text-left block ml-4"
+                >Explore All Integrations</a
+              >
+            </li>
+          </ul>
+        </li>
+        <li class="space-y-2">
+          <button
+            class="mobile-menu-toggle flex items-center justify-between w-full py-2.5 cursor-pointer"
+            data-menu="resources"
+          >
+            <span
+              class="text-secondary/60 dark:text-accent/60 font-normal text-tagline-1 block relative"
+              >Resources</span
+            >
+
+            <span class="menu-arrow transition-transform duration-300">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+              >
+                <path
+                  d="M10 12L14 8L10 4"
+                  class="stroke-secondary/60 dark:stroke-accent/60"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </span>
+          </button>
+          <ul class="mobile-submenu hidden" data-submenu="resources">
+            <li>
+              <a
+                href="./email-marketing-blog.html"
+                class="text-tagline-1 font-normal text-secondary dark:text-accent transition-all duration-200 py-2.5 text-left block ml-4"
+                >Blog</a
+              >
+            </li>
+            <li>
+              <a
+                href="./email-marketing-tutorial.html"
+                class="text-tagline-1 font-normal text-secondary dark:text-accent transition-all duration-200 py-2.5 text-left block ml-4"
+                >Tutorial</a
+              >
+            </li>
+            <li>
+              <a
+                href="./email-marketing-faq.html"
+                class="text-tagline-1 font-normal text-secondary dark:text-accent transition-all duration-200 py-2.5 text-left block ml-4"
+                >FAQ</a
+              >
+            </li>
+            <li>
+              <a
+                href="./email-marketing-glossary.html"
+                class="text-tagline-1 font-normal text-secondary dark:text-accent transition-all duration-200 py-2.5 text-left block ml-4"
+                >Glossary</a
+              >
+            </li>
+            <li>
+              <a
+                href="./email-marketing-support.html"
+                class="text-tagline-1 font-normal text-secondary dark:text-accent transition-all duration-200 py-2.5 text-left block ml-4"
+                >Support</a
+              >
+            </li>
+            <li>
+              <a
+                href="./email-marketing-contact.html"
+                class="text-tagline-1 font-normal text-secondary dark:text-accent transition-all duration-200 py-2.5 text-left block ml-4"
+                >Contact</a
+              >
+            </li>
+            <li>
+              <a
+                href="./email-marketing-success-stories.html"
+                class="text-tagline-1 font-normal text-secondary dark:text-accent transition-all duration-200 py-2.5 text-left block ml-4"
+                >Success Stories</a
+              >
+            </li>
+          </ul>
+        </li>
+        <li class="space-y-2">
+          <button
+            class="mobile-menu-toggle flex items-center justify-between w-full py-2.5 cursor-pointer"
+            data-menu="plans-support"
+          >
+            <span
+              class="text-secondary/60 dark:text-accent/60 font-normal text-tagline-1 block relative"
+              >Plans & Support</span
+            >
+
+            <span class="menu-arrow transition-transform duration-300">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+              >
+                <path
+                  d="M10 12L14 8L10 4"
+                  class="stroke-secondary/60 dark:stroke-accent/60"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </span>
+          </button>
+          <ul class="mobile-submenu hidden" data-submenu="plans-support">
+            <li>
+              <a
+                href="./email-marketing-login.html"
+                class="text-tagline-1 font-normal text-secondary dark:text-accent transition-all duration-200 py-2.5 text-left block ml-4"
+                >Login</a
+              >
+            </li>
+            <li>
+              <a
+                href="./email-marketing-signup.html"
+                class="text-tagline-1 font-normal text-secondary dark:text-accent transition-all duration-200 py-2.5 text-left block ml-4"
+                >Create Account</a
+              >
+            </li>
+            <li>
+              <a
+                href="./email-marketing-referral-program.html"
+                class="text-tagline-1 font-normal text-secondary dark:text-accent transition-all duration-200 py-2.5 text-left block ml-4"
+                >Referral Program</a
+              >
+            </li>
+            <li>
+              <a
+                href="./email-marketing-affiliates.html"
+                class="text-tagline-1 font-normal text-secondary dark:text-accent transition-all duration-200 py-2.5 text-left block ml-4"
+                >Affiliate Program</a
+              >
+            </li>
+            <li>
+              <a
+                href="./email-marketing-affiliate-policy.html"
+                class="text-tagline-1 font-normal text-secondary dark:text-accent transition-all duration-200 py-2.5 text-left block ml-4"
+                >Affiliate Policy</a
+              >
+            </li>
+            <li>
+              <a
+                href="./email-marketing-terms-conditions.html"
+                class="text-tagline-1 font-normal text-secondary dark:text-accent transition-all duration-200 py-2.5 text-left block ml-4"
+                >Terms & Conditions</a
+              >
+            </li>
+            <li>
+              <a
+                href="./email-marketing-privacy-policy.html"
+                class="text-tagline-1 font-normal text-secondary dark:text-accent transition-all duration-200 py-2.5 text-left block ml-4"
+                >Privacy Policy</a
+              >
+            </li>
+            <li>
+              <a
+                href="./email-marketing-refund-policy.html"
+                class="text-tagline-1 font-normal text-secondary dark:text-accent transition-all duration-200 py-2.5 text-left block ml-4"
+                >Refund Policy</a
+              >
+            </li>
+            <li>
+              <a
+                href="./email-marketing-gdpr.html"
+                class="text-tagline-1 font-normal text-secondary dark:text-accent transition-all duration-200 py-2.5 text-left block ml-4"
+                >GDPR</a
+              >
+            </li>
+            <li>
+              <a
+                href="./email-marketing-legal.html"
+                class="text-tagline-1 font-normal text-secondary dark:text-accent transition-all duration-200 py-2.5 text-left block ml-4"
+                >Legal</a
+              >
+            </li>
+            <li>
+              <a
+                href="./email-marketing-changelog.html"
+                class="text-tagline-1 font-normal text-secondary dark:text-accent transition-all duration-200 py-2.5 text-left block ml-4"
+                >Changelog</a
+              >
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</aside>

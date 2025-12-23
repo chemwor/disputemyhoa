@@ -1,0 +1,767 @@
+<!-- Case Workspace -->
+<section class="xl:pt-[180px] lg:pt-[140px] pt-[100px] pb-16 lg:pb-24">
+  <div class="main-container">
+    <!-- Error State -->
+    <div id="error-state" class="hidden max-w-2xl mx-auto">
+      <div class="bg-white rounded-[20px] border border-stroke-1 p-8 text-center">
+        <h1 class="text-heading-3 mb-4">Case Not Found</h1>
+        <p class="text-tagline-1 text-secondary/80 mb-6">We couldn't find your case. Please start again.</p>
+        <a href="start-case.html" class="inline-block px-8 py-3 bg-secondary text-white rounded-lg hover:bg-secondary/90 transition-colors">Start New Case</a>
+      </div>
+    </div>
+
+    <!-- Main Workspace -->
+    <div id="main-workspace" class="max-w-7xl mx-auto">
+      <!-- Workspace Header -->
+      <div class="mb-8 lg:mb-12">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 class="text-heading-3 lg:text-heading-2 mb-2">Case Workspace</h1>
+            <div class="flex items-center gap-3">
+              <p class="text-tagline-2 text-secondary/60">Case ID: <span id="case-id" class="font-mono"></span></p>
+              <span id="status-badge" class="inline-block px-2 py-1 rounded text-tagline-2 bg-green-100 text-green-800">Unlocked</span>
+            </div>
+          </div>
+          <div class="flex gap-3">
+            <button id="back-to-preview" class="px-4 py-2 border border-stroke-1 text-secondary rounded-lg hover:bg-background-3 transition-colors text-tagline-1">
+              Back to Preview
+            </button>
+            <a href="start-case.html" class="px-4 py-2 border border-stroke-1 text-secondary rounded-lg hover:bg-background-3 transition-colors text-tagline-1">
+              Start New Case
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Layout -->
+      <div class="grid lg:grid-cols-3 gap-6 lg:gap-8">
+        <!-- Left Column (Chat + Drafts) -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Chat Card -->
+          <div class="bg-white rounded-[20px] border border-stroke-1 p-6">
+            <h2 class="text-heading-5 mb-4">Chat</h2>
+
+            <!-- Messages Area -->
+            <div id="chat-messages" class="h-64 overflow-y-auto border border-stroke-1 rounded-lg p-4 mb-4 space-y-3">
+              <div class="text-center text-tagline-2 text-secondary/60">
+                Start a conversation about your case...
+              </div>
+            </div>
+
+            <!-- Chat Input -->
+            <div class="flex gap-3">
+              <input
+                type="text"
+                id="chat-input"
+                placeholder="Ask about your case or next steps..."
+                class="flex-1 px-4 py-2 border border-stroke-1 rounded-lg focus:outline-none focus:border-ns-green"
+                maxlength="500"
+              >
+              <button id="send-chat" class="px-6 py-2 bg-ns-green text-white rounded-lg hover:bg-ns-green/90 transition-colors">
+                Send
+              </button>
+            </div>
+          </div>
+
+          <!-- Draft Replies Card -->
+          <div class="bg-white rounded-[20px] border border-stroke-1 p-6">
+            <h2 class="text-heading-5 mb-4">Draft Replies</h2>
+
+            <!-- Locked State -->
+            <div id="drafts-locked" class="text-center py-8">
+              <div class="opacity-50 mb-4">
+                <div class="bg-background-3 rounded-lg p-4 mb-3">
+                  <h3 class="text-tagline-1 font-medium mb-2">Request Clarification</h3>
+                  <p class="text-tagline-2 text-secondary/60 blur-sm">Dear [HOA Name], I received your notice regarding...</p>
+                </div>
+                <div class="bg-background-3 rounded-lg p-4 mb-3">
+                  <h3 class="text-tagline-1 font-medium mb-2">Request Extension</h3>
+                  <p class="text-tagline-2 text-secondary/60 blur-sm">I am writing to request an extension for...</p>
+                </div>
+                <div class="bg-background-3 rounded-lg p-4">
+                  <h3 class="text-tagline-1 font-medium mb-2">Confirm Compliance</h3>
+                  <p class="text-tagline-2 text-secondary/60 blur-sm">Thank you for bringing this to my attention...</p>
+                </div>
+              </div>
+              <p class="text-tagline-1 text-secondary/80 mb-4">Unlock to generate ready-to-send reply drafts.</p>
+              <button id="unlock-drafts" class="px-6 py-3 bg-ns-green text-white rounded-lg hover:bg-ns-green/90 transition-colors">
+                Unlock
+              </button>
+            </div>
+
+            <!-- Unlocked State -->
+            <div id="drafts-unlocked" class="hidden space-y-4">
+              <div class="bg-background-3 rounded-lg p-4">
+                <div class="flex justify-between items-start mb-2">
+                  <h3 class="text-tagline-1 font-medium">Request Clarification</h3>
+                  <button class="copy-btn px-3 py-1 text-tagline-2 border border-stroke-1 rounded hover:bg-background-3 transition-colors" data-draft="clarification">
+                    Copy
+                  </button>
+                </div>
+                <div id="draft-clarification" class="text-tagline-2 text-secondary/80">
+                  <!-- Will be populated by JS -->
+                </div>
+              </div>
+
+              <div class="bg-background-3 rounded-lg p-4">
+                <div class="flex justify-between items-start mb-2">
+                  <h3 class="text-tagline-1 font-medium">Request Extension</h3>
+                  <button class="copy-btn px-3 py-1 text-tagline-2 border border-stroke-1 rounded hover:bg-background-3 transition-colors" data-draft="extension">
+                    Copy
+                  </button>
+                </div>
+                <div id="draft-extension" class="text-tagline-2 text-secondary/80">
+                  <!-- Will be populated by JS -->
+                </div>
+              </div>
+
+              <div class="bg-background-3 rounded-lg p-4">
+                <div class="flex justify-between items-start mb-2">
+                  <h3 class="text-tagline-1 font-medium">Confirm Compliance</h3>
+                  <button class="copy-btn px-3 py-1 text-tagline-2 border border-stroke-1 rounded hover:bg-background-3 transition-colors" data-draft="compliance">
+                    Copy
+                  </button>
+                </div>
+                <div id="draft-compliance" class="text-tagline-2 text-secondary/80">
+                  <!-- Will be populated by JS -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column (Summary + Action Plan + Documents) -->
+        <div class="space-y-6">
+          <!-- Summary Card -->
+          <div class="bg-white rounded-[20px] border border-stroke-1 p-6">
+            <h2 class="text-heading-5 mb-4">Summary</h2>
+            <div id="summary-content" class="space-y-2 text-tagline-2">
+              <!-- Will be populated by JS -->
+            </div>
+            <div id="summary-locked-note" class="mt-3 text-tagline-2 text-secondary/60 italic">
+              Unlock for complete analysis
+            </div>
+          </div>
+
+          <!-- Action Plan Card -->
+          <div class="bg-white rounded-[20px] border border-stroke-1 p-6">
+            <h2 class="text-heading-5 mb-4">Action Plan</h2>
+
+            <!-- Locked State -->
+            <div id="action-locked" class="space-y-3">
+              <div class="flex items-center opacity-50">
+                <div class="w-4 h-4 border border-stroke-1 rounded mr-3"></div>
+                <span class="text-tagline-2 text-secondary/60 blur-sm">Review notice requirements</span>
+              </div>
+              <div class="flex items-center opacity-50">
+                <div class="w-4 h-4 border border-stroke-1 rounded mr-3"></div>
+                <span class="text-tagline-2 text-secondary/60 blur-sm">Gather supporting documents</span>
+              </div>
+              <div class="flex items-center opacity-50">
+                <div class="w-4 h-4 border border-stroke-1 rounded mr-3"></div>
+                <span class="text-tagline-2 text-secondary/60 blur-sm">Prepare response strategy</span>
+              </div>
+              <p class="text-tagline-2 text-secondary/60 italic mt-4">Unlock for complete checklist and timeline</p>
+            </div>
+
+            <!-- Unlocked State -->
+            <div id="action-unlocked" class="hidden">
+              <div class="space-y-3 mb-4">
+                <div class="flex items-start">
+                  <input type="checkbox" class="mt-1 mr-3 w-4 h-4">
+                  <div>
+                    <span class="text-tagline-2 block">Review the specific notice requirements</span>
+                    <span class="text-tagline-3 text-secondary/60">Identify exactly what compliance looks like</span>
+                  </div>
+                </div>
+                <div class="flex items-start">
+                  <input type="checkbox" class="mt-1 mr-3 w-4 h-4">
+                  <div>
+                    <span class="text-tagline-2 block">Document current property condition</span>
+                    <span class="text-tagline-3 text-secondary/60">Take photos and gather relevant records</span>
+                  </div>
+                </div>
+                <div class="flex items-start">
+                  <input type="checkbox" class="mt-1 mr-3 w-4 h-4">
+                  <div>
+                    <span class="text-tagline-2 block">Request clarification if needed</span>
+                    <span class="text-tagline-3 text-secondary/60">Ask for specific requirements and acceptable remedies</span>
+                  </div>
+                </div>
+                <div class="flex items-start">
+                  <input type="checkbox" class="mt-1 mr-3 w-4 h-4">
+                  <div>
+                    <span class="text-tagline-2 block">Keep detailed records</span>
+                    <span class="text-tagline-3 text-secondary/60">Save all communications and correspondence</span>
+                  </div>
+                </div>
+                <div class="flex items-start">
+                  <input type="checkbox" class="mt-1 mr-3 w-4 h-4">
+                  <div>
+                    <span class="text-tagline-2 block" id="outcome-specific-action">Take appropriate action</span>
+                    <span class="text-tagline-3 text-secondary/60">Based on your selected outcome</span>
+                  </div>
+                </div>
+                <div class="flex items-start">
+                  <input type="checkbox" class="mt-1 mr-3 w-4 h-4">
+                  <div>
+                    <span class="text-tagline-2 block">Follow up before deadline</span>
+                    <span class="text-tagline-3 text-secondary/60">Confirm acceptance and next steps</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Timeline -->
+              <div class="border-t border-stroke-1 pt-4">
+                <h3 class="text-tagline-1 font-medium mb-3">Timeline</h3>
+                <div class="space-y-2 text-tagline-2">
+                  <div><strong>Today:</strong> Review and document current situation</div>
+                  <div><strong>Next 48 hours:</strong> Send initial response or clarification request</div>
+                  <div><strong>Before deadline:</strong> <span id="timeline-deadline">Confirm compliance and next steps</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Documents Card -->
+          <div class="bg-white rounded-[20px] border border-stroke-1 p-6">
+            <h2 class="text-heading-5 mb-4">Documents</h2>
+
+            <div class="space-y-3">
+              <div class="flex items-center justify-between py-2 px-3 bg-background-3 rounded-lg">
+                <div class="flex items-center">
+                  <svg class="w-4 h-4 mr-2 text-secondary/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                  </svg>
+                  <span class="text-tagline-2" id="original-doc-status">Original notice: Uploaded</span>
+                </div>
+                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+              </div>
+
+              <!-- Additional Documents -->
+              <div id="additional-docs">
+                <!-- Will be populated by JS -->
+              </div>
+
+              <div class="border-t border-stroke-1 pt-3">
+                <input type="file" id="file-input" class="hidden" multiple accept=".pdf,.png,.jpg,.jpeg,.doc,.docx">
+                <button id="add-document" class="w-full px-4 py-2 border border-dashed border-stroke-1 rounded-lg text-tagline-1 text-secondary/80 hover:border-ns-green hover:text-ns-green transition-colors">
+                  <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                  </svg>
+                  Add Document
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Disclaimer -->
+      <div class="mt-12 pt-6 border-t border-stroke-1">
+        <p class="text-center text-tagline-2 text-secondary/60">
+          Drafting and educational assistance only. Not legal advice.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+class CaseWorkspace {
+  constructor() {
+    this.caseToken = null;
+    this.caseData = null;
+    this.isUnlocked = false;
+    this.messages = [];
+    this.documents = [];
+    this.init();
+  }
+
+  init() {
+    this.loadCaseFromURL();
+    this.bindEvents();
+  }
+
+  loadCaseFromURL() {
+    const urlParams = new URLSearchParams(window.location.search);
+    this.caseToken = urlParams.get('case');
+    const success = urlParams.get('success');
+
+    if (!this.caseToken) {
+      this.showError();
+      return;
+    }
+
+    // Load case data from localStorage
+    const caseDataStr = localStorage.getItem('dmhoa_case_' + this.caseToken);
+    if (!caseDataStr) {
+      this.showError();
+      return;
+    }
+
+    try {
+      this.caseData = JSON.parse(caseDataStr);
+
+      // TODO: Replace with Stripe-confirmed unlock via webhook; do not trust query params in production
+      if (success === '1') {
+        this.caseData.unlocked = true;
+        localStorage.setItem('dmhoa_case_' + this.caseToken, JSON.stringify(this.caseData));
+      }
+
+      this.isUnlocked = this.caseData.unlocked === true;
+      this.loadMessages();
+      this.loadDocuments();
+      this.populateWorkspace();
+    } catch (e) {
+      console.error('Error loading case data:', e);
+      this.showError();
+    }
+  }
+
+  showError() {
+    document.getElementById('error-state').classList.remove('hidden');
+    document.getElementById('main-workspace').classList.add('hidden');
+  }
+
+  populateWorkspace() {
+    // Set case ID and status
+    document.getElementById('case-id').textContent = this.caseToken;
+    const statusBadge = document.getElementById('status-badge');
+
+    if (this.isUnlocked) {
+      statusBadge.textContent = 'Unlocked';
+      statusBadge.className = 'inline-block px-2 py-1 rounded text-tagline-2 bg-green-100 text-green-800';
+    } else {
+      statusBadge.textContent = 'Locked';
+      statusBadge.className = 'inline-block px-2 py-1 rounded text-tagline-2 bg-yellow-100 text-yellow-800';
+    }
+
+    // Populate content based on unlock status
+    this.populateSummary();
+    this.toggleDraftsVisibility();
+    this.toggleActionPlanVisibility();
+    this.populateDocuments();
+    this.renderMessages();
+  }
+
+  populateSummary() {
+    const summaryContent = document.getElementById('summary-content');
+    const data = this.caseData;
+
+    const basicInfo = [
+      `<div><strong>Notice Type:</strong> ${this.formatValue(data.noticeType)}</div>`,
+      `<div><strong>Your Role:</strong> ${this.formatValue(data.role)}</div>`,
+      `<div><strong>Desired Outcome:</strong> ${this.formatValue(data.outcome)}</div>`
+    ];
+
+    if (this.isUnlocked) {
+      const fullSummary = [
+        ...basicInfo,
+        `<div><strong>Issue Description:</strong> ${this.truncateText(data.issueText, 150)}</div>`,
+        `<div><strong>Property:</strong> ${this.formatValue(data.propertyType)} in ${data.state}</div>`
+      ];
+      summaryContent.innerHTML = fullSummary.join('');
+      document.getElementById('summary-locked-note').classList.add('hidden');
+    } else {
+      summaryContent.innerHTML = basicInfo.slice(0, 2).join('');
+      document.getElementById('summary-locked-note').classList.remove('hidden');
+    }
+  }
+
+  toggleDraftsVisibility() {
+    const lockedDiv = document.getElementById('drafts-locked');
+    const unlockedDiv = document.getElementById('drafts-unlocked');
+
+    if (this.isUnlocked) {
+      lockedDiv.classList.add('hidden');
+      unlockedDiv.classList.remove('hidden');
+      this.populateDrafts();
+    } else {
+      lockedDiv.classList.remove('hidden');
+      unlockedDiv.classList.add('hidden');
+    }
+  }
+
+  toggleActionPlanVisibility() {
+    const lockedDiv = document.getElementById('action-locked');
+    const unlockedDiv = document.getElementById('action-unlocked');
+
+    if (this.isUnlocked) {
+      lockedDiv.classList.add('hidden');
+      unlockedDiv.classList.remove('hidden');
+      this.populateActionPlan();
+    } else {
+      lockedDiv.classList.remove('hidden');
+      unlockedDiv.classList.add('hidden');
+    }
+  }
+
+  populateDrafts() {
+    const data = this.caseData;
+    const outcome = data.outcome;
+    const noticeType = this.formatValue(data.noticeType);
+    const issueText = data.issueText;
+
+    // Draft templates based on case data
+    const drafts = {
+      clarification: `Dear HOA Management,
+
+I received your ${noticeType.toLowerCase()} dated ${new Date().toLocaleDateString()}. To ensure I understand the requirements correctly and can address this matter appropriately, I would appreciate clarification on the following:
+
+• What specific action is required to achieve compliance?
+• What documentation or evidence would you like me to provide?
+• Are there acceptable alternative solutions?
+• What is the exact deadline for resolution?
+
+I want to resolve this matter promptly and appropriately. Thank you for your time and assistance.
+
+Sincerely,
+[Your Name]`,
+
+      extension: `Dear HOA Management,
+
+I am writing regarding your ${noticeType.toLowerCase()} concerning ${issueText.substring(0, 50)}...
+
+I understand the importance of addressing this matter and am committed to resolving it. However, I would like to request a reasonable extension to ensure I can address this properly.
+
+Could we discuss:
+• A reasonable timeline for compliance?
+• Any interim steps I can take?
+• The process for confirming completion?
+
+I appreciate your consideration and look forward to resolving this matter.
+
+Sincerely,
+[Your Name]`,
+
+      compliance: `Dear HOA Management,
+
+Thank you for bringing the matter of ${issueText.substring(0, 50)}... to my attention.
+
+I want to confirm that I understand the requirements and am prepared to address this appropriately. Before proceeding, I would like to confirm:
+
+• The specific steps that constitute full compliance
+• The timeline for completion
+• The process for confirming resolution
+• Any documentation needed
+
+I appreciate your guidance in ensuring this matter is resolved to everyone's satisfaction.
+
+Sincerely,
+[Your Name]`
+    };
+
+    document.getElementById('draft-clarification').innerHTML = drafts.clarification.replace(/\n/g, '<br>');
+    document.getElementById('draft-extension').innerHTML = drafts.extension.replace(/\n/g, '<br>');
+    document.getElementById('draft-compliance').innerHTML = drafts.compliance.replace(/\n/g, '<br>');
+  }
+
+  populateActionPlan() {
+    const data = this.caseData;
+    const outcomeActions = {
+      'clarification': 'Request specific clarification from HOA',
+      'extension': 'Request reasonable extension timeline',
+      'alternative': 'Propose alternative compliance solutions',
+      'comply': 'Implement lowest-cost compliance approach',
+      'dispute': 'Gather evidence to support your position',
+      'not-sure': 'Assess all options before responding'
+    };
+
+    document.getElementById('outcome-specific-action').textContent =
+      outcomeActions[data.outcome] || 'Take appropriate action based on your situation';
+
+    // Update timeline with actual deadline if available
+    if (data.deadline) {
+      const deadlineDate = new Date(data.deadline);
+      document.getElementById('timeline-deadline').innerHTML =
+        `<strong>By ${deadlineDate.toLocaleDateString()}:</strong> Ensure full compliance`;
+    }
+  }
+
+  populateDocuments() {
+    const originalStatus = document.getElementById('original-doc-status');
+    originalStatus.textContent = this.caseData.hasUpload ? 'Original notice: Uploaded' : 'Original notice: Pasted text';
+
+    this.renderDocumentList();
+  }
+
+  renderDocumentList() {
+    const container = document.getElementById('additional-docs');
+    container.innerHTML = '';
+
+    this.documents.forEach((doc, index) => {
+      const docDiv = document.createElement('div');
+      docDiv.className = 'flex items-center justify-between py-2 px-3 bg-background-3 rounded-lg';
+      docDiv.innerHTML = `
+        <div class="flex items-center">
+          <svg class="w-4 h-4 mr-2 text-secondary/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+          <span class="text-tagline-2">${doc.name}</span>
+          <span class="text-tagline-3 text-secondary/60 ml-2">(${this.formatFileSize(doc.size)})</span>
+        </div>
+        <button class="remove-doc text-red-500 hover:text-red-700 transition-colors" data-index="${index}">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      `;
+      container.appendChild(docDiv);
+    });
+
+    // Bind remove buttons
+    container.querySelectorAll('.remove-doc').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const index = parseInt(e.target.closest('.remove-doc').dataset.index);
+        this.removeDocument(index);
+      });
+    });
+  }
+
+  loadMessages() {
+    const messagesStr = localStorage.getItem('dmhoa_chat_' + this.caseToken);
+    if (messagesStr) {
+      try {
+        this.messages = JSON.parse(messagesStr);
+      } catch (e) {
+        this.messages = [];
+      }
+    }
+  }
+
+  loadDocuments() {
+    const docsStr = localStorage.getItem('dmhoa_docs_' + this.caseToken);
+    if (docsStr) {
+      try {
+        this.documents = JSON.parse(docsStr);
+      } catch (e) {
+        this.documents = [];
+      }
+    }
+  }
+
+  saveMessages() {
+    localStorage.setItem('dmhoa_chat_' + this.caseToken, JSON.stringify(this.messages));
+  }
+
+  saveDocuments() {
+    localStorage.setItem('dmhoa_docs_' + this.caseToken, JSON.stringify(this.documents));
+  }
+
+  renderMessages() {
+    const container = document.getElementById('chat-messages');
+
+    if (this.messages.length === 0) {
+      container.innerHTML = '<div class="text-center text-tagline-2 text-secondary/60">Start a conversation about your case...</div>';
+      return;
+    }
+
+    container.innerHTML = '';
+    this.messages.forEach(msg => {
+      const msgDiv = document.createElement('div');
+      msgDiv.className = `flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`;
+
+      const bubble = document.createElement('div');
+      bubble.className = `max-w-[80%] px-4 py-2 rounded-lg text-tagline-2 ${
+        msg.role === 'user'
+          ? 'bg-ns-green text-white'
+          : 'bg-background-3 text-secondary'
+      }`;
+      bubble.textContent = msg.text;
+
+      msgDiv.appendChild(bubble);
+      container.appendChild(msgDiv);
+    });
+
+    container.scrollTop = container.scrollHeight;
+  }
+
+  sendMessage() {
+    const input = document.getElementById('chat-input');
+    const text = input.value.trim();
+
+    if (!text) return;
+
+    // Add user message
+    this.messages.push({
+      role: 'user',
+      text: text,
+      ts: Date.now()
+    });
+
+    // Generate assistant response
+    const response = this.generateAssistantResponse(text);
+    this.messages.push({
+      role: 'assistant',
+      text: response,
+      ts: Date.now()
+    });
+
+    this.saveMessages();
+    this.renderMessages();
+    input.value = '';
+  }
+
+  generateAssistantResponse(userText) {
+    if (!this.isUnlocked) {
+      return "Unlock to get tailored drafts and a full plan. You can still view your preview.";
+    }
+
+    const data = this.caseData;
+    const lowerText = userText.toLowerCase();
+
+    // Simple response patterns based on user input and case data
+    if (lowerText.includes('deadline') || lowerText.includes('time')) {
+      return data.deadline
+        ? `Your deadline is ${new Date(data.deadline).toLocaleDateString()}. I recommend taking action within the next 48 hours to allow time for follow-up.`
+        : "No specific deadline was mentioned in your case. I recommend reaching out promptly for clarification on timing.";
+    }
+
+    if (lowerText.includes('next step') || lowerText.includes('what should')) {
+      const outcomes = {
+        'clarification': 'Start by requesting specific clarification about the requirements and what constitutes compliance.',
+        'extension': 'Request a reasonable extension and explain your timeline for resolution.',
+        'alternative': 'Propose specific alternative solutions that would address their concerns.',
+        'comply': 'Focus on the most cost-effective way to meet their requirements.',
+        'dispute': 'Gather evidence and documentation to support your position.',
+        'not-sure': 'Request clarification first to understand all your options.'
+      };
+      return outcomes[data.outcome] || 'Review the action plan for specific steps based on your situation.';
+    }
+
+    if (lowerText.includes('draft') || lowerText.includes('letter') || lowerText.includes('response')) {
+      return `I've prepared three draft responses for you based on your ${this.formatValue(data.noticeType)} notice. Check the Draft Replies section and customize them with your specific details.`;
+    }
+
+    // Default helpful response
+    return `Based on your ${this.formatValue(data.noticeType)} case where you want to ${this.formatValue(data.outcome)}, I recommend reviewing the action plan and using the appropriate draft response. Let me know if you need help with any specific step.`;
+  }
+
+  copyToClipboard(text) {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => {
+        this.showCopyFeedback();
+      });
+    } else {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      this.showCopyFeedback();
+    }
+  }
+
+  showCopyFeedback() {
+    // Simple feedback - could be enhanced with better UI
+    const originalText = event.target.textContent;
+    event.target.textContent = 'Copied!';
+    setTimeout(() => {
+      event.target.textContent = originalText;
+    }, 2000);
+  }
+
+  addDocuments(files) {
+    Array.from(files).forEach(file => {
+      const doc = {
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        ts: Date.now()
+      };
+      this.documents.push(doc);
+    });
+
+    this.saveDocuments();
+    this.renderDocumentList();
+  }
+
+  removeDocument(index) {
+    this.documents.splice(index, 1);
+    this.saveDocuments();
+    this.renderDocumentList();
+  }
+
+  bindEvents() {
+    // Chat
+    document.getElementById('send-chat').addEventListener('click', () => {
+      this.sendMessage();
+    });
+
+    document.getElementById('chat-input').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        this.sendMessage();
+      }
+    });
+
+    // Navigation
+    document.getElementById('back-to-preview').addEventListener('click', () => {
+      window.location.href = 'case-preview.html?case=' + encodeURIComponent(this.caseToken);
+    });
+
+    // Unlock button
+    const unlockBtn = document.getElementById('unlock-drafts');
+    if (unlockBtn) {
+      unlockBtn.addEventListener('click', () => {
+        window.location.href = 'case-preview.html?case=' + encodeURIComponent(this.caseToken);
+      });
+    }
+
+    // Copy buttons
+    document.querySelectorAll('.copy-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const draftType = e.target.dataset.draft;
+        const draftContent = document.getElementById('draft-' + draftType).textContent;
+        this.copyToClipboard(draftContent);
+      });
+    });
+
+    // File upload
+    document.getElementById('add-document').addEventListener('click', () => {
+      document.getElementById('file-input').click();
+    });
+
+    document.getElementById('file-input').addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        this.addDocuments(e.target.files);
+        e.target.value = ''; // Reset input
+      }
+    });
+  }
+
+  // Helper functions
+  formatValue(value) {
+    if (!value) return 'Not specified';
+    return value.charAt(0).toUpperCase() + value.slice(1).replace('-', ' ');
+  }
+
+  truncateText(text, maxLength) {
+    if (!text) return 'Not provided';
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+  }
+
+  formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  }
+
+  // Future Stripe support placeholder
+  isStripeVerified() {
+    return false; // TODO: Implement Stripe verification
+  }
+}
+
+// Initialize workspace when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+  new CaseWorkspace();
+});
+</script>
