@@ -352,6 +352,19 @@
         this.caseData.unlockIntent = true;
         localStorage.setItem('dmhoa_case_' + this.caseToken, JSON.stringify(this.caseData));
 
+        // Pull the saved form payload (adjust the key if yours is different)
+        const payload = JSON.parse(
+          localStorage.getItem('dmhoa_case_' + this.caseToken) || '{}'
+        );
+
+// Optional: quick guard so you don't send empty payload by mistake
+        if (!payload || Object.keys(payload).length === 0) {
+          console.warn('[case-preview] No payload found in localStorage for token:', this.caseToken);
+          // You can either block checkout or allow it:
+          // return alert('Please complete the case form first.');
+        }
+
+
         // Try to call Supabase Edge Function
         const response = await fetch(`${this.getSupabaseUrl()}/functions/v1/create-checkout-session`, {
           method: 'POST',
