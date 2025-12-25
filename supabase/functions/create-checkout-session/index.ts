@@ -32,7 +32,7 @@ serve(async (req) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
     // Parse request body
-    const { token, email } = await req.json()
+    const { token, email, payload } = await req.json()
 
     if (!token || !email) {
       return new Response(

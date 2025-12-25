@@ -270,176 +270,314 @@
 </section>
 
 <script>
-class CaseWorkspace {
-  constructor() {
-    this.caseToken = null;
-    this.caseData = null;
-    this.isUnlocked = false;
-    this.messages = [];
-    this.documents = [];
-    this.init();
-  }
+  class CaseWorkspace {
+    constructor() {
+      this.caseToken = null;
+      this.caseData = null;
+      this.isUnlocked = false;
 
-  init() {
-    this.loadCaseFromURL();
-    this.bindEvents();
-  }
+      // ✅ NEW: store generated outputs from DB (summary/drafts/action plan)
+      this.outputs = null;
 
-  async loadCaseFromURL() {
-    const urlParams = new URLSearchParams(window.location.search);
-    this.caseToken = urlParams.get('case');
-    const sessionId = urlParams.get('session_id');
+      // Chat/docs
+      this.messages = [];
+      this.documents = [];
 
-    if (!this.caseToken) {
-      this.showError();
-      return;
+      this.init();
     }
 
-    // Show loading state
-    this.showLoading();
+    // ✅ Centralized config
+    getSupabaseUrl() {
+      return 'https://yvdwrkhntyutpnklxsvz.supabase.co';
+    }
 
-    try {
-      // First, try to get case data from Supabase
-      const caseData = await this.fetchCaseFromSupabase();
+    getSupabaseAnonKey() {
+      return 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2ZHdya2hudHl1dHBua2x4c3Z6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1MDY3NTQsImV4cCI6MjA4MjA4Mjc1NH0.dFkoPjA60c9MH6C_YWYChehG3nKHHK3VKmKj0w722SU';
+    }
 
-      if (!caseData) {
-        // Fallback to localStorage for cases created before Supabase integration
-        const caseDataStr = localStorage.getItem('dmhoa_case_' + this.caseToken);
-        if (!caseDataStr) {
-          this.showError();
-          return;
+    init() {
+      this.loadCaseFromURL();
+      this.bindEvents();
+    }
+
+    async loadCaseFromURL() {
+      const urlParams = new URLSearchParams(window.location.search);
+      this.caseToken = urlParams.get('case');
+      const sessionId = urlParams.get('session_id');
+
+      if (!this.caseToken) {
+        this.showError();
+        return;
+      }
+
+      // Show loading state
+      this.showLoading();
+
+      try {
+        // First, try to get case data from Supabase
+        const caseData = await this.fetchCaseFromSupabase();
+
+        if (!caseData) {
+          // Fallback to localStorage for cases created before Supabase integration
+          const caseDataStr = localStorage.getItem('dmhoa_case_' + this.caseToken);
+          if (!caseDataStr) {
+            this.showError();
+            return;
+          }
+          this.caseData = JSON.parse(caseDataStr);
+          this.isUnlocked = false; // Default to locked for localStorage cases
+        } else {
+          this.caseData = caseData.payload || {};
+          this.isUnlocked = !!caseData.unlocked;
         }
-        this.caseData = JSON.parse(caseDataStr);
-        this.isUnlocked = false; // Default to locked for localStorage cases
-      } else {
-        this.caseData = caseData.payload || {};
-        this.isUnlocked = caseData.unlocked;
+
+        // If we have a session_id from Stripe redirect, poll for payment confirmation
+        if (sessionId && !this.isUnlocked) {
+          this.showPaymentConfirmation();
+          await this.pollForPaymentConfirmation(30); // Poll for 30 seconds
+        }
+
+        // ✅ NEW: If unlocked, fetch/generate outputs (summary/drafts/action plan)
+        if (this.isUnlocked) {
+          try {
+            let out = await this.fetchOutputsFromSupabase();
+
+            if (!out || !out.result || (out.status && out.status !== 'ready' && out.status !== 'completed')) {
+              this.showGeneratingOutputs();
+
+              // Trigger generation (should be idempotent server-side)
+              await this.triggerGenerateOutputs();
+
+              out = await this.pollForOutputsReady(60);
+              this.hideGeneratingOutputs();
+            }
+
+            if (out && out.result) {
+              this.outputs = out.result;
+            }
+          } catch (err) {
+            console.error('Outputs generation flow error:', err);
+            this.hideGeneratingOutputs();
+            // Page still works with templates if outputs fail
+          }
+        }
+
+        this.loadMessages();
+        this.loadDocuments();
+        this.populateWorkspace();
+        this.hideLoading();
+
+      } catch (e) {
+        console.error('Error loading case data:', e);
+        this.hideLoading();
+        this.showError();
       }
-
-      // If we have a session_id from Stripe redirect, poll for payment confirmation
-      if (sessionId && !this.isUnlocked) {
-        this.showPaymentConfirmation();
-        await this.pollForPaymentConfirmation(30); // Poll for 30 seconds
-      }
-
-      this.loadMessages();
-      this.loadDocuments();
-      this.populateWorkspace();
-      this.hideLoading();
-
-    } catch (e) {
-      console.error('Error loading case data:', e);
-      this.hideLoading();
-      this.showError();
     }
-  }
 
-  async fetchCaseFromSupabase() {
-    try {
-      const response = await fetch(`https://yvdwrkhntyutpnklxsvz.supabase.co/functions/v1/read-case?token=${encodeURIComponent(this.caseToken)}`, {
+    async fetchCaseFromSupabase() {
+      try {
+        const response = await fetch(`${this.getSupabaseUrl()}/functions/v1/read-case?token=${encodeURIComponent(this.caseToken)}`, {
+          method: 'GET',
+          headers: {
+            'apikey': this.getSupabaseAnonKey(),
+            'Authorization': `Bearer ${this.getSupabaseAnonKey()}`
+          }
+        });
+
+        if (response.status === 404) {
+          return null; // Case not found in Supabase
+        }
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch case data');
+        }
+
+        return await response.json();
+      } catch (error) {
+        console.error('Error fetching case from Supabase:', error);
+        return null;
+      }
+    }
+
+    async pollForPaymentConfirmation(maxSeconds = 30) {
+      const interval = 2000; // 2 seconds
+      const maxAttempts = Math.ceil((maxSeconds * 1000) / interval);
+      let attempts = 0;
+
+      return new Promise((resolve) => {
+        const tick = async () => {
+          attempts++;
+
+          try {
+            const caseData = await this.fetchCaseFromSupabase();
+
+            if (caseData && caseData.unlocked) {
+              this.isUnlocked = true;
+              this.caseData = caseData.payload || {};
+              this.hidePaymentConfirmation();
+              this.populateWorkspace();
+              return resolve(true);
+            }
+
+            if (attempts >= maxAttempts) {
+              this.hidePaymentConfirmation();
+              this.showPaymentTimeout();
+              return resolve(false);
+            }
+
+            setTimeout(tick, interval);
+          } catch (error) {
+            console.error('Error polling for payment confirmation:', error);
+
+            if (attempts >= maxAttempts) {
+              this.hidePaymentConfirmation();
+              return resolve(false);
+            }
+
+            setTimeout(tick, interval);
+          }
+        };
+
+        tick();
+      });
+    }
+
+    // =========================
+    // ✅ OUTPUTS (DB-backed)
+    // =========================
+
+    async fetchOutputsFromSupabase() {
+      // Expects edge function: read-outputs?token=...
+      const res = await fetch(`${this.getSupabaseUrl()}/functions/v1/read-outputs?token=${encodeURIComponent(this.caseToken)}`, {
         method: 'GET',
         headers: {
-          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2ZHdya2hudHl1dHBua2x4c3Z6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1MDY3NTQsImV4cCI6MjA4MjA4Mjc1NH0.dFkoPjA60c9MH6C_YWYChehG3nKHHK3VKmKj0w722SU',
-          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2ZHdya2hudHl1dHBua2x4c3Z6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1MDY3NTQsImV4cCI6MjA4MjA4Mjc1NH0.dFkoPjA60c9MH6C_YWYChehG3nKHHK3VKmKj0w722SU'
+          'apikey': this.getSupabaseAnonKey(),
+          'Authorization': `Bearer ${this.getSupabaseAnonKey()}`
         }
       });
 
-      if (response.status === 404) {
-        return null; // Case not found in Supabase
-      }
+      if (res.status === 404) return null;
+      if (!res.ok) throw new Error('Failed to fetch outputs');
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch case data');
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error fetching case from Supabase:', error);
-      return null;
+      return await res.json();
     }
-  }
 
-  async pollForPaymentConfirmation(maxSeconds = 30) {
-    const interval = 2000; // 2 seconds
-    const maxAttempts = Math.ceil((maxSeconds * 1000) / interval);
-    let attempts = 0;
+    async triggerGenerateOutputs() {
+      // Expects edge function: generate-case-outputs (POST { token })
+      const res = await fetch(`${this.getSupabaseUrl()}/functions/v1/generate-case-outputs`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': this.getSupabaseAnonKey(),
+          'Authorization': `Bearer ${this.getSupabaseAnonKey()}`
+        },
+        body: JSON.stringify({ token: this.caseToken })
+      });
 
-    return new Promise((resolve) => {
-      const tick = async () => {
-        attempts++;
+      if (!res.ok) {
+        const txt = await res.text().catch(() => '');
+        throw new Error(`Generate outputs failed: ${txt || res.status}`);
+      }
 
-        try {
-          const caseData = await this.fetchCaseFromSupabase();
+      return await res.json().catch(() => ({}));
+    }
 
-          if (caseData && caseData.unlocked) {
-            this.isUnlocked = true;
-            this.caseData = caseData.payload || {}; // ✅ important
-            this.hidePaymentConfirmation();
-            this.populateWorkspace();
-            return resolve(true);
+    async pollForOutputsReady(maxSeconds = 60) {
+      const interval = 2000;
+      const maxAttempts = Math.ceil((maxSeconds * 1000) / interval);
+      let attempts = 0;
+
+      return new Promise((resolve) => {
+        const tick = async () => {
+          attempts++;
+          try {
+            const out = await this.fetchOutputsFromSupabase();
+
+            if (out && out.result && (out.status === 'ready' || out.status === 'completed')) {
+              return resolve(out);
+            }
+
+            if (attempts >= maxAttempts) return resolve(null);
+            setTimeout(tick, interval);
+          } catch (e) {
+            console.error('poll outputs error', e);
+            if (attempts >= maxAttempts) return resolve(null);
+            setTimeout(tick, interval);
           }
+        };
 
-          if (attempts >= maxAttempts) {
-            this.hidePaymentConfirmation();
-            this.showPaymentTimeout();
-            return resolve(false);
-          }
+        tick();
+      });
+    }
 
-          setTimeout(tick, interval);
-        } catch (error) {
-          console.error('Error polling for payment confirmation:', error);
+    showGeneratingOutputs() {
+      let el = document.getElementById('outputs-generating-state');
+      if (!el) {
+        el = document.createElement('div');
+        el.id = 'outputs-generating-state';
+        el.className = 'max-w-2xl mx-auto text-center mb-8';
+        el.innerHTML = `
+        <div class="bg-purple-50 border border-purple-200 rounded-[20px] p-6">
+          <div class="flex items-center justify-center mb-3">
+            <div class="animate-spin w-5 h-5 border-2 border-purple-600 border-t-transparent rounded-full mr-3"></div>
+            <h2 class="text-heading-6 text-purple-800">Generating your case outputs...</h2>
+          </div>
+          <p class="text-tagline-1 text-purple-700">
+            Creating summaries, action plan, and draft replies. This can take ~10–30 seconds.
+          </p>
+        </div>
+      `;
+        document.querySelector('.main-container').appendChild(el);
+      }
+      el.classList.remove('hidden');
+    }
 
-          if (attempts >= maxAttempts) {
-            this.hidePaymentConfirmation();
-            return resolve(false);
-          }
+    hideGeneratingOutputs() {
+      const el = document.getElementById('outputs-generating-state');
+      if (el) el.classList.add('hidden');
+    }
 
-          setTimeout(tick, interval);
-        }
-      };
+    // =========================
+    // UI states
+    // =========================
 
-      tick();
-    });
-  }
+    showLoading() {
+      document.getElementById('error-state').classList.add('hidden');
+      document.getElementById('main-workspace').classList.add('hidden');
 
-
-  showLoading() {
-    document.getElementById('error-state').classList.add('hidden');
-    document.getElementById('main-workspace').classList.add('hidden');
-
-    // Create loading state if it doesn't exist
-    let loadingState = document.getElementById('loading-state');
-    if (!loadingState) {
-      loadingState = document.createElement('div');
-      loadingState.id = 'loading-state';
-      loadingState.className = 'max-w-2xl mx-auto text-center';
-      loadingState.innerHTML = `
+      // Create loading state if it doesn't exist
+      let loadingState = document.getElementById('loading-state');
+      if (!loadingState) {
+        loadingState = document.createElement('div');
+        loadingState.id = 'loading-state';
+        loadingState.className = 'max-w-2xl mx-auto text-center';
+        loadingState.innerHTML = `
         <div class="bg-white rounded-[20px] border border-stroke-1 p-8">
           <div class="animate-spin w-8 h-8 border-2 border-ns-green border-t-transparent rounded-full mx-auto mb-4"></div>
           <h1 class="text-heading-4 mb-2">Loading your case...</h1>
           <p class="text-tagline-1 text-secondary/80">Please wait while we retrieve your case data.</p>
         </div>
       `;
-      document.querySelector('.main-container').appendChild(loadingState);
+        document.querySelector('.main-container').appendChild(loadingState);
+      }
+      loadingState.classList.remove('hidden');
     }
-    loadingState.classList.remove('hidden');
-  }
 
-  hideLoading() {
-    const loadingState = document.getElementById('loading-state');
-    if (loadingState) {
-      loadingState.classList.add('hidden');
+    hideLoading() {
+      const loadingState = document.getElementById('loading-state');
+      if (loadingState) {
+        loadingState.classList.add('hidden');
+      }
+      document.getElementById('main-workspace').classList.remove('hidden');
     }
-    document.getElementById('main-workspace').classList.remove('hidden');
-  }
 
-  showPaymentConfirmation() {
-    let confirmationState = document.getElementById('payment-confirmation-state');
-    if (!confirmationState) {
-      confirmationState = document.createElement('div');
-      confirmationState.id = 'payment-confirmation-state';
-      confirmationState.className = 'max-w-2xl mx-auto text-center mb-8';
-      confirmationState.innerHTML = `
+    showPaymentConfirmation() {
+      let confirmationState = document.getElementById('payment-confirmation-state');
+      if (!confirmationState) {
+        confirmationState = document.createElement('div');
+        confirmationState.id = 'payment-confirmation-state';
+        confirmationState.className = 'max-w-2xl mx-auto text-center mb-8';
+        confirmationState.innerHTML = `
         <div class="bg-blue-50 border border-blue-200 rounded-[20px] p-6">
           <div class="flex items-center justify-center mb-3">
             <div class="animate-spin w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full mr-3"></div>
@@ -450,25 +588,25 @@ class CaseWorkspace {
           </p>
         </div>
       `;
-      document.querySelector('.main-container').appendChild(confirmationState);
+        document.querySelector('.main-container').appendChild(confirmationState);
+      }
+      confirmationState.classList.remove('hidden');
     }
-    confirmationState.classList.remove('hidden');
-  }
 
-  hidePaymentConfirmation() {
-    const confirmationState = document.getElementById('payment-confirmation-state');
-    if (confirmationState) {
-      confirmationState.classList.add('hidden');
+    hidePaymentConfirmation() {
+      const confirmationState = document.getElementById('payment-confirmation-state');
+      if (confirmationState) {
+        confirmationState.classList.add('hidden');
+      }
     }
-  }
 
-  showPaymentTimeout() {
-    let timeoutState = document.getElementById('payment-timeout-state');
-    if (!timeoutState) {
-      timeoutState = document.createElement('div');
-      timeoutState.id = 'payment-timeout-state';
-      timeoutState.className = 'max-w-2xl mx-auto text-center mb-8';
-      timeoutState.innerHTML = `
+    showPaymentTimeout() {
+      let timeoutState = document.getElementById('payment-timeout-state');
+      if (!timeoutState) {
+        timeoutState = document.createElement('div');
+        timeoutState.id = 'payment-timeout-state';
+        timeoutState.className = 'max-w-2xl mx-auto text-center mb-8';
+        timeoutState.innerHTML = `
         <div class="bg-yellow-50 border border-yellow-200 rounded-[20px] p-6">
           <h2 class="text-heading-6 text-yellow-800 mb-3">Payment Confirmation Delayed</h2>
           <p class="text-tagline-1 text-yellow-700 mb-4">
@@ -479,98 +617,117 @@ class CaseWorkspace {
           </button>
         </div>
       `;
-      document.querySelector('.main-container').appendChild(timeoutState);
-    }
-    timeoutState.classList.remove('hidden');
-  }
-
-  showError() {
-    document.getElementById('error-state').classList.remove('hidden');
-    document.getElementById('main-workspace').classList.add('hidden');
-  }
-
-  populateWorkspace() {
-    // Set case ID and status
-    document.getElementById('case-id').textContent = this.caseToken;
-    const statusBadge = document.getElementById('status-badge');
-
-    if (this.isUnlocked) {
-      statusBadge.textContent = 'Unlocked';
-      statusBadge.className = 'inline-block px-2 py-1 rounded text-tagline-2 bg-green-100 text-green-800';
-    } else {
-      statusBadge.textContent = 'Locked';
-      statusBadge.className = 'inline-block px-2 py-1 rounded text-tagline-2 bg-yellow-100 text-yellow-800';
+        document.querySelector('.main-container').appendChild(timeoutState);
+      }
+      timeoutState.classList.remove('hidden');
     }
 
-    // Populate content based on unlock status
-    this.populateSummary();
-    this.toggleDraftsVisibility();
-    this.toggleActionPlanVisibility();
-    this.populateDocuments();
-    this.renderMessages();
-  }
+    showError() {
+      document.getElementById('error-state').classList.remove('hidden');
+      document.getElementById('main-workspace').classList.add('hidden');
+    }
 
-  populateSummary() {
-    const summaryContent = document.getElementById('summary-content');
-    const data = this.caseData;
+    // =========================
+    // Rendering
+    // =========================
 
-    const basicInfo = [
-      `<div><strong>Notice Type:</strong> ${this.formatValue(data.noticeType)}</div>`,
-      `<div><strong>Your Role:</strong> ${this.formatValue(data.role)}</div>`,
-      `<div><strong>Desired Outcome:</strong> ${this.formatValue(data.outcome)}</div>`
-    ];
+    populateWorkspace() {
+      // Set case ID and status
+      document.getElementById('case-id').textContent = this.caseToken;
+      const statusBadge = document.getElementById('status-badge');
 
-    if (this.isUnlocked) {
-      const fullSummary = [
-        ...basicInfo,
-        `<div><strong>Issue Description:</strong> ${this.truncateText(data.issueText, 150)}</div>`,
-        `<div><strong>Property:</strong> ${this.formatValue(data.propertyType)} in ${data.state}</div>`
+      if (this.isUnlocked) {
+        statusBadge.textContent = 'Unlocked';
+        statusBadge.className = 'inline-block px-2 py-1 rounded text-tagline-2 bg-green-100 text-green-800';
+      } else {
+        statusBadge.textContent = 'Locked';
+        statusBadge.className = 'inline-block px-2 py-1 rounded text-tagline-2 bg-yellow-100 text-yellow-800';
+      }
+
+      // Populate content based on unlock status
+      this.populateSummary();
+      this.toggleDraftsVisibility();
+      this.toggleActionPlanVisibility();
+      this.populateDocuments();
+      this.renderMessages();
+    }
+
+    populateSummary() {
+      const summaryContent = document.getElementById('summary-content');
+      const data = this.caseData;
+
+      // ✅ Prefer outputs if present
+      if (this.isUnlocked && this.outputs && this.outputs.summary_html) {
+        summaryContent.innerHTML = this.outputs.summary_html;
+        document.getElementById('summary-locked-note').classList.add('hidden');
+        return;
+      }
+
+      const basicInfo = [
+        `<div><strong>Notice Type:</strong> ${this.formatValue(data.noticeType)}</div>`,
+        `<div><strong>Your Role:</strong> ${this.formatValue(data.role)}</div>`,
+        `<div><strong>Desired Outcome:</strong> ${this.formatValue(data.outcome)}</div>`
       ];
-      summaryContent.innerHTML = fullSummary.join('');
-      document.getElementById('summary-locked-note').classList.add('hidden');
-    } else {
-      summaryContent.innerHTML = basicInfo.slice(0, 2).join('');
-      document.getElementById('summary-locked-note').classList.remove('hidden');
+
+      if (this.isUnlocked) {
+        const fullSummary = [
+          ...basicInfo,
+          `<div><strong>Issue Description:</strong> ${this.truncateText(data.issueText, 150)}</div>`,
+          `<div><strong>Property:</strong> ${this.formatValue(data.propertyType)} in ${data.state}</div>`
+        ];
+        summaryContent.innerHTML = fullSummary.join('');
+        document.getElementById('summary-locked-note').classList.add('hidden');
+      } else {
+        summaryContent.innerHTML = basicInfo.slice(0, 2).join('');
+        document.getElementById('summary-locked-note').classList.remove('hidden');
+      }
     }
-  }
 
-  toggleDraftsVisibility() {
-    const lockedDiv = document.getElementById('drafts-locked');
-    const unlockedDiv = document.getElementById('drafts-unlocked');
+    toggleDraftsVisibility() {
+      const lockedDiv = document.getElementById('drafts-locked');
+      const unlockedDiv = document.getElementById('drafts-unlocked');
 
-    if (this.isUnlocked) {
-      lockedDiv.classList.add('hidden');
-      unlockedDiv.classList.remove('hidden');
-      this.populateDrafts();
-    } else {
-      lockedDiv.classList.remove('hidden');
-      unlockedDiv.classList.add('hidden');
+      if (this.isUnlocked) {
+        lockedDiv.classList.add('hidden');
+        unlockedDiv.classList.remove('hidden');
+        this.populateDrafts();
+      } else {
+        lockedDiv.classList.remove('hidden');
+        unlockedDiv.classList.add('hidden');
+      }
     }
-  }
 
-  toggleActionPlanVisibility() {
-    const lockedDiv = document.getElementById('action-locked');
-    const unlockedDiv = document.getElementById('action-unlocked');
+    toggleActionPlanVisibility() {
+      const lockedDiv = document.getElementById('action-locked');
+      const unlockedDiv = document.getElementById('action-unlocked');
 
-    if (this.isUnlocked) {
-      lockedDiv.classList.add('hidden');
-      unlockedDiv.classList.remove('hidden');
-      this.populateActionPlan();
-    } else {
-      lockedDiv.classList.remove('hidden');
-      unlockedDiv.classList.add('hidden');
+      if (this.isUnlocked) {
+        lockedDiv.classList.add('hidden');
+        unlockedDiv.classList.remove('hidden');
+        this.populateActionPlan();
+      } else {
+        lockedDiv.classList.remove('hidden');
+        unlockedDiv.classList.add('hidden');
+      }
     }
-  }
 
-  populateDrafts() {
-    const data = this.caseData;
-    const outcome = data.outcome;
-    const noticeType = this.formatValue(data.noticeType);
-    const issueText = data.issueText;
+    populateDrafts() {
+      // ✅ Prefer outputs if present
+      if (this.outputs && this.outputs.drafts) {
+        const d = this.outputs.drafts || {};
+        document.getElementById('draft-clarification').innerHTML = (d.clarification || '').replace(/\n/g, '<br>');
+        document.getElementById('draft-extension').innerHTML = (d.extension || '').replace(/\n/g, '<br>');
+        document.getElementById('draft-compliance').innerHTML = (d.compliance || '').replace(/\n/g, '<br>');
+        return;
+      }
 
-    // Draft templates based on case data
-    const drafts = {
-      clarification: `Dear HOA Management,
+      const data = this.caseData;
+      const noticeType = this.formatValue(data.noticeType);
+      const issueText = data.issueText || '';
+
+      // Template fallback
+      const drafts = {
+        clarification: `Dear HOA Management,
 
 I received your ${noticeType.toLowerCase()} dated ${new Date().toLocaleDateString()}. To ensure I understand the requirements correctly and can address this matter appropriately, I would appreciate clarification on the following:
 
@@ -584,7 +741,7 @@ I want to resolve this matter promptly and appropriately. Thank you for your tim
 Sincerely,
 [Your Name]`,
 
-      extension: `Dear HOA Management,
+        extension: `Dear HOA Management,
 
 I am writing regarding your ${noticeType.toLowerCase()} concerning ${issueText.substring(0, 50)}...
 
@@ -600,7 +757,7 @@ I appreciate your consideration and look forward to resolving this matter.
 Sincerely,
 [Your Name]`,
 
-      compliance: `Dear HOA Management,
+        compliance: `Dear HOA Management,
 
 Thank you for bringing the matter of ${issueText.substring(0, 50)}... to my attention.
 
@@ -615,50 +772,64 @@ I appreciate your guidance in ensuring this matter is resolved to everyone's sat
 
 Sincerely,
 [Your Name]`
-    };
+      };
 
-    document.getElementById('draft-clarification').innerHTML = drafts.clarification.replace(/\n/g, '<br>');
-    document.getElementById('draft-extension').innerHTML = drafts.extension.replace(/\n/g, '<br>');
-    document.getElementById('draft-compliance').innerHTML = drafts.compliance.replace(/\n/g, '<br>');
-  }
-
-  populateActionPlan() {
-    const data = this.caseData;
-    const outcomeActions = {
-      'clarification': 'Request specific clarification from HOA',
-      'extension': 'Request reasonable extension timeline',
-      'alternative': 'Propose alternative compliance solutions',
-      'comply': 'Implement lowest-cost compliance approach',
-      'dispute': 'Gather evidence to support your position',
-      'not-sure': 'Assess all options before responding'
-    };
-
-    document.getElementById('outcome-specific-action').textContent =
-      outcomeActions[data.outcome] || 'Take appropriate action based on your situation';
-
-    // Update timeline with actual deadline if available
-    if (data.deadline) {
-      const deadlineDate = new Date(data.deadline);
-      document.getElementById('timeline-deadline').innerHTML =
-        `<strong>By ${deadlineDate.toLocaleDateString()}:</strong> Ensure full compliance`;
+      document.getElementById('draft-clarification').innerHTML = drafts.clarification.replace(/\n/g, '<br>');
+      document.getElementById('draft-extension').innerHTML = drafts.extension.replace(/\n/g, '<br>');
+      document.getElementById('draft-compliance').innerHTML = drafts.compliance.replace(/\n/g, '<br>');
     }
-  }
 
-  populateDocuments() {
-    const originalStatus = document.getElementById('original-doc-status');
-    originalStatus.textContent = this.caseData.hasUpload ? 'Original notice: Uploaded' : 'Original notice: Pasted text';
+    populateActionPlan() {
+      // ✅ Prefer outputs if present
+      if (this.outputs && this.outputs.action_plan) {
+        const ap = this.outputs.action_plan || {};
+        if (ap.outcome_specific_action) {
+          document.getElementById('outcome-specific-action').textContent = ap.outcome_specific_action;
+        }
+        if (ap.deadline_html) {
+          document.getElementById('timeline-deadline').innerHTML = ap.deadline_html;
+        } else if (ap.deadline_text) {
+          document.getElementById('timeline-deadline').textContent = ap.deadline_text;
+        }
+        return;
+      }
 
-    this.renderDocumentList();
-  }
+      const data = this.caseData;
+      const outcomeActions = {
+        'clarification': 'Request specific clarification from HOA',
+        'extension': 'Request reasonable extension timeline',
+        'alternative': 'Propose alternative compliance solutions',
+        'comply': 'Implement lowest-cost compliance approach',
+        'dispute': 'Gather evidence to support your position',
+        'not-sure': 'Assess all options before responding'
+      };
 
-  renderDocumentList() {
-    const container = document.getElementById('additional-docs');
-    container.innerHTML = '';
+      document.getElementById('outcome-specific-action').textContent =
+        outcomeActions[data.outcome] || 'Take appropriate action based on your situation';
 
-    this.documents.forEach((doc, index) => {
-      const docDiv = document.createElement('div');
-      docDiv.className = 'flex items-center justify-between py-2 px-3 bg-background-3 rounded-lg';
-      docDiv.innerHTML = `
+      // Update timeline with actual deadline if available
+      if (data.deadline) {
+        const deadlineDate = new Date(data.deadline);
+        document.getElementById('timeline-deadline').innerHTML =
+          `<strong>By ${deadlineDate.toLocaleDateString()}:</strong> Ensure full compliance`;
+      }
+    }
+
+    populateDocuments() {
+      const originalStatus = document.getElementById('original-doc-status');
+      originalStatus.textContent = this.caseData.hasUpload ? 'Original notice: Uploaded' : 'Original notice: Pasted text';
+
+      this.renderDocumentList();
+    }
+
+    renderDocumentList() {
+      const container = document.getElementById('additional-docs');
+      container.innerHTML = '';
+
+      this.documents.forEach((doc, index) => {
+        const docDiv = document.createElement('div');
+        docDiv.className = 'flex items-center justify-between py-2 px-3 bg-background-3 rounded-lg';
+        docDiv.innerHTML = `
         <div class="flex items-center">
           <svg class="w-4 h-4 mr-2 text-secondary/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -672,259 +843,260 @@ Sincerely,
           </svg>
         </button>
       `;
-      container.appendChild(docDiv);
-    });
-
-    // Bind remove buttons
-    container.querySelectorAll('.remove-doc').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const index = parseInt(e.target.closest('.remove-doc').dataset.index);
-        this.removeDocument(index);
+        container.appendChild(docDiv);
       });
-    });
-  }
 
-  loadMessages() {
-    const messagesStr = localStorage.getItem('dmhoa_chat_' + this.caseToken);
-    if (messagesStr) {
-      try {
-        this.messages = JSON.parse(messagesStr);
-      } catch (e) {
-        this.messages = [];
+      // Bind remove buttons
+      container.querySelectorAll('.remove-doc').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const index = parseInt(e.target.closest('.remove-doc').dataset.index);
+          this.removeDocument(index);
+        });
+      });
+    }
+
+    loadMessages() {
+      const messagesStr = localStorage.getItem('dmhoa_chat_' + this.caseToken);
+      if (messagesStr) {
+        try {
+          this.messages = JSON.parse(messagesStr);
+        } catch (e) {
+          this.messages = [];
+        }
       }
     }
-  }
 
-  loadDocuments() {
-    const docsStr = localStorage.getItem('dmhoa_docs_' + this.caseToken);
-    if (docsStr) {
-      try {
-        this.documents = JSON.parse(docsStr);
-      } catch (e) {
-        this.documents = [];
+    loadDocuments() {
+      const docsStr = localStorage.getItem('dmhoa_docs_' + this.caseToken);
+      if (docsStr) {
+        try {
+          this.documents = JSON.parse(docsStr);
+        } catch (e) {
+          this.documents = [];
+        }
       }
     }
-  }
 
-  saveMessages() {
-    localStorage.setItem('dmhoa_chat_' + this.caseToken, JSON.stringify(this.messages));
-  }
-
-  saveDocuments() {
-    localStorage.setItem('dmhoa_docs_' + this.caseToken, JSON.stringify(this.documents));
-  }
-
-  renderMessages() {
-    const container = document.getElementById('chat-messages');
-
-    if (this.messages.length === 0) {
-      container.innerHTML = '<div class="text-center text-tagline-2 text-secondary/60">Start a conversation about your case...</div>';
-      return;
+    saveMessages() {
+      localStorage.setItem('dmhoa_chat_' + this.caseToken, JSON.stringify(this.messages));
     }
 
-    container.innerHTML = '';
-    this.messages.forEach(msg => {
-      const msgDiv = document.createElement('div');
-      msgDiv.className = `flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`;
-
-      const bubble = document.createElement('div');
-      bubble.className = `max-w-[80%] px-4 py-2 rounded-lg text-tagline-2 ${
-        msg.role === 'user'
-          ? 'bg-ns-green text-white'
-          : 'bg-background-3 text-secondary'
-      }`;
-      bubble.textContent = msg.text;
-
-      msgDiv.appendChild(bubble);
-      container.appendChild(msgDiv);
-    });
-
-    container.scrollTop = container.scrollHeight;
-  }
-
-  sendMessage() {
-    const input = document.getElementById('chat-input');
-    const text = input.value.trim();
-
-    if (!text) return;
-
-    // Add user message
-    this.messages.push({
-      role: 'user',
-      text: text,
-      ts: Date.now()
-    });
-
-    // Generate assistant response
-    const response = this.generateAssistantResponse(text);
-    this.messages.push({
-      role: 'assistant',
-      text: response,
-      ts: Date.now()
-    });
-
-    this.saveMessages();
-    this.renderMessages();
-    input.value = '';
-  }
-
-  generateAssistantResponse(userText) {
-    if (!this.isUnlocked) {
-      return "Unlock to get tailored drafts and a full plan. You can still view your preview.";
+    saveDocuments() {
+      localStorage.setItem('dmhoa_docs_' + this.caseToken, JSON.stringify(this.documents));
     }
 
-    const data = this.caseData;
-    const lowerText = userText.toLowerCase();
+    renderMessages() {
+      const container = document.getElementById('chat-messages');
 
-    // Simple response patterns based on user input and case data
-    if (lowerText.includes('deadline') || lowerText.includes('time')) {
-      return data.deadline
-        ? `Your deadline is ${new Date(data.deadline).toLocaleDateString()}. I recommend taking action within the next 48 hours to allow time for follow-up.`
-        : "No specific deadline was mentioned in your case. I recommend reaching out promptly for clarification on timing.";
-    }
+      if (this.messages.length === 0) {
+        container.innerHTML = '<div class="text-center text-tagline-2 text-secondary/60">Start a conversation about your case...</div>';
+        return;
+      }
 
-    if (lowerText.includes('next step') || lowerText.includes('what should')) {
-      const outcomes = {
-        'clarification': 'Start by requesting specific clarification about the requirements and what constitutes compliance.',
-        'extension': 'Request a reasonable extension and explain your timeline for resolution.',
-        'alternative': 'Propose specific alternative solutions that would address their concerns.',
-        'comply': 'Focus on the most cost-effective way to meet their requirements.',
-        'dispute': 'Gather evidence and documentation to support your position.',
-        'not-sure': 'Request clarification first to understand all your options.'
-      };
-      return outcomes[data.outcome] || 'Review the action plan for specific steps based on your situation.';
-    }
+      container.innerHTML = '';
+      this.messages.forEach(msg => {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`;
 
-    if (lowerText.includes('draft') || lowerText.includes('letter') || lowerText.includes('response')) {
-      return `I've prepared three draft responses for you based on your ${this.formatValue(data.noticeType)} notice. Check the Draft Replies section and customize them with your specific details.`;
-    }
+        const bubble = document.createElement('div');
+        bubble.className = `max-w-[80%] px-4 py-2 rounded-lg text-tagline-2 ${
+          msg.role === 'user'
+            ? 'bg-ns-green text-white'
+            : 'bg-background-3 text-secondary'
+        }`;
+        bubble.textContent = msg.text;
 
-    // Default helpful response
-    return `Based on your ${this.formatValue(data.noticeType)} case where you want to ${this.formatValue(data.outcome)}, I recommend reviewing the action plan and using the appropriate draft response. Let me know if you need help with any specific step.`;
-  }
-
-  copyToClipboard(text) {
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(text).then(() => {
-        this.showCopyFeedback();
+        msgDiv.appendChild(bubble);
+        container.appendChild(msgDiv);
       });
-    } else {
-      // Fallback for older browsers
-      const textArea = document.createElement('textarea');
-      textArea.value = text;
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textArea);
-      this.showCopyFeedback();
+
+      container.scrollTop = container.scrollHeight;
     }
-  }
 
-  showCopyFeedback() {
-    // Simple feedback - could be enhanced with better UI
-    const originalText = event.target.textContent;
-    event.target.textContent = 'Copied!';
-    setTimeout(() => {
-      event.target.textContent = originalText;
-    }, 2000);
-  }
+    sendMessage() {
+      const input = document.getElementById('chat-input');
+      const text = input.value.trim();
 
-  addDocuments(files) {
-    Array.from(files).forEach(file => {
-      const doc = {
-        name: file.name,
-        size: file.size,
-        type: file.type,
+      if (!text) return;
+
+      // Add user message
+      this.messages.push({
+        role: 'user',
+        text: text,
         ts: Date.now()
-      };
-      this.documents.push(doc);
-    });
+      });
 
-    this.saveDocuments();
-    this.renderDocumentList();
-  }
+      // Generate assistant response (still local template for now)
+      const response = this.generateAssistantResponse(text);
+      this.messages.push({
+        role: 'assistant',
+        text: response,
+        ts: Date.now()
+      });
 
-  removeDocument(index) {
-    this.documents.splice(index, 1);
-    this.saveDocuments();
-    this.renderDocumentList();
-  }
+      this.saveMessages();
+      this.renderMessages();
+      input.value = '';
+    }
 
-  bindEvents() {
-    // Chat
-    document.getElementById('send-chat').addEventListener('click', () => {
-      this.sendMessage();
-    });
-
-    document.getElementById('chat-input').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        this.sendMessage();
+    generateAssistantResponse(userText) {
+      if (!this.isUnlocked) {
+        return "Unlock to get tailored drafts and a full plan. You can still view your preview.";
       }
-    });
 
-    // Navigation
-    document.getElementById('back-to-preview').addEventListener('click', () => {
-      window.location.href = 'case-preview.html?case=' + encodeURIComponent(this.caseToken);
-    });
+      const data = this.caseData || {};
+      const lowerText = (userText || '').toLowerCase();
 
-    // Unlock button
-    const unlockBtn = document.getElementById('unlock-drafts');
-    if (unlockBtn) {
-      unlockBtn.addEventListener('click', () => {
+      if (lowerText.includes('deadline') || lowerText.includes('time')) {
+        return data.deadline
+          ? `Your deadline is ${new Date(data.deadline).toLocaleDateString()}. I recommend taking action within the next 48 hours to allow time for follow-up.`
+          : "No specific deadline was mentioned in your case. I recommend reaching out promptly for clarification on timing.";
+      }
+
+      if (lowerText.includes('next step') || lowerText.includes('what should')) {
+        const outcomes = {
+          'clarification': 'Start by requesting specific clarification about the requirements and what constitutes compliance.',
+          'extension': 'Request a reasonable extension and explain your timeline for resolution.',
+          'alternative': 'Propose specific alternative solutions that would address their concerns.',
+          'comply': 'Focus on the most cost-effective way to meet their requirements.',
+          'dispute': 'Gather evidence and documentation to support your position.',
+          'not-sure': 'Request clarification first to understand all your options.'
+        };
+        return outcomes[data.outcome] || 'Review the action plan for specific steps based on your situation.';
+      }
+
+      if (lowerText.includes('draft') || lowerText.includes('letter') || lowerText.includes('response')) {
+        return `I've prepared three draft responses for you based on your ${this.formatValue(data.noticeType)} notice. Check the Draft Replies section and customize them with your specific details.`;
+      }
+
+      return `Based on your ${this.formatValue(data.noticeType)} case where you want to ${this.formatValue(data.outcome)}, I recommend reviewing the action plan and using the appropriate draft response. Let me know if you need help with any specific step.`;
+    }
+
+    copyToClipboard(text) {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(() => {
+          this.showCopyFeedback();
+        });
+      } else {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        this.showCopyFeedback();
+      }
+    }
+
+    showCopyFeedback(btnEl) {
+      // ✅ Avoid using global `event` (safer)
+      const target = btnEl || null;
+      if (!target) return;
+      const originalText = target.textContent;
+      target.textContent = 'Copied!';
+      setTimeout(() => {
+        target.textContent = originalText;
+      }, 2000);
+    }
+
+    addDocuments(files) {
+      Array.from(files).forEach(file => {
+        const doc = {
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          ts: Date.now()
+        };
+        this.documents.push(doc);
+      });
+
+      this.saveDocuments();
+      this.renderDocumentList();
+    }
+
+    removeDocument(index) {
+      this.documents.splice(index, 1);
+      this.saveDocuments();
+      this.renderDocumentList();
+    }
+
+    bindEvents() {
+      // Chat
+      document.getElementById('send-chat').addEventListener('click', () => {
+        this.sendMessage();
+      });
+
+      document.getElementById('chat-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          this.sendMessage();
+        }
+      });
+
+      // Navigation
+      document.getElementById('back-to-preview').addEventListener('click', () => {
         window.location.href = 'case-preview.html?case=' + encodeURIComponent(this.caseToken);
       });
+
+      // Unlock button
+      const unlockBtn = document.getElementById('unlock-drafts');
+      if (unlockBtn) {
+        unlockBtn.addEventListener('click', () => {
+          window.location.href = 'case-preview.html?case=' + encodeURIComponent(this.caseToken);
+        });
+      }
+
+      // Copy buttons
+      document.querySelectorAll('.copy-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const button = e.currentTarget;
+          const draftType = button.dataset.draft;
+          const draftContent = document.getElementById('draft-' + draftType).textContent;
+          this.copyToClipboard(draftContent);
+          this.showCopyFeedback(button);
+        });
+      });
+
+      // File upload
+      document.getElementById('add-document').addEventListener('click', () => {
+        document.getElementById('file-input').click();
+      });
+
+      document.getElementById('file-input').addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+          this.addDocuments(e.target.files);
+          e.target.value = '';
+        }
+      });
     }
 
-    // Copy buttons
-    document.querySelectorAll('.copy-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const draftType = e.target.dataset.draft;
-        const draftContent = document.getElementById('draft-' + draftType).textContent;
-        this.copyToClipboard(draftContent);
-      });
-    });
+    // Helper functions
+    formatValue(value) {
+      if (!value) return 'Not specified';
+      return value.charAt(0).toUpperCase() + value.slice(1).replace('-', ' ');
+    }
 
-    // File upload
-    document.getElementById('add-document').addEventListener('click', () => {
-      document.getElementById('file-input').click();
-    });
+    truncateText(text, maxLength) {
+      if (!text) return 'Not provided';
+      if (text.length <= maxLength) return text;
+      return text.substring(0, maxLength) + '...';
+    }
 
-    document.getElementById('file-input').addEventListener('change', (e) => {
-      if (e.target.files.length > 0) {
-        this.addDocuments(e.target.files);
-        e.target.value = ''; // Reset input
-      }
-    });
+    formatFileSize(bytes) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    }
+
+    isStripeVerified() {
+      return false; // placeholder
+    }
   }
 
-  // Helper functions
-  formatValue(value) {
-    if (!value) return 'Not specified';
-    return value.charAt(0).toUpperCase() + value.slice(1).replace('-', ' ');
-  }
-
-  truncateText(text, maxLength) {
-    if (!text) return 'Not provided';
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + '...';
-  }
-
-  formatFileSize(bytes) {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-  }
-
-  // Future Stripe support placeholder
-  isStripeVerified() {
-    return false; // TODO: Implement Stripe verification
-  }
-}
-
-// Initialize workspace when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-  new CaseWorkspace();
-});
+  // Initialize workspace when DOM is loaded
+  document.addEventListener('DOMContentLoaded', () => {
+    new CaseWorkspace();
+  });
 </script>
+
