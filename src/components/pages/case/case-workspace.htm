@@ -300,6 +300,35 @@
       this.bindEvents();
     }
 
+    async ensureAIOutputs() {
+      try {
+        const response = await fetch(
+          'https://yvdwrkhntyutpnklxsvz.supabase.co/functions/v1/generate-case-outputs',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + this.getAnonKey(),
+            },
+            body: JSON.stringify({ token: this.caseToken }),
+          }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          console.error('AI generation failed:', data);
+          return;
+        }
+
+        // Store AI output locally for rendering
+        this.aiOutput = data.output;
+      } catch (err) {
+        console.error('Error generating AI outputs:', err);
+      }
+    }
+
+
     async loadCaseFromURL() {
       const urlParams = new URLSearchParams(window.location.search);
       this.caseToken = urlParams.get('case');
@@ -336,6 +365,12 @@
           this.showPaymentConfirmation();
           await this.pollForPaymentConfirmation(30); // Poll for 30 seconds
         }
+
+        // 🔹 NEW: trigger AI generation after unlock
+        if (this.isUnlocked) {
+          await this.ensureAIOutputs();
+        }
+
 
         // ✅ NEW: If unlocked, fetch/generate outputs (summary/drafts/action plan)
         if (this.isUnlocked) {
