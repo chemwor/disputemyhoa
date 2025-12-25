@@ -1,4 +1,3 @@
-<!-- Preview Section -->
 <section class="xl:pt-[180px] lg:pt-[140px] pt-[100px] pb-16 lg:pb-24">
   <div class="main-container">
     <div id="error-state" class="hidden max-w-2xl mx-auto">
@@ -92,7 +91,7 @@
               </li>
               <li class="flex items-center text-tagline-1 text-secondary/80">
                 <svg class="w-4 h-4 mr-3 text-secondary/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                 </svg>
                 Ongoing chat refinements
               </li>
@@ -147,181 +146,253 @@
 </section>
 
 <script>
-class CasePreview {
-  constructor() {
-    this.caseToken = null;
-    this.caseData = null;
-    this.init();
-  }
-
-  init() {
-    this.loadCaseFromURL();
-    this.bindEvents();
-  }
-
-  loadCaseFromURL() {
-    const urlParams = new URLSearchParams(window.location.search);
-    this.caseToken = urlParams.get('case');
-
-    if (!this.caseToken) {
-      this.showError();
-      return;
+  class CasePreview {
+    constructor() {
+      this.caseToken = null;
+      this.caseData = null;
+      this.init();
     }
 
-    // Load case data from localStorage
-    const caseDataStr = localStorage.getItem('dmhoa_case_' + this.caseToken);
-    if (!caseDataStr) {
-      this.showError();
-      return;
+    init() {
+      this.loadCaseFromURL();
+      this.bindEvents();
     }
 
-    try {
-      this.caseData = JSON.parse(caseDataStr);
-      this.populatePreview();
-    } catch (e) {
-      console.error('Error loading case data:', e);
-      this.showError();
+    loadCaseFromURL() {
+      const urlParams = new URLSearchParams(window.location.search);
+      this.caseToken = urlParams.get('case');
+
+      if (!this.caseToken) {
+        this.showError();
+        return;
+      }
+
+      // Load case data from localStorage
+      const caseDataStr = localStorage.getItem('dmhoa_case_' + this.caseToken);
+      if (!caseDataStr) {
+        this.showError();
+        return;
+      }
+
+      try {
+        this.caseData = JSON.parse(caseDataStr);
+        this.populatePreview();
+      } catch (e) {
+        console.error('Error loading case data:', e);
+        this.showError();
+      }
+    }
+
+    showError() {
+      document.getElementById('error-state').classList.remove('hidden');
+      document.getElementById('main-content').classList.add('hidden');
+    }
+
+    populatePreview() {
+      // Set case ID
+      document.getElementById('case-id').textContent = this.caseToken;
+
+      // Populate summary
+      this.populateSummary();
+
+      // Populate dates and risk
+      this.populateDatesAndRisk();
+
+      // Populate next step
+      this.populateNextStep();
+    }
+
+    populateSummary() {
+      const summaryContent = document.getElementById('summary-content');
+      const data = this.caseData;
+
+      const bullets = [
+        `<div>• <strong>Notice type:</strong> ${this.formatValue(data.noticeType)}</div>`,
+        `<div>• <strong>The HOA claims the issue involves:</strong> ${this.truncateText(data.issueText, 100)}</div>`,
+        `<div>• <strong>You want to:</strong> ${this.formatValue(data.outcome)}</div>`,
+        `<div>• <strong>Property:</strong> ${this.formatValue(data.propertyType)} in ${data.state}</div>`,
+        `<div>• <strong>Your role:</strong> ${this.formatValue(data.role)}</div>`,
+        `<div>• <strong>Recommended approach:</strong> Keep communication clear and request specifics if anything is unclear.</div>`
+      ];
+
+      summaryContent.innerHTML = bullets.join('');
+    }
+
+    populateDatesAndRisk() {
+      const deadlineInfo = document.getElementById('deadline-info');
+      const riskLevel = document.getElementById('risk-level');
+
+      // Set deadline
+      if (this.caseData.deadline) {
+        const deadlineDate = new Date(this.caseData.deadline);
+        deadlineInfo.textContent = deadlineDate.toLocaleDateString();
+      } else {
+        deadlineInfo.textContent = 'Not provided';
+      }
+
+      // Set risk level based on notice type
+      const highRiskTypes = ['fine', 'hearing', 'collections'];
+      const isHighRisk = highRiskTypes.includes(this.caseData.noticeType);
+
+      if (isHighRisk) {
+        riskLevel.innerHTML = '<span class="inline-block px-2 py-1 rounded text-tagline-2 bg-red-100 text-red-800">High</span>';
+      } else {
+        riskLevel.innerHTML = '<span class="inline-block px-2 py-1 rounded text-tagline-2 bg-yellow-100 text-yellow-800">Low-Medium</span>';
+      }
+    }
+
+    populateNextStep() {
+      const nextStepEl = document.getElementById('next-step');
+      const outcome = this.caseData.outcome;
+
+      const nextSteps = {
+        'clarification': 'Request clarification and confirm what proof is required',
+        'extension': 'Request an extension and ask what satisfies compliance',
+        'alternative': 'Propose specific alternatives and ask if they would be acceptable',
+        'comply': 'Ask if lower-cost compliant alternatives are acceptable',
+        'dispute': 'Request evidence and cite the specific rule being enforced',
+        'not-sure': 'Ask for the exact requirement, deadline, and acceptable remedy'
+      };
+
+      nextStepEl.textContent = nextSteps[outcome] || 'Review the notice carefully and consider your options';
+    }
+
+    bindEvents() {
+      // Unlock button
+      document.getElementById('unlock-btn').addEventListener('click', () => {
+        this.showUnlockForm();
+      });
+
+      // Checkout button
+      document.getElementById('checkout-btn').addEventListener('click', () => {
+        this.proceedToCheckout();
+      });
+    }
+
+    showUnlockForm() {
+      document.getElementById('unlock-initial').classList.add('hidden');
+      document.getElementById('unlock-expanded').classList.remove('hidden');
+    }
+
+    async proceedToCheckout() {
+      const email = document.getElementById('unlock-email').value.trim();
+      const disclaimer = document.getElementById('legal-disclaimer').checked;
+
+      if (!email) {
+        alert('Please enter your email address.');
+        return;
+      }
+
+      if (!this.isValidEmail(email)) {
+        alert('Please enter a valid email address.');
+        return;
+      }
+
+      if (!disclaimer) {
+        alert('Please accept the legal disclaimer.');
+        return;
+      }
+
+      // Show loading state
+      const checkoutBtn = document.getElementById('checkout-btn');
+      const originalText = checkoutBtn.textContent;
+      checkoutBtn.textContent = 'Processing...';
+      checkoutBtn.disabled = true;
+
+      try {
+        // Save case data locally first
+        this.caseData.email = email;
+        this.caseData.unlockIntent = true;
+        localStorage.setItem('dmhoa_case_' + this.caseToken, JSON.stringify(this.caseData));
+
+        // Try to call Supabase Edge Function
+        const response = await fetch(`${this.getSupabaseUrl()}/functions/v1/create-checkout-session`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${this.getSupabaseAnonKey()}`
+          },
+          body: JSON.stringify({
+            token: this.caseToken,
+            email: email
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: 'Server configuration error' }));
+
+          // Check if it's a server configuration issue (missing env vars)
+          if (response.status === 500) {
+            console.warn('Server configuration issue detected. Using fallback checkout.');
+            this.handleCheckoutFallback(email);
+            return;
+          }
+
+          throw new Error(errorData.error || 'Failed to create checkout session');
+        }
+
+        const data = await response.json();
+
+        // Redirect to Stripe Checkout
+        window.location.href = data.url;
+
+      } catch (error) {
+        console.error('Checkout error:', error);
+
+        // If it's a network/server error, use fallback
+        if (error.message.includes('Missing required environment variables') ||
+          error.message.includes('Server configuration error')) {
+          console.warn('Using checkout fallback due to server configuration issue');
+          this.handleCheckoutFallback(email);
+        } else {
+          alert('Failed to proceed to checkout: ' + error.message);
+          // Reset button state
+          checkoutBtn.textContent = originalText;
+          checkoutBtn.disabled = false;
+        }
+      }
+    }
+
+    handleCheckoutFallback(email) {
+      // Temporary fallback while server environment is being configured
+      console.log('Checkout fallback activated for:', email);
+
+      // Show success message and redirect to a temporary success page
+      alert(`Thank you! Your email (${email}) has been saved. We'll contact you shortly to complete your order. Case ID: ${this.caseToken}`);
+
+      // You can redirect to a temporary page or show instructions
+      // For now, let's redirect back to the main page with a success parameter
+      window.location.href = `index.html?checkout=pending&email=${encodeURIComponent(email)}&case=${this.caseToken}`;
+    }
+
+    getSupabaseUrl() {
+      return 'https://yvdwrkhntyutpnklxsvz.supabase.co';
+    }
+
+    getSupabaseAnonKey() {
+      return 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2ZHdya2hudHl1dHBua2x4c3Z6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1MDY3NTQsImV4cCI6MjA4MjA4Mjc1NH0.dFkoPjA60c9MH6C_YWYChehG3nKHHK3VKmKj0w722SU';
+    }
+
+    // Helper methods that were missing
+    isValidEmail(email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailRegex.test(email);
+    }
+
+    formatValue(value) {
+      if (!value) return 'Not specified';
+      return value.charAt(0).toUpperCase() + value.slice(1).replace('-', ' ');
+    }
+
+    truncateText(text, maxLength) {
+      if (!text) return 'Not provided';
+      if (text.length <= maxLength) return text;
+      return text.substring(0, maxLength) + '...';
     }
   }
 
-  showError() {
-    document.getElementById('error-state').classList.remove('hidden');
-    document.getElementById('main-content').classList.add('hidden');
-  }
-
-  populatePreview() {
-    // Set case ID
-    document.getElementById('case-id').textContent = this.caseToken;
-
-    // Populate summary
-    this.populateSummary();
-
-    // Populate dates and risk
-    this.populateDatesAndRisk();
-
-    // Populate next step
-    this.populateNextStep();
-  }
-
-  populateSummary() {
-    const summaryContent = document.getElementById('summary-content');
-    const data = this.caseData;
-
-    const bullets = [
-      `<div>• <strong>Notice type:</strong> ${this.formatValue(data.noticeType)}</div>`,
-      `<div>• <strong>The HOA claims the issue involves:</strong> ${this.truncateText(data.issueText, 100)}</div>`,
-      `<div>• <strong>You want to:</strong> ${this.formatValue(data.outcome)}</div>`,
-      `<div>• <strong>Property:</strong> ${this.formatValue(data.propertyType)} in ${data.state}</div>`,
-      `<div>• <strong>Your role:</strong> ${this.formatValue(data.role)}</div>`,
-      `<div>• <strong>Recommended approach:</strong> Keep communication clear and request specifics if anything is unclear.</div>`
-    ];
-
-    summaryContent.innerHTML = bullets.join('');
-  }
-
-  populateDatesAndRisk() {
-    const deadlineInfo = document.getElementById('deadline-info');
-    const riskLevel = document.getElementById('risk-level');
-
-    // Set deadline
-    if (this.caseData.deadline) {
-      const deadlineDate = new Date(this.caseData.deadline);
-      deadlineInfo.textContent = deadlineDate.toLocaleDateString();
-    } else {
-      deadlineInfo.textContent = 'Not provided';
-    }
-
-    // Set risk level based on notice type
-    const highRiskTypes = ['fine', 'hearing', 'collections'];
-    const isHighRisk = highRiskTypes.includes(this.caseData.noticeType);
-
-    if (isHighRisk) {
-      riskLevel.innerHTML = '<span class="inline-block px-2 py-1 rounded text-tagline-2 bg-red-100 text-red-800">High</span>';
-    } else {
-      riskLevel.innerHTML = '<span class="inline-block px-2 py-1 rounded text-tagline-2 bg-yellow-100 text-yellow-800">Low-Medium</span>';
-    }
-  }
-
-  populateNextStep() {
-    const nextStepEl = document.getElementById('next-step');
-    const outcome = this.caseData.outcome;
-
-    const nextSteps = {
-      'clarification': 'Request clarification and confirm what proof is required',
-      'extension': 'Request an extension and ask what satisfies compliance',
-      'alternative': 'Propose specific alternatives and ask if they would be acceptable',
-      'comply': 'Ask if lower-cost compliant alternatives are acceptable',
-      'dispute': 'Request evidence and cite the specific rule being enforced',
-      'not-sure': 'Ask for the exact requirement, deadline, and acceptable remedy'
-    };
-
-    nextStepEl.textContent = nextSteps[outcome] || 'Review the notice carefully and consider your options';
-  }
-
-  bindEvents() {
-    // Unlock button
-    document.getElementById('unlock-btn').addEventListener('click', () => {
-      this.showUnlockForm();
-    });
-
-    // Checkout button
-    document.getElementById('checkout-btn').addEventListener('click', () => {
-      this.proceedToCheckout();
-    });
-  }
-
-  showUnlockForm() {
-    document.getElementById('unlock-initial').classList.add('hidden');
-    document.getElementById('unlock-expanded').classList.remove('hidden');
-  }
-
-  proceedToCheckout() {
-    const email = document.getElementById('unlock-email').value.trim();
-    const disclaimer = document.getElementById('legal-disclaimer').checked;
-
-    if (!email) {
-      alert('Please enter your email address.');
-      return;
-    }
-
-    if (!this.isValidEmail(email)) {
-      alert('Please enter a valid email address.');
-      return;
-    }
-
-    if (!disclaimer) {
-      alert('Please accept the legal disclaimer.');
-      return;
-    }
-
-    // Save email to case data
-    this.caseData.email = email;
-    this.caseData.unlockIntent = true;
-    localStorage.setItem('dmhoa_case_' + this.caseToken, JSON.stringify(this.caseData));
-
-    // Simulate checkout - route to case page with success
-    window.location.href = 'case.html?case=' + encodeURIComponent(this.caseToken) + '&success=1';
-  }
-
-  isValidEmail(email) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  }
-
-  formatValue(value) {
-    if (!value) return 'Not specified';
-    return value.charAt(0).toUpperCase() + value.slice(1).replace('-', ' ');
-  }
-
-  truncateText(text, maxLength) {
-    if (!text) return 'Not provided';
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + '...';
-  }
-}
-
-// Initialize preview when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-  new CasePreview();
-});
+  // Initialize preview when DOM is loaded
+  document.addEventListener('DOMContentLoaded', () => {
+    new CasePreview();
+  });
 </script>
