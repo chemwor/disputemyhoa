@@ -162,29 +162,76 @@
       const urlParams = new URLSearchParams(window.location.search);
       this.caseToken = urlParams.get('case');
 
+      // Add debugging
+      console.log('=== DEBUG: Case Loading ===');
+      console.log('URL:', window.location.href);
+      console.log('Case token:', this.caseToken);
+      console.log('All localStorage keys:', Object.keys(localStorage).filter(k => k.startsWith('dmhoa_')));
+
       if (!this.caseToken) {
+        console.log('No case token found');
         this.showError();
         return;
       }
 
       // Load case data from localStorage
       const caseDataStr = localStorage.getItem('dmhoa_case_' + this.caseToken);
+      console.log('Looking for key:', 'dmhoa_case_' + this.caseToken);
+      console.log('Found data:', caseDataStr ? 'YES' : 'NO');
+
       if (!caseDataStr) {
-        this.showError();
+        // Try to find any recent cases as fallback
+        console.log('No case data found, checking for recent cases...');
+        const allKeys = Object.keys(localStorage);
+        const caseKeys = allKeys.filter(key => key.startsWith('dmhoa_case_'));
+
+        if (caseKeys.length > 0) {
+          console.log('Found other cases:', caseKeys);
+          this.showRecoveryOptions(caseKeys);
+        } else {
+          console.log('No cases found at all');
+          this.showError();
+        }
         return;
       }
 
       try {
         this.caseData = JSON.parse(caseDataStr);
+        console.log('Successfully loaded case data:', this.caseData);
         this.populatePreview();
       } catch (e) {
-        console.error('Error loading case data:', e);
+        console.error('Error parsing case data:', e);
         this.showError();
       }
     }
 
     showError() {
       document.getElementById('error-state').classList.remove('hidden');
+      document.getElementById('main-content').classList.add('hidden');
+    }
+
+    showRecoveryOptions(caseKeys) {
+      const errorDiv = document.getElementById('error-state');
+      errorDiv.innerHTML = `
+        <div class="bg-white rounded-[20px] border border-stroke-1 p-8 text-center">
+          <h1 class="text-heading-3 mb-4">Case Not Found</h1>
+          <p class="text-tagline-1 text-secondary/80 mb-6">We couldn't find case "${this.caseToken}", but found these recent cases:</p>
+          <div class="space-y-3 mb-6">
+            ${caseKeys.slice(0, 3).map(key => {
+              const token = key.replace('dmhoa_case_', '');
+              return `
+                <button onclick="window.location.href='case-preview.html?case=${encodeURIComponent(token)}'"
+                        class="block w-full px-4 py-3 bg-background-3 hover:bg-stroke-1 rounded-lg text-left transition-colors">
+                  <div class="text-tagline-1 font-medium">Case ${token.substring(0, 20)}...</div>
+                  <div class="text-tagline-2 text-secondary/60">Click to load this case</div>
+                </button>
+              `;
+            }).join('')}
+          </div>
+          <a href="start-case.html" class="inline-block px-8 py-3 bg-secondary text-white rounded-lg hover:bg-secondary/90 transition-colors">Start New Case</a>
+        </div>
+      `;
+      errorDiv.classList.remove('hidden');
       document.getElementById('main-content').classList.add('hidden');
     }
 
