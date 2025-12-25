@@ -361,41 +361,47 @@ class CaseWorkspace {
 
   async pollForPaymentConfirmation(maxSeconds = 30) {
     const interval = 2000; // 2 seconds
-    const maxAttempts = maxSeconds / (interval / 1000);
+    const maxAttempts = Math.ceil((maxSeconds * 1000) / interval);
     let attempts = 0;
 
-    const poll = async () => {
-      attempts++;
+    return new Promise((resolve) => {
+      const tick = async () => {
+        attempts++;
 
-      try {
-        const caseData = await this.fetchCaseFromSupabase();
+        try {
+          const caseData = await this.fetchCaseFromSupabase();
 
-        if (caseData && caseData.unlocked) {
-          this.isUnlocked = true;
-          this.hidePaymentConfirmation();
-          this.populateWorkspace();
-          return true;
+          if (caseData && caseData.unlocked) {
+            this.isUnlocked = true;
+            this.caseData = caseData.payload || {}; // ✅ important
+            this.hidePaymentConfirmation();
+            this.populateWorkspace();
+            return resolve(true);
+          }
+
+          if (attempts >= maxAttempts) {
+            this.hidePaymentConfirmation();
+            this.showPaymentTimeout();
+            return resolve(false);
+          }
+
+          setTimeout(tick, interval);
+        } catch (error) {
+          console.error('Error polling for payment confirmation:', error);
+
+          if (attempts >= maxAttempts) {
+            this.hidePaymentConfirmation();
+            return resolve(false);
+          }
+
+          setTimeout(tick, interval);
         }
+      };
 
-        if (attempts >= maxAttempts) {
-          this.hidePaymentConfirmation();
-          this.showPaymentTimeout();
-          return false;
-        }
-
-        setTimeout(poll, interval);
-      } catch (error) {
-        console.error('Error polling for payment confirmation:', error);
-        if (attempts >= maxAttempts) {
-          this.hidePaymentConfirmation();
-        } else {
-          setTimeout(poll, interval);
-        }
-      }
-    };
-
-    await poll();
+      tick();
+    });
   }
+
 
   showLoading() {
     document.getElementById('error-state').classList.add('hidden');
