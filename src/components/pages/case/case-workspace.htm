@@ -406,7 +406,17 @@
           await this.loadOrGenerateOutputs();
         }
 
-        this.loadMessages();
+        if (this.isUnlocked) {
+          await this.loadMessagesFromDB();
+        } else {
+          this.messages = [];
+        }
+
+        if (this.isUnlocked) {
+          await this.ensureInitialAssistantMessage();
+        }
+
+
         this.loadDocuments();
         this.populateWorkspace();
         this.hideLoading();
@@ -957,6 +967,126 @@ Sincerely,
       });
     }
 
+
+
+    async loadMessagesFromDB() {
+      if (!this.caseToken) return;
+
+      const res = await fetch(
+        `${this.getSupabaseUrl()}/functions/v1/read-messages?token=${encodeURIComponent(this.caseToken)}&limit=50`,
+        {
+          method: 'GET',
+          headers: {
+            'apikey': this.getSupabaseAnonKey(),
+            'Authorization': `Bearer ${this.getSupabaseAnonKey()}`
+          }
+        }
+      );
+
+      if (!res.ok) throw new Error('Failed to read messages');
+      const json = await res.json();
+
+      this.messages = (json.messages || []).map(m => ({
+        role: m.role,
+        text: m.content,
+        ts: new Date(m.created_at).getTime()
+      }));
+    }
+
+    buildInitialAssistantMessage() {
+      const data = this.caseData || {};
+      const out = this.outputs || {};
+
+      const outcomeLabel = this.formatValue(data.outcome);
+      const noticeLabel = this.formatValue(data.noticeType);
+
+      // Prefer AI summary if available
+      const summary = (out.letter_summary || '').trim() ||
+        `You’re dealing with an HOA ${noticeLabel.toLowerCase()} and your desired outcome is: ${outcomeLabel}.`;
+
+      const topRisks = Array.isArray(out?.risks_and_deadlines?.risks)
+        ? out.risks_and_deadlines.risks.slice(0, 3)
+        : [];
+
+      const nextSteps = Array.isArray(out?.action_plan)
+        ? out.action_plan.slice(0, 3)
+        : [];
+
+      const lines = [];
+
+      lines.push(`Hi — I reviewed your case details.`);
+      lines.push(``);
+      lines.push(`Summary:`);
+      lines.push(`${summary}`);
+
+      if (topRisks.length) {
+        lines.push(``);
+        lines.push(`Top risks to watch:`);
+        topRisks.forEach(r => lines.push(`- ${r}`));
+      }
+
+      if (nextSteps.length) {
+        lines.push(``);
+        lines.push(`Suggested next steps:`);
+        nextSteps.forEach(s => lines.push(`- ${s}`));
+      }
+
+      lines.push(``);
+      lines.push(`Use this chat to:`);
+      lines.push(`- Ask questions about deadlines, fines, hearings, or next steps`);
+      lines.push(`- Paste the HOA’s reply so I can draft a response back`);
+      lines.push(`- Add missing info (dates, photos, vendor notes, prior emails, etc.)`);
+      lines.push(``);
+      lines.push(`If you paste the HOA’s latest message here, I can write a calm, professional reply that requests the exact rule/covenant citation and confirms what “compliant” looks like.`);
+
+      return lines.join('\n');
+    }
+
+    async saveMessageToDB(role, content) {
+      const res = await fetch(`${this.getSupabaseUrl()}/functions/v1/create-message`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': this.getSupabaseAnonKey(),
+          'Authorization': `Bearer ${this.getSupabaseAnonKey()}`
+        },
+        body: JSON.stringify({
+          token: this.caseToken,
+          role,
+          content
+        })
+      });
+
+      if (!res.ok) {
+        const txt = await res.text().catch(() => '');
+        throw new Error(txt || 'Failed to save message');
+      }
+
+      return await res.json().catch(() => ({}));
+    }
+
+    async ensureInitialAssistantMessage() {
+      // Only run when unlocked + chat is empty
+      if (!this.isUnlocked) return;
+      if (!Array.isArray(this.messages) || this.messages.length > 0) return;
+
+      const msg = this.buildInitialAssistantMessage();
+
+      try {
+        // Insert into DB so it persists across refreshes / returning users
+        await this.saveMessageToDB('assistant', msg);
+
+        // Add locally for immediate UI render
+        this.messages.push({ role: 'assistant', text: msg, ts: Date.now() });
+      } catch (e) {
+        console.error('ensureInitialAssistantMessage error:', e);
+
+        // Fallback: still show it locally even if DB insert fails
+        this.messages.push({ role: 'assistant', text: msg, ts: Date.now() });
+      }
+    }
+
+
     // ==========
     // Chat (local)
     // ==========
@@ -999,7 +1129,10 @@ Sincerely,
         bubble.className = `max-w-[80%] px-4 py-2 rounded-lg text-tagline-2 ${
           msg.role === 'user' ? 'bg-ns-green text-white' : 'bg-background-3 text-secondary'
         }`;
+        // bubble.textContent = msg.text;
+        bubble.style.whiteSpace = 'pre-wrap';
         bubble.textContent = msg.text;
+
 
         msgDiv.appendChild(bubble);
         container.appendChild(msgDiv);
@@ -1008,20 +1141,79 @@ Sincerely,
       container.scrollTop = container.scrollHeight;
     }
 
-    sendMessage() {
+    async sendMessage() {
       const input = document.getElementById('chat-input');
+      const sendBtn = document.getElementById('send-chat');
       const text = input.value.trim();
       if (!text) return;
 
+      if (!this.isUnlocked) {
+        this.messages.push({ role: 'assistant', text: "Unlock to chat about your case.", ts: Date.now() });
+        this.renderMessages();
+        input.value = '';
+        return;
+      }
+
+      // Optimistic UI: show user message immediately
       this.messages.push({ role: 'user', text, ts: Date.now() });
-
-      const response = this.generateAssistantResponse(text);
-      this.messages.push({ role: 'assistant', text: response, ts: Date.now() });
-
-      this.saveMessages();
       this.renderMessages();
       input.value = '';
+
+      // Disable while sending
+      sendBtn.disabled = true;
+      sendBtn.classList.add('opacity-60', 'cursor-not-allowed');
+
+      // Optional: show typing indicator
+      const typingId = 'typing-' + Date.now();
+      this.messages.push({ role: 'assistant', text: 'Typing…', ts: Date.now(), _tmpId: typingId });
+      this.renderMessages();
+
+      try {
+        const res = await fetch(`${this.getSupabaseUrl()}/functions/v1/send-message`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': this.getSupabaseAnonKey(),
+            'Authorization': `Bearer ${this.getSupabaseAnonKey()}`
+          },
+          body: JSON.stringify({
+            token: this.caseToken,
+            content: text
+          })
+        });
+
+        if (!res.ok) {
+          const txt = await res.text().catch(() => '');
+          throw new Error(txt || 'Chat failed');
+        }
+
+        const json = await res.json();
+        const assistantText = json?.assistant_message?.content || "Got it. What would you like to do next?";
+
+        // Remove typing bubble
+        this.messages = this.messages.filter(m => m._tmpId !== typingId);
+
+        // Add real assistant reply
+        this.messages.push({ role: 'assistant', text: assistantText, ts: Date.now() });
+        this.renderMessages();
+      } catch (err) {
+        console.error('sendMessage error:', err);
+
+        // Remove typing bubble
+        this.messages = this.messages.filter(m => m._tmpId !== typingId);
+
+        this.messages.push({
+          role: 'assistant',
+          text: "Sorry — I couldn't send that. Please try again.",
+          ts: Date.now()
+        });
+        this.renderMessages();
+      } finally {
+        sendBtn.disabled = false;
+        sendBtn.classList.remove('opacity-60', 'cursor-not-allowed');
+      }
     }
+
 
     generateAssistantResponse(userText) {
       if (!this.isUnlocked) {
