@@ -116,16 +116,41 @@
           <div class="space-y-6">
             <div>
               <label for="notice-type" class="block text-tagline-1 font-medium mb-2">Notice Type <span class="text-red-500">*</span></label>
-              <select id="notice-type" name="noticeType" class="w-full px-4 py-3 border border-stroke-1 rounded-lg focus:outline-none focus:border-ns-green">
+              <select
+                id="notice-type"
+                name="noticeType"
+                class="w-full px-4 py-3 border border-stroke-1 rounded-lg focus:outline-none focus:border-ns-green"
+              >
                 <option value="">Select notice type</option>
-                <option value="violation">Violation notice</option>
-                <option value="fine">Fine</option>
-                <option value="hearing">Hearing notice</option>
-                <option value="architectural">Architectural request</option>
-                <option value="maintenance">Maintenance issue</option>
-                <option value="collections">Collections</option>
-                <option value="other">Other</option>
+
+                <optgroup label="General Notices">
+                  <option value="violation">Violation notice</option>
+                  <option value="warning">Warning / courtesy notice</option>
+                  <option value="maintenance">Maintenance issue</option>
+                  <option value="architectural">Architectural / ARC notice</option>
+                </optgroup>
+
+                <optgroup label="Financial / Enforcement">
+                  <option value="fine">Fine or penalty notice</option>
+                  <option value="late-fee">Late fee notice</option>
+                  <option value="collections">Collections notice</option>
+                  <option value="assessment">Assessment or special assessment</option>
+                </optgroup>
+
+                <optgroup label="Escalation / Legal">
+                  <option value="hearing">Hearing notice</option>
+                  <option value="final-notice">Final notice before enforcement</option>
+                  <option value="attorney">Attorney or legal action notice</option>
+                  <option value="lien">Lien or foreclosure warning</option>
+                </optgroup>
+
+                <optgroup label="Informational / Other">
+                  <option value="inspection">Inspection notice</option>
+                  <option value="rule-change">Rule or covenant change notice</option>
+                  <option value="other">Other / unclear</option>
+                </optgroup>
               </select>
+
             </div>
 
             <div>
@@ -136,14 +161,33 @@
 
             <div>
               <label for="outcome" class="block text-tagline-1 font-medium mb-2">What do you want to do? <span class="text-red-500">*</span></label>
-              <select id="outcome" name="outcome" class="w-full px-4 py-3 border border-stroke-1 rounded-lg focus:outline-none focus:border-ns-green">
+              <select id="outcome" name="outcome" class="w-full px-4 py-3 border border-stroke-1 rounded-lg">
                 <option value="">Select desired outcome</option>
-                <option value="clarification">Get clarification</option>
-                <option value="extension">Request an extension</option>
-                <option value="alternative">Propose an alternative</option>
-                <option value="comply">Comply at lowest cost</option>
-                <option value="dispute">Dispute the notice</option>
-                <option value="not-sure">Not sure</option>
+
+                <optgroup label="Understand / Clarify">
+                  <option value="clarification">Get clarification</option>
+                  <option value="request-evidence">Request proof or documentation</option>
+                </optgroup>
+
+                <optgroup label="Delay / Timing">
+                  <option value="extension">Request an extension</option>
+                  <option value="pause-fines">Pause fines while resolving</option>
+                </optgroup>
+
+                <optgroup label="Resolve">
+                  <option value="comply">Comply at lowest cost</option>
+                  <option value="alternative">Propose an alternative solution</option>
+                  <option value="confirm-compliance">Confirm existing compliance</option>
+                </optgroup>
+
+                <optgroup label="Challenge / Escalate">
+                  <option value="dispute">Dispute the notice</option>
+                  <option value="negotiate-fine">Negotiate or reduce a fine</option>
+                  <option value="request-hearing">Request a hearing or appeal</option>
+                  <option value="prepare-escalation">Prepare for attorney escalation</option>
+                </optgroup>
+
+                <option value="not-sure">Not sure yet</option>
               </select>
             </div>
           </div>

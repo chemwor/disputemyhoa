@@ -16,7 +16,8 @@
       <div class="mb-8 lg:mb-12">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 class="text-heading-3 lg:text-heading-2 mb-2">Case Workspace</h1>
+            <h1 id="workspace-title" class="text-heading-3 lg:text-heading-2 mb-2">Case Workspace</h1>
+            <p id="workspace-subtitle" class="text-tagline-2 text-secondary/60 hidden"></p>
             <div class="flex items-center gap-3">
               <p class="text-tagline-2 text-secondary/60">Case ID: <span id="case-id" class="font-mono"></span></p>
               <span id="status-badge" class="inline-block px-2 py-1 rounded text-tagline-2 bg-green-100 text-green-800">Unlocked</span>
@@ -71,15 +72,15 @@
             <div id="drafts-locked" class="text-center py-8">
               <div class="opacity-50 mb-4">
                 <div class="bg-background-3 rounded-lg p-4 mb-3">
-                  <h3 class="text-tagline-1 font-medium mb-2">Request Clarification</h3>
+                  <h3 id="draft-title-clarification-locked" class="text-tagline-1 font-medium mb-2">Request Clarification</h3>
                   <p class="text-tagline-2 text-secondary/60 blur-sm">Dear [HOA Name], I received your notice regarding...</p>
                 </div>
                 <div class="bg-background-3 rounded-lg p-4 mb-3">
-                  <h3 class="text-tagline-1 font-medium mb-2">Request Extension</h3>
+                  <h3 id="draft-title-extension-locked" class="text-tagline-1 font-medium mb-2">Request Extension</h3>
                   <p class="text-tagline-2 text-secondary/60 blur-sm">I am writing to request an extension for...</p>
                 </div>
                 <div class="bg-background-3 rounded-lg p-4">
-                  <h3 class="text-tagline-1 font-medium mb-2">Confirm Compliance</h3>
+                  <h3 id="draft-title-compliance-locked" class="text-tagline-1 font-medium mb-2">Confirm Compliance</h3>
                   <p class="text-tagline-2 text-secondary/60 blur-sm">Thank you for bringing this to my attention...</p>
                 </div>
               </div>
@@ -93,7 +94,7 @@
             <div id="drafts-unlocked" class="hidden space-y-4">
               <div class="bg-background-3 rounded-lg p-4">
                 <div class="flex justify-between items-start mb-2">
-                  <h3 class="text-tagline-1 font-medium">Request Clarification</h3>
+                  <h3 id="draft-title-clarification" class="text-tagline-1 font-medium">Request Clarification</h3>
                   <button class="copy-btn px-3 py-1 text-tagline-2 border border-stroke-1 rounded hover:bg-background-3 transition-colors" data-draft="clarification">
                     Copy
                   </button>
@@ -105,7 +106,7 @@
 
               <div class="bg-background-3 rounded-lg p-4">
                 <div class="flex justify-between items-start mb-2">
-                  <h3 class="text-tagline-1 font-medium">Request Extension</h3>
+                  <h3 id="draft-title-extension" class="text-tagline-1 font-medium">Request Extension</h3>
                   <button class="copy-btn px-3 py-1 text-tagline-2 border border-stroke-1 rounded hover:bg-background-3 transition-colors" data-draft="extension">
                     Copy
                   </button>
@@ -117,7 +118,7 @@
 
               <div class="bg-background-3 rounded-lg p-4">
                 <div class="flex justify-between items-start mb-2">
-                  <h3 class="text-tagline-1 font-medium">Confirm Compliance</h3>
+                  <h3 id="draft-title-compliance" class="text-tagline-1 font-medium">Confirm Compliance</h3>
                   <button class="copy-btn px-3 py-1 text-tagline-2 border border-stroke-1 rounded hover:bg-background-3 transition-colors" data-draft="compliance">
                     Copy
                   </button>
@@ -283,6 +284,63 @@
       this.messages = [];
       this.documents = [];
 
+      // UI copy map for dynamic customization
+      this.UI_COPY = {
+        outcome: {
+          clarification: {
+            pageTitle: "Request Clarification",
+            pageSubtitle: "Get the HOA to state the exact rule, evidence, and required remedy.",
+            draftTitles: {
+              clarification: "Clarification Request Letter",
+              extension: "Extension Request Letter",
+              compliance: "Compliance Confirmation Letter"
+            }
+          },
+          extension: {
+            pageTitle: "Request an Extension",
+            pageSubtitle: "Ask for more time while you gather info and avoid escalation.",
+            draftTitles: {
+              clarification: "Clarify Requirements (Backup)",
+              extension: "Extension Request Letter",
+              compliance: "Compliance Confirmation Letter"
+            }
+          },
+          comply: {
+            pageTitle: "Confirm Compliance",
+            pageSubtitle: "Resolve it fast and reduce the chance of fines or hearings.",
+            draftTitles: {
+              clarification: "Confirm Approved Remedy (Optional)",
+              extension: "Extension Request (If Needed)",
+              compliance: "Compliance Confirmation Letter"
+            }
+          },
+          dispute: {
+            pageTitle: "Dispute the Notice",
+            pageSubtitle: "Respond respectfully while preserving your position and timeline.",
+            draftTitles: {
+              clarification: "Dispute / Clarification Letter",
+              extension: "Extension Request (Preserve Rights)",
+              compliance: "Good-Faith Compliance (Fallback)"
+            }
+          },
+          "not-sure": {
+            pageTitle: "Case Workspace",
+            pageSubtitle: "Review your options and choose the best next step.",
+            draftTitles: {
+              clarification: "Request Clarification",
+              extension: "Request Extension",
+              compliance: "Confirm Compliance"
+            }
+          }
+        },
+        noticeTypeLabel: {
+          fine: "Fine Notice",
+          violation: "Violation Notice",
+          hearing: "Hearing Notice",
+          warning: "Warning Notice"
+        }
+      };
+
       this.init();
     }
 
@@ -340,6 +398,9 @@
           await this.pollForPaymentConfirmation(30);
         }
 
+        // Apply dynamic UI copy after case data is loaded
+        this.applyDynamicUICopy();
+
         // If unlocked, fetch/generate outputs
         if (this.isUnlocked) {
           await this.loadOrGenerateOutputs();
@@ -395,6 +456,9 @@
 
               // NEW: now that we unlocked, get outputs
               await this.loadOrGenerateOutputs();
+
+              // Apply dynamic UI copy after unlocking
+              this.applyDynamicUICopy();
 
               this.populateWorkspace();
               return resolve(true);
@@ -1098,11 +1162,63 @@ Sincerely,
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
     }
+
+    // ==========
+    // Dynamic UI Copy
+    // ==========
+    applyDynamicUICopy() {
+      const data = this.caseData || {};
+      const outcomeKey = data.outcome || 'not-sure';
+      const noticeTypeKey = data.noticeType || '';
+
+      // Get UI copy configuration for this outcome
+      const cfg = this.UI_COPY.outcome[outcomeKey] || this.UI_COPY.outcome['not-sure'];
+      const noticeLabel = this.UI_COPY.noticeTypeLabel[noticeTypeKey] || '';
+
+      // Update workspace title
+      const workspaceTitleEl = document.getElementById('workspace-title');
+      if (workspaceTitleEl) {
+        if (noticeLabel) {
+          workspaceTitleEl.innerHTML = `<span>${cfg.pageTitle} • </span>${noticeLabel}`;
+        } else {
+          workspaceTitleEl.textContent = cfg.pageTitle;
+        }
+      }
+
+      // Update workspace subtitle
+      const workspaceSubtitleEl = document.getElementById('workspace-subtitle');
+      if (workspaceSubtitleEl) {
+        if (cfg.pageSubtitle) {
+          workspaceSubtitleEl.textContent = cfg.pageSubtitle;
+          workspaceSubtitleEl.classList.remove('hidden');
+        } else {
+          workspaceSubtitleEl.classList.add('hidden');
+        }
+      }
+
+      // Update draft titles for both locked and unlocked states
+      const draftTitleIds = [
+        'draft-title-clarification',
+        'draft-title-clarification-locked',
+        'draft-title-extension',
+        'draft-title-extension-locked',
+        'draft-title-compliance',
+        'draft-title-compliance-locked'
+      ];
+
+      draftTitleIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          const draftType = id.includes('clarification') ? 'clarification' :
+                           id.includes('extension') ? 'extension' : 'compliance';
+          const title = cfg.draftTitles[draftType] || el.textContent;
+          el.textContent = title;
+        }
+      });
+    }
   }
 
   document.addEventListener('DOMContentLoaded', () => {
     new CaseWorkspace();
   });
 </script>
-
-
