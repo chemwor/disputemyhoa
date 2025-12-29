@@ -7,27 +7,138 @@ FAQ section
     <div class="text-center space-y-5">
       <span data-ns-animate data-delay="0.2" class="badge badge-cyan">FAQ</span>
       <div class="space-y-3 text-center">
-        <h2 data-ns-animate data-delay="0.3">Commonly asked questions</h2>
+        <h2 data-ns-animate data-delay="0.3">Frequently asked questions about HOA disputes</h2>
         <p data-ns-animate data-delay="0.4" class="max-w-[600px] mx-auto">
-          By offering concise and informative responses, this section helps users find solutions
-          without the need to contact customer support, saving time
+          Get answers to common questions about resolving HOA violations, disputes, and navigating homeowner association issues with AI-powered assistance.
         </p>
       </div>
     </div>
 
-    <!-- tab group  -->
-    <Component src="./faq-tab.htm" />
+    <!-- FAQ Tabs and Content Container -->
+    <div class="pt-[70px]" data-ns-animate data-delay="0.5">
+      <!-- Tab Navigation -->
+      <div class="flex justify-center mb-10">
+        <div class="inline-flex bg-background-2 dark:bg-background-7 p-2 rounded-[20px] gap-2">
+          <button
+            class="faq-tab-btn active px-6 py-3 rounded-[16px] text-tagline-2 font-medium transition-all whitespace-nowrap"
+            data-tab="general"
+          >
+            General
+          </button>
+          <button
+            class="faq-tab-btn px-6 py-3 rounded-[16px] text-tagline-2 font-medium transition-all whitespace-nowrap"
+            data-tab="violations"
+          >
+            Violations & Notices
+          </button>
+          <button
+            class="faq-tab-btn px-6 py-3 rounded-[16px] text-tagline-2 font-medium transition-all whitespace-nowrap"
+            data-tab="disputes"
+          >
+            Dispute Process
+          </button>
+          <button
+            class="faq-tab-btn px-6 py-3 rounded-[16px] text-tagline-2 font-medium transition-all whitespace-nowrap"
+            data-tab="privacy"
+          >
+            Privacy
+          </button>
+          <button
+            class="faq-tab-btn px-6 py-3 rounded-[16px] text-tagline-2 font-medium transition-all whitespace-nowrap"
+            data-tab="terms"
+          >
+            Terms & Conditions
+          </button>
+        </div>
+      </div>
 
-    <!-- general tab  -->
-    <Component src="./general-faq.htm" />
+      <!-- Tab Content -->
+      <div class="faq-content">
+        <!-- General Tab Content -->
+        <div id="general-content" class="faq-tab-content active">
+          <Component src="./general-faq.htm" />
+        </div>
 
-    <!-- changelog tab  -->
-    <Component src="./change-log-faq.htm" />
+        <!-- Violations Tab Content -->
+        <div id="violations-content" class="faq-tab-content hidden">
+          <Component src="./violations-faq.htm" />
+        </div>
 
-    <!-- privacy tab  -->
-    <Component src="./privacy.htm" />
+        <!-- Disputes Tab Content -->
+        <div id="disputes-content" class="faq-tab-content hidden">
+          <Component src="./disputes-faq.htm" />
+        </div>
 
-    <!-- terms & condition tab  -->
-    <Component src="./terms-condition-faq.htm" />
+        <!-- Privacy Tab Content -->
+        <div id="privacy-content" class="faq-tab-content hidden">
+          <Component src="./privacy.htm" />
+        </div>
+
+        <!-- Terms Tab Content -->
+        <div id="terms-content" class="faq-tab-content hidden">
+          <Component src="./terms-condition-faq.htm" />
+        </div>
+      </div>
+    </div>
   </div>
 </section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const tabButtons = document.querySelectorAll('.faq-tab-btn');
+  const tabContents = document.querySelectorAll('.faq-tab-content');
+
+  tabButtons.forEach(button => {
+    button.addEventListener('click', function() {
+      const targetTab = this.getAttribute('data-tab');
+
+      // Remove active class from all buttons and contents
+      tabButtons.forEach(btn => btn.classList.remove('active'));
+      tabContents.forEach(content => {
+        content.classList.add('hidden');
+        content.classList.remove('active');
+      });
+
+      // Add active class to clicked button
+      this.classList.add('active');
+
+      // Show corresponding content
+      const targetContent = document.getElementById(targetTab + '-content');
+      if (targetContent) {
+        targetContent.classList.remove('hidden');
+        targetContent.classList.add('active');
+      }
+    });
+  });
+});
+</script>
+
+<style>
+.faq-tab-btn {
+  color: rgba(var(--secondary), 0.6);
+  background: transparent;
+}
+
+.faq-tab-btn.active {
+  background: white;
+  color: var(--secondary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dark .faq-tab-btn.active {
+  background: var(--background-6);
+  color: var(--accent);
+}
+
+.faq-tab-content {
+  transition: opacity 0.3s ease-in-out;
+}
+
+.faq-tab-content.hidden {
+  display: none;
+}
+
+.faq-tab-content.active {
+  display: block;
+}
+</style>
