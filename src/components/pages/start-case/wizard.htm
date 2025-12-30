@@ -582,13 +582,13 @@ class StartCaseWizard {
         method: 'POST',
         headers: {
           'apikey': this.supabaseKey,
-          'Content-Type': 'application/json',
-          'x-doc-secret': 'dmhoa_9baf6a13e2f847d0b52f' // put this in your site env/config
+          'Authorization': `Bearer ${this.supabaseKey}`,
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          token,
+          token: token,
           storage_path: storagePath,
-          filename,
+          filename: filename,
           mime_type: mimeType
         })
       });
