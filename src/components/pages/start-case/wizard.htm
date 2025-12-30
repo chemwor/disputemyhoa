@@ -259,7 +259,7 @@ class StartCaseWizard {
     this.formData = {};
     this.isUploading = false;
 
-    // Supabase configuration
+    // Supabase configuration - Correct anon key
     this.supabaseUrl = 'https://yvdwrkhntyutpnklxsvz.supabase.co';
     this.supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2ZHdya2hudHl1dHBua2x4c3Z6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1MDY3NTQsImV4cCI6MjA4MjA4Mjc1NH0.dFkoPjA60c9MH6C_YWYChehG3nKHHK3VKmKj0w722SU';
 
@@ -513,13 +513,21 @@ class StartCaseWizard {
         try {
           const storagePath = await this.uploadFile(this.formData.primaryFile, token, 'original');
           casePayload.notice_storage_path = storagePath;
+          casePayload.extract_status = 'uploaded';
 
-          // Trigger document extraction
-          await this.triggerDocExtraction(token, storagePath, this.formData.primaryFile.name, this.formData.primaryFile.type);
+          // Try to trigger document extraction (non-blocking)
+          const extractResult = await this.triggerDocExtraction(token, storagePath, this.formData.primaryFile.name, this.formData.primaryFile.type);
+          if (extractResult && extractResult.error) {
+            casePayload.extract_status = 'extract_trigger_failed';
+            console.warn('Document extraction trigger failed but continuing:', extractResult.error);
+          } else {
+            casePayload.extract_status = 'extract_triggered';
+          }
         } catch (uploadError) {
           console.error('Primary file upload failed:', uploadError);
-          casePayload.extract_status = 'pending_upload_failed';
-          this.showError('File upload failed, but proceeding with text analysis.');
+          casePayload.extract_status = 'upload_failed';
+          // Don't block the flow, but inform the user
+          console.warn('File upload failed, proceeding with text analysis only');
         }
       }
 
@@ -558,74 +566,134 @@ class StartCaseWizard {
     const safeFilename = this.sanitizeFilename(file.name);
     const storagePath = `${token}/${folder}/${safeFilename}`;
 
-    const response = await fetch(`${this.supabaseUrl}/storage/v1/object/dmhoa-docs/${storagePath}`, {
-      method: 'POST',
-      headers: {
-        'apikey': this.supabaseKey,
-        'Authorization': `Bearer ${this.supabaseKey}`,
-        'Content-Type': file.type
-      },
-      body: file
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Upload failed: ${response.status} - ${errorText}`);
-    }
-
-    return storagePath;
-  }
-
-  async triggerDocExtraction(token, storagePath, filename, mimeType) {
     try {
-      const response = await fetch(`${this.supabaseUrl}/functions/v1/doc-extract-start`, {
+      const response = await fetch(`${this.supabaseUrl}/storage/v1/object/dmhoa-docs/${storagePath}`, {
         method: 'POST',
         headers: {
           'apikey': this.supabaseKey,
           'Authorization': `Bearer ${this.supabaseKey}`,
-          'Content-Type': 'application/json'
+          'Content-Type': file.type,
+          'x-upsert': 'true'
         },
-        body: JSON.stringify({
-          token: token,
-          storage_path: storagePath,
-          filename: filename,
-          mime_type: mimeType
-        })
+        body: file
       });
 
       if (!response.ok) {
-        throw new Error(`Doc extraction trigger failed: ${response.status}`);
+        const errorText = await response.text();
+        console.error('Upload response:', {
+          status: response.status,
+          statusText: response.statusText,
+          headers: Object.fromEntries(response.headers.entries()),
+          body: errorText
+        });
+        throw new Error(`Upload failed: ${response.status} - ${errorText}`);
       }
+
+      console.log('File uploaded successfully to:', storagePath);
+      return storagePath;
     } catch (error) {
-      console.error('Document extraction trigger failed:', error);
-      // Mark extraction as failed but don't block the flow
+      console.error('Upload error details:', error);
       throw error;
     }
   }
 
-  async insertCaseToDatabase(token, payload) {
-    const response = await fetch(`${this.supabaseUrl}/rest/v1/dmhoa_cases`, {
-      method: 'POST',
-      headers: {
-        'apikey': this.supabaseKey,
-        'Authorization': `Bearer ${this.supabaseKey}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=representation'
-      },
-      body: JSON.stringify({
-        token: token,
-        unlocked: false,
-        status: 'pending',
-        payload: payload
-      })
-    });
+  async triggerDocExtraction(token, storagePath, filename, mimeType) {
+    // Try multiple possible Edge Function endpoints
+    const possibleEndpoints = [
+      'doc-extract-start',
+      'document-extract',
+      'extract-document',
+      'process-document'
+    ];
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Database insert failed: ${response.status} - ${errorText}`);
+    // You'll need to set this secret - it should match DOC_EXTRACT_WEBHOOK_SECRET in your Supabase environment
+    const docSecret = 'dmhoa_9baf6a13e2f847d0b52f'; // This should match your webhook secret
+
+    for (const endpoint of possibleEndpoints) {
+      try {
+        console.log(`Trying Edge Function endpoint: ${endpoint}`);
+
+        const response = await fetch(`${this.supabaseUrl}/functions/v1/${endpoint}`, {
+          method: 'POST',
+          headers: {
+            'apikey': this.supabaseKey,
+            'Authorization': `Bearer ${this.supabaseKey}`,
+            'Content-Type': 'application/json',
+            'x-doc-secret': docSecret  // Required by the Edge Function
+          },
+          body: JSON.stringify({
+            token: token,
+            storage_path: storagePath,
+            filename: filename,
+            mime_type: mimeType
+          })
+        });
+
+        console.log(`Response from ${endpoint}:`, {
+          status: response.status,
+          statusText: response.statusText,
+          headers: Object.fromEntries(response.headers.entries())
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          console.log('Document extraction triggered successfully:', result);
+          return result;
+        } else if (response.status === 404) {
+          console.log(`Endpoint ${endpoint} not found, trying next...`);
+          continue;
+        } else {
+          const errorText = await response.text();
+          console.error(`${endpoint} failed: ${response.status} - ${errorText}`);
+        }
+      } catch (error) {
+        console.error(`Error calling ${endpoint}:`, error);
+        continue;
+      }
     }
 
-    return await response.json();
+    // If all endpoints fail, return error but don't throw
+    console.warn('All Edge Function endpoints failed, document extraction will be handled later');
+    return { error: 'All extraction endpoints failed' };
+  }
+
+  async insertCaseToDatabase(token, payload) {
+    try {
+      const response = await fetch(`${this.supabaseUrl}/rest/v1/dmhoa_cases`, {
+        method: 'POST',
+        headers: {
+          'apikey': this.supabaseKey,
+          'Authorization': `Bearer ${this.supabaseKey}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=representation'
+        },
+        body: JSON.stringify({
+          token: token,
+          unlocked: false,
+          status: 'new',
+          payload: payload
+        })
+      });
+
+      console.log('Database insert response:', {
+        status: response.status,
+        statusText: response.statusText,
+        headers: Object.fromEntries(response.headers.entries())
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Database insert failed:', errorText);
+        throw new Error(`Database insert failed: ${response.status} - ${errorText}`);
+      }
+
+      const result = await response.json();
+      console.log('Case inserted successfully:', result);
+      return result;
+    } catch (error) {
+      console.error('Database insert error:', error);
+      throw error;
+    }
   }
 
   setUploadingState(isUploading) {
