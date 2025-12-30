@@ -589,9 +589,146 @@ class StartCaseWizard {
     }
   }
 
-  async updateCasePayload(token, payload) {
+  async uploadFile(file, token, folder) {
+    const safeFilename = this.sanitizeFilename(file.name);
+    const storagePath = `${token}/${folder}/${safeFilename}`;
+
+    try {
+      const response = await fetch(`${this.supabaseUrl}/storage/v1/object/dmhoa-docs/${storagePath}`, {
+        method: 'POST',
+        headers: {
+          'apikey': this.supabaseKey,
+          'Authorization': `Bearer ${this.supabaseKey}`,
+          'Content-Type': file.type,
+          'x-upsert': 'true'
+        },
+        body: file
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Upload response:', {
+          status: response.status,
+          statusText: response.statusText,
+          headers: Object.fromEntries(response.headers.entries()),
+          body: errorText
+        });
+        throw new Error(`Upload failed: ${response.status} - ${errorText}`);
+      }
+
+      console.log('File uploaded successfully to:', storagePath);
+      return storagePath;
+    } catch (error) {
+      console.error('Upload error details:', error);
+      throw error;
+    }
+  }
+
+  async triggerDocExtraction(token, storagePath, filename, mimeType) {
+    // You'll need to set this secret - it should match DOC_EXTRACT_WEBHOOK_SECRET in your Supabase environment
+    const docSecret = 'dmhoa-extract-2025'; // This should match your webhook secret
+
+    try {
+      console.log(`Attempting to trigger document extraction for token: ${token}`);
+      console.log('Request details:', {
+        endpoint: `${this.supabaseUrl}/functions/v1/doc-extract-start`,
+        token,
+        storagePath,
+        filename,
+        mimeType,
+        docSecret: docSecret.substring(0, 8) + '...' // Don't log full secret
+      });
+
+      const response = await fetch(`${this.supabaseUrl}/functions/v1/doc-extract-start`, {
+        method: 'POST',
+        headers: {
+          'apikey': this.supabaseKey,
+          'Authorization': `Bearer ${this.supabaseKey}`,
+          'Content-Type': 'application/json',
+          'x-doc-secret': docSecret  // Required by the Edge Function
+        },
+        body: JSON.stringify({
+          token: token,
+          storage_path: storagePath,
+          filename: filename,
+          mime_type: mimeType
+        })
+      });
+
+      console.log(`doc-extract-start response:`, {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok,
+        headers: Object.fromEntries(response.headers.entries())
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Document extraction triggered successfully:', result);
+        return result;
+      } else {
+        const errorText = await response.text();
+        console.error(`doc-extract-start failed: ${response.status} - ${errorText}`);
+
+        // Log specific error details based on status
+        if (response.status === 404) {
+          console.warn('Edge Function not found - may not be deployed properly');
+        } else if (response.status === 401) {
+          console.error('Unauthorized - check x-doc-secret header matches WEBHOOK_SECRET');
+        } else if (response.status === 500) {
+          console.error('Server error in Edge Function - check environment variables');
+        }
+
+        return { error: `Edge Function call failed: ${response.status} - ${errorText}` };
+      }
+    } catch (error) {
+      console.error(`Network error calling doc-extract-start:`, error);
+      return { error: `Network error: ${error.message}` };
+    }
+  }
+
+  async insertCaseToDatabase(token, payload) {
     try {
       const response = await fetch(`${this.supabaseUrl}/rest/v1/dmhoa_cases`, {
+        method: 'POST',
+        headers: {
+          'apikey': this.supabaseKey,
+          'Authorization': `Bearer ${this.supabaseKey}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=representation'
+        },
+        body: JSON.stringify({
+          token: token,
+          unlocked: false,
+          status: 'new',
+          payload: payload
+        })
+      });
+
+      console.log('Database insert response:', {
+        status: response.status,
+        statusText: response.statusText,
+        headers: Object.fromEntries(response.headers.entries())
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Database insert failed:', errorText);
+        throw new Error(`Database insert failed: ${response.status} - ${errorText}`);
+      }
+
+      const result = await response.json();
+      console.log('Case inserted successfully:', result);
+      return result;
+    } catch (error) {
+      console.error('Database insert error:', error);
+      throw error;
+    }
+  }
+
+  async updateCasePayload(token, payload) {
+    try {
+      const response = await fetch(`${this.supabaseUrl}/rest/v1/dmhoa_cases?token=eq.${token}`, {
         method: 'PATCH',
         headers: {
           'apikey': this.supabaseKey,
@@ -605,23 +742,50 @@ class StartCaseWizard {
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Failed to update case payload:', errorText);
+        throw new Error(`Update failed: ${response.status} - ${errorText}`);
       }
+
+      const result = await response.json();
+      console.log('Case payload updated successfully:', result);
+      return result;
     } catch (error) {
       console.error('Error updating case payload:', error);
+      throw error;
     }
   }
 
   async updateExtractStatus(token, status, error = null) {
     try {
-      const updateData = {
-        payload: {
-          extract_status: status,
-          extract_updated_at: new Date().toISOString()
+      // First, get the current case to merge with existing payload
+      const getCurrentResponse = await fetch(`${this.supabaseUrl}/rest/v1/dmhoa_cases?token=eq.${token}&select=payload`, {
+        headers: {
+          'apikey': this.supabaseKey,
+          'Authorization': `Bearer ${this.supabaseKey}`,
+          'Content-Type': 'application/json'
         }
+      });
+
+      if (!getCurrentResponse.ok) {
+        console.error('Failed to get current case for status update');
+        return;
+      }
+
+      const currentCase = await getCurrentResponse.json();
+      if (!currentCase || currentCase.length === 0) {
+        console.error('Case not found for status update');
+        return;
+      }
+
+      // Merge with existing payload
+      const currentPayload = currentCase[0].payload || {};
+      const updatedPayload = {
+        ...currentPayload,
+        extract_status: status,
+        extract_updated_at: new Date().toISOString()
       };
 
       if (error) {
-        updateData.payload.extract_error = error.slice(0, 500);
+        updatedPayload.extract_error = error.slice(0, 500);
       }
 
       const response = await fetch(`${this.supabaseUrl}/rest/v1/dmhoa_cases?token=eq.${token}`, {
@@ -631,15 +795,48 @@ class StartCaseWizard {
           'Authorization': `Bearer ${this.supabaseKey}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(updateData)
+        body: JSON.stringify({ payload: updatedPayload })
       });
 
       if (!response.ok) {
-        console.error('Failed to update extract status:', await response.text());
+        const errorText = await response.text();
+        console.error('Failed to update extract status:', errorText);
+      } else {
+        console.log('Extract status updated successfully:', status);
       }
     } catch (error) {
       console.error('Error updating extract status:', error);
     }
+  }
+
+  setUploadingState(isUploading) {
+    this.isUploading = isUploading;
+    this.updateUI();
+  }
+
+  sanitizeFilename(filename) {
+    // Remove or replace unsafe characters
+    return filename.replace(/[^a-zA-Z0-9.-]/g, '_').replace(/_{2,}/g, '_');
+  }
+
+  generateRandomString(length) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  }
+
+  formatValue(value) {
+    if (!value) return 'Not specified';
+    return value.charAt(0).toUpperCase() + value.slice(1).replace('-', ' ');
+  }
+
+  truncateText(text, maxLength) {
+    if (!text) return 'Not provided';
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
   }
 }
 
