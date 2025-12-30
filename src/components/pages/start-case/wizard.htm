@@ -689,23 +689,20 @@ class StartCaseWizard {
 
   async insertCaseToDatabase(token, payload) {
     try {
-      const response = await fetch(`${this.supabaseUrl}/rest/v1/dmhoa_cases`, {
+      const response = await fetch(`${this.supabaseUrl}/functions/v1/save-case`, {
         method: 'POST',
         headers: {
           'apikey': this.supabaseKey,
           'Authorization': `Bearer ${this.supabaseKey}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=representation'
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           token: token,
-          unlocked: false,
-          status: 'new',
           payload: payload
         })
       });
 
-      console.log('Database insert response:', {
+      console.log('Save case Edge Function response:', {
         status: response.status,
         statusText: response.statusText,
         headers: Object.fromEntries(response.headers.entries())
@@ -713,43 +710,46 @@ class StartCaseWizard {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Database insert failed:', errorText);
-        throw new Error(`Database insert failed: ${response.status} - ${errorText}`);
+        console.error('Save case Edge Function failed:', errorText);
+        throw new Error(`Save case failed: ${response.status} - ${errorText}`);
       }
 
       const result = await response.json();
-      console.log('Case inserted successfully:', result);
+      console.log('Case saved successfully via Edge Function:', result);
       return result;
     } catch (error) {
-      console.error('Database insert error:', error);
+      console.error('Save case Edge Function error:', error);
       throw error;
     }
   }
 
   async updateCasePayload(token, payload) {
     try {
-      const response = await fetch(`${this.supabaseUrl}/rest/v1/dmhoa_cases?token=eq.${token}`, {
-        method: 'PATCH',
+      // Use the same save-case Edge Function for updates (it does upsert)
+      const response = await fetch(`${this.supabaseUrl}/functions/v1/save-case`, {
+        method: 'POST',
         headers: {
           'apikey': this.supabaseKey,
           'Authorization': `Bearer ${this.supabaseKey}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=representation'
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ payload: payload })
+        body: JSON.stringify({
+          token: token,
+          payload: payload
+        })
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Failed to update case payload:', errorText);
+        console.error('Failed to update case payload via Edge Function:', errorText);
         throw new Error(`Update failed: ${response.status} - ${errorText}`);
       }
 
       const result = await response.json();
-      console.log('Case payload updated successfully:', result);
+      console.log('Case payload updated successfully via Edge Function:', result);
       return result;
     } catch (error) {
-      console.error('Error updating case payload:', error);
+      console.error('Error updating case payload via Edge Function:', error);
       throw error;
     }
   }
