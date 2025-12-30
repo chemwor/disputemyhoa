@@ -43,27 +43,58 @@ serve(async (req) => {
       )
     }
 
-    // Upsert case data (insert or update if exists)
-    const { data, error } = await supabase
+    // Check if case already exists
+    const { data: existingCase } = await supabase
       .from('dmhoa_cases')
-      .upsert(
-        {
+      .select('id, payload, created_at')
+      .eq('token', token)
+      .single()
+
+    let result;
+    if (existingCase) {
+      // Case exists - update with merged payload
+      const mergedPayload = {
+        ...existingCase.payload,
+        ...payload
+      }
+
+      const { data, error } = await supabase
+        .from('dmhoa_cases')
+        .update({
+          payload: mergedPayload,
+          updated_at: new Date().toISOString()
+        })
+        .eq('token', token)
+        .select()
+
+      if (error) {
+        console.error('Database update error:', error)
+        throw new Error('Failed to update case data')
+      }
+
+      result = data
+      console.log('Case updated:', token)
+    } else {
+      // Case doesn't exist - create new
+      const { data, error } = await supabase
+        .from('dmhoa_cases')
+        .insert({
           token: token,
           payload: payload,
           status: 'new',
           unlocked: false,
-          created_at: new Date().toISOString()
-        },
-        {
-          onConflict: 'token',
-          ignoreDuplicates: false
-        }
-      )
-      .select()
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .select()
 
-    if (error) {
-      console.error('Database upsert error:', error)
-      throw new Error('Failed to save case data')
+      if (error) {
+        console.error('Database insert error:', error)
+        throw new Error('Failed to create case data')
+      }
+
+      result = data
+      console.log('Case created:', token)
     }
 
     // Log the save event for audit
@@ -72,7 +103,7 @@ serve(async (req) => {
         .from('dmhoa_events')
         .insert({
           token: token,
-          type: 'case_saved',
+          type: existingCase ? 'case_updated' : 'case_created',
           data: {
             payload_keys: Object.keys(payload),
             timestamp: new Date().toISOString()
@@ -83,7 +114,7 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ success: true, case_id: data[0]?.id }),
+      JSON.stringify({ success: true, case_id: result[0]?.id }),
       {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
