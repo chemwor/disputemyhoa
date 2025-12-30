@@ -184,15 +184,20 @@
         // Show loading state
         this.showLoading();
 
-        const response = await fetch(`/supabase/functions/v1/read-case?token=${encodeURIComponent(this.caseToken)}`, {
+        // Use the full Supabase function URL (not relative path)
+        const response = await fetch(`https://yvdwrkhntyutpnklxsvz.supabase.co/functions/v1/read-case?token=${encodeURIComponent(this.caseToken)}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2ZHdya2hudHl1dHBua2x4c3Z6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1MDY3NTQsImV4cCI6MjA4MjA4Mjc1NH0.dFkoPjA60c9MH6C_YWYChehG3nKHHK3VKmKj0w722SU`
           }
         });
 
+        console.log('API response status:', response.status);
+        console.log('API response URL:', response.url);
+
         if (!response.ok) {
-          throw new Error(`API error: ${response.status}`);
+          throw new Error(`API error: ${response.status} - ${response.statusText}`);
         }
 
         const result = await response.json();
