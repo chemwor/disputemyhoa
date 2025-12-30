@@ -6,14 +6,19 @@ const leaflet = {
       return;
     }
 
-    // Initialize the map
-    const leafletMap = L.map('map').setView([39.8283, -98.5795], 6);
+    // Initialize the map - Updated to point to Smyrna, GA
+    const leafletMap = L.map('map').setView([33.8839, -84.5144], 13);
 
     // Add tile layer with better styling
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 18,
       minZoom: 3,
     }).addTo(leafletMap);
+
+    // Add a marker for Smyrna, GA
+    L.marker([33.8839, -84.5144]).addTo(leafletMap)
+      .bindPopup('Smyrna, GA<br>Our Location')
+      .openPopup();
 
     // Handle window resize for responsive design
     window.addEventListener('resize', () => {

@@ -257,6 +257,12 @@ class StartCaseWizard {
     this.currentStep = 1;
     this.totalSteps = 4;
     this.formData = {};
+    this.isUploading = false;
+
+    // Supabase configuration
+    this.supabaseUrl = 'https://yvdwrkhntyutpnklxsvz.supabase.co';
+    this.supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2ZHdya2hudHl1dHBua2x4c3Z6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1MDY3NTQsImV4cCI6MjA4MjA4Mjc1NH0.dFkoPjA60c9MH6C_YWYChehG3nKHHK3VKmKj0w722SU';
+
     this.init();
   }
 
@@ -387,7 +393,6 @@ class StartCaseWizard {
   }
 
   showError(message) {
-    // Simple alert for now - could be enhanced with better UI
     alert(message);
   }
 
@@ -408,6 +413,8 @@ class StartCaseWizard {
     if (this.currentStep === 3) {
       this.formData.hasUpload = document.getElementById('file-upload').files.length > 0;
       this.formData.pastedText = document.getElementById('paste-text').value.trim();
+      this.formData.primaryFile = document.getElementById('file-upload').files[0] || null;
+      this.formData.additionalFiles = Array.from(document.getElementById('additional-docs').files || []);
     }
   }
 
@@ -443,6 +450,15 @@ class StartCaseWizard {
       nextBtn.classList.remove('hidden');
       generateBtn.classList.add('hidden');
     }
+
+    // Update generate button state
+    if (this.isUploading) {
+      generateBtn.textContent = 'Uploading...';
+      generateBtn.disabled = true;
+    } else {
+      generateBtn.textContent = 'Generate Free Preview';
+      generateBtn.disabled = false;
+    }
   }
 
   populateReview() {
@@ -462,38 +478,164 @@ class StartCaseWizard {
     reviewSummary.innerHTML = summaryItems.join('');
   }
 
-  generatePreview() {
+  async generatePreview() {
     if (!this.validateCurrentStep()) {
       return;
     }
 
     this.collectCurrentStepData();
 
-    // Generate case token
-    const token = 'case_' + Date.now() + '_' + this.generateRandomString(6);
+    try {
+      this.setUploadingState(true);
 
-    // Create case object
-    const caseData = {
-      token: token,
-      createdAt: new Date().toISOString(),
-      propertyType: this.formData.propertyType,
-      role: this.formData.role,
-      state: this.formData.state,
-      deadline: this.formData.deadline || null,
-      noticeType: this.formData.noticeType,
-      issueText: this.formData.issueText,
-      outcome: this.formData.outcome,
-      hasUpload: this.formData.hasUpload,
-      pastedText: this.formData.pastedText,
-      email: null,
-      unlocked: false
-    };
+      // Generate case token
+      const token = 'case_' + Date.now() + '_' + this.generateRandomString(6);
 
-    // Save to localStorage
-    localStorage.setItem('dmhoa_case_' + token, JSON.stringify(caseData));
+      // Create case payload
+      const casePayload = {
+        token: token,
+        createdAt: new Date().toISOString(),
+        propertyType: this.formData.propertyType,
+        role: this.formData.role,
+        state: this.formData.state,
+        deadline: this.formData.deadline || null,
+        noticeType: this.formData.noticeType,
+        issueText: this.formData.issueText,
+        outcome: this.formData.outcome,
+        pastedText: this.formData.pastedText || null,
+        email: null,
+        extract_status: 'pending',
+        additional_docs: []
+      };
 
-    // Route to preview page
-    window.location.href = 'case-preview.html?case=' + encodeURIComponent(token);
+      // Handle primary file upload if present
+      if (this.formData.primaryFile) {
+        try {
+          const storagePath = await this.uploadFile(this.formData.primaryFile, token, 'original');
+          casePayload.notice_storage_path = storagePath;
+
+          // Trigger document extraction
+          await this.triggerDocExtraction(token, storagePath, this.formData.primaryFile.name, this.formData.primaryFile.type);
+        } catch (uploadError) {
+          console.error('Primary file upload failed:', uploadError);
+          casePayload.extract_status = 'pending_upload_failed';
+          this.showError('File upload failed, but proceeding with text analysis.');
+        }
+      }
+
+      // Handle additional files upload (MVP: just upload and store metadata)
+      if (this.formData.additionalFiles.length > 0) {
+        for (const file of this.formData.additionalFiles) {
+          try {
+            const storagePath = await this.uploadFile(file, token, 'additional');
+            casePayload.additional_docs.push({
+              filename: file.name,
+              storage_path: storagePath,
+              mime_type: file.type,
+              uploaded_at: new Date().toISOString()
+            });
+          } catch (additionalUploadError) {
+            console.error('Additional file upload failed:', additionalUploadError);
+            // Continue with other files
+          }
+        }
+      }
+
+      // Insert case into database
+      await this.insertCaseToDatabase(token, casePayload);
+
+      // Redirect to preview page
+      window.location.href = 'case-preview.html?case=' + encodeURIComponent(token);
+
+    } catch (error) {
+      console.error('Generate preview failed:', error);
+      this.setUploadingState(false);
+      this.showError('Failed to generate preview. Please try again.');
+    }
+  }
+
+  async uploadFile(file, token, folder) {
+    const safeFilename = this.sanitizeFilename(file.name);
+    const storagePath = `${token}/${folder}/${safeFilename}`;
+
+    const response = await fetch(`${this.supabaseUrl}/storage/v1/object/dmhoa-docs/${storagePath}`, {
+      method: 'POST',
+      headers: {
+        'apikey': this.supabaseKey,
+        'Authorization': `Bearer ${this.supabaseKey}`,
+        'Content-Type': file.type
+      },
+      body: file
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Upload failed: ${response.status} - ${errorText}`);
+    }
+
+    return storagePath;
+  }
+
+  async triggerDocExtraction(token, storagePath, filename, mimeType) {
+    try {
+      const response = await fetch(`${this.supabaseUrl}/functions/v1/doc-extract-start`, {
+        method: 'POST',
+        headers: {
+          'apikey': this.supabaseKey,
+          'Authorization': `Bearer ${this.supabaseKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          token: token,
+          storage_path: storagePath,
+          filename: filename,
+          mime_type: mimeType
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Doc extraction trigger failed: ${response.status}`);
+      }
+    } catch (error) {
+      console.error('Document extraction trigger failed:', error);
+      // Mark extraction as failed but don't block the flow
+      throw error;
+    }
+  }
+
+  async insertCaseToDatabase(token, payload) {
+    const response = await fetch(`${this.supabaseUrl}/rest/v1/dmhoa_cases`, {
+      method: 'POST',
+      headers: {
+        'apikey': this.supabaseKey,
+        'Authorization': `Bearer ${this.supabaseKey}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify({
+        token: token,
+        unlocked: false,
+        status: 'new',
+        payload: payload
+      })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Database insert failed: ${response.status} - ${errorText}`);
+    }
+
+    return await response.json();
+  }
+
+  setUploadingState(isUploading) {
+    this.isUploading = isUploading;
+    this.updateUI();
+  }
+
+  sanitizeFilename(filename) {
+    // Remove or replace unsafe characters
+    return filename.replace(/[^a-zA-Z0-9.-]/g, '_').replace(/_{2,}/g, '_');
   }
 
   generateRandomString(length) {
