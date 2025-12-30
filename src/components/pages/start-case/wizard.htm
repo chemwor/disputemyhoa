@@ -508,31 +508,54 @@ class StartCaseWizard {
         additional_docs: []
       };
 
+      // Insert case into database FIRST and WAIT for completion
+      console.log('Creating case in database...');
+      await this.insertCaseToDatabase(token, casePayload);
+      console.log('Case created successfully:', token);
+
       // Handle primary file upload if present
       if (this.formData.primaryFile) {
         try {
+          console.log('Uploading primary file...');
           const storagePath = await this.uploadFile(this.formData.primaryFile, token, 'original');
+          console.log('File uploaded to:', storagePath);
+
           casePayload.notice_storage_path = storagePath;
           casePayload.extract_status = 'uploaded';
 
-          // Try to trigger document extraction (non-blocking)
-          const extractResult = await this.triggerDocExtraction(token, storagePath, this.formData.primaryFile.name, this.formData.primaryFile.type);
-          if (extractResult && extractResult.error) {
-            casePayload.extract_status = 'extract_trigger_failed';
-            console.warn('Document extraction trigger failed but continuing:', extractResult.error);
-          } else {
-            casePayload.extract_status = 'extract_triggered';
-          }
+          // Update the database with the storage path and WAIT for completion
+          console.log('Updating case with storage path...');
+          await this.updateCasePayload(token, casePayload);
+          console.log('Case updated with storage path');
+
+          // NOW trigger document extraction after ensuring case exists with storage path
+          console.log('Triggering document extraction...');
+          setTimeout(async () => {
+            try {
+              const extractResult = await this.triggerDocExtraction(token, storagePath, this.formData.primaryFile.name, this.formData.primaryFile.type);
+              if (extractResult && extractResult.error) {
+                console.warn('Document extraction trigger failed:', extractResult.error);
+                this.updateExtractStatus(token, 'extract_trigger_failed', extractResult.error);
+              } else {
+                console.log('Document extraction triggered successfully');
+                this.updateExtractStatus(token, 'extract_triggered');
+              }
+            } catch (error) {
+              console.warn('Document extraction trigger error:', error);
+              this.updateExtractStatus(token, 'extract_trigger_failed', error.message);
+            }
+          }, 1000); // Wait 1 second to ensure database consistency
+
         } catch (uploadError) {
           console.error('Primary file upload failed:', uploadError);
           casePayload.extract_status = 'upload_failed';
-          // Don't block the flow, but inform the user
-          console.warn('File upload failed, proceeding with text analysis only');
+          await this.updateCasePayload(token, casePayload);
         }
       }
 
-      // Handle additional files upload (MVP: just upload and store metadata)
+      // Handle additional files upload
       if (this.formData.additionalFiles.length > 0) {
+        console.log('Uploading additional files...');
         for (const file of this.formData.additionalFiles) {
           try {
             const storagePath = await this.uploadFile(file, token, 'additional');
@@ -547,12 +570,16 @@ class StartCaseWizard {
             // Continue with other files
           }
         }
+
+        // Update database with additional docs
+        if (casePayload.additional_docs.length > 0) {
+          await this.updateCasePayload(token, casePayload);
+          console.log('Updated case with additional docs');
+        }
       }
 
-      // Insert case into database
-      await this.insertCaseToDatabase(token, casePayload);
-
-      // Redirect to preview page
+      // Redirect to preview page immediately - don't wait for extraction
+      console.log('Redirecting to case preview...');
       window.location.href = 'case-preview.html?case=' + encodeURIComponent(token);
 
     } catch (error) {
@@ -562,168 +589,57 @@ class StartCaseWizard {
     }
   }
 
-  async uploadFile(file, token, folder) {
-    const safeFilename = this.sanitizeFilename(file.name);
-    const storagePath = `${token}/${folder}/${safeFilename}`;
-
-    try {
-      const response = await fetch(`${this.supabaseUrl}/storage/v1/object/dmhoa-docs/${storagePath}`, {
-        method: 'POST',
-        headers: {
-          'apikey': this.supabaseKey,
-          'Authorization': `Bearer ${this.supabaseKey}`,
-          'Content-Type': file.type,
-          'x-upsert': 'true'
-        },
-        body: file
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Upload response:', {
-          status: response.status,
-          statusText: response.statusText,
-          headers: Object.fromEntries(response.headers.entries()),
-          body: errorText
-        });
-        throw new Error(`Upload failed: ${response.status} - ${errorText}`);
-      }
-
-      console.log('File uploaded successfully to:', storagePath);
-      return storagePath;
-    } catch (error) {
-      console.error('Upload error details:', error);
-      throw error;
-    }
-  }
-
-  async triggerDocExtraction(token, storagePath, filename, mimeType) {
-    // Try multiple possible Edge Function endpoints
-    const possibleEndpoints = [
-      'doc-extract-start',
-      'document-extract',
-      'extract-document',
-      'process-document'
-    ];
-
-    // You'll need to set this secret - it should match DOC_EXTRACT_WEBHOOK_SECRET in your Supabase environment
-    const docSecret = 'dmhoa_9baf6a13e2f847d0b52f'; // This should match your webhook secret
-
-    for (const endpoint of possibleEndpoints) {
-      try {
-        console.log(`Trying Edge Function endpoint: ${endpoint}`);
-
-        const response = await fetch(`${this.supabaseUrl}/functions/v1/${endpoint}`, {
-          method: 'POST',
-          headers: {
-            'apikey': this.supabaseKey,
-            'Authorization': `Bearer ${this.supabaseKey}`,
-            'Content-Type': 'application/json',
-            'x-doc-secret': docSecret  // Required by the Edge Function
-          },
-          body: JSON.stringify({
-            token: token,
-            storage_path: storagePath,
-            filename: filename,
-            mime_type: mimeType
-          })
-        });
-
-        console.log(`Response from ${endpoint}:`, {
-          status: response.status,
-          statusText: response.statusText,
-          headers: Object.fromEntries(response.headers.entries())
-        });
-
-        if (response.ok) {
-          const result = await response.json();
-          console.log('Document extraction triggered successfully:', result);
-          return result;
-        } else if (response.status === 404) {
-          console.log(`Endpoint ${endpoint} not found, trying next...`);
-          continue;
-        } else {
-          const errorText = await response.text();
-          console.error(`${endpoint} failed: ${response.status} - ${errorText}`);
-        }
-      } catch (error) {
-        console.error(`Error calling ${endpoint}:`, error);
-        continue;
-      }
-    }
-
-    // If all endpoints fail, return error but don't throw
-    console.warn('All Edge Function endpoints failed, document extraction will be handled later');
-    return { error: 'All extraction endpoints failed' };
-  }
-
-  async insertCaseToDatabase(token, payload) {
+  async updateCasePayload(token, payload) {
     try {
       const response = await fetch(`${this.supabaseUrl}/rest/v1/dmhoa_cases`, {
-        method: 'POST',
+        method: 'PATCH',
         headers: {
           'apikey': this.supabaseKey,
           'Authorization': `Bearer ${this.supabaseKey}`,
           'Content-Type': 'application/json',
           'Prefer': 'return=representation'
         },
-        body: JSON.stringify({
-          token: token,
-          unlocked: false,
-          status: 'new',
-          payload: payload
-        })
-      });
-
-      console.log('Database insert response:', {
-        status: response.status,
-        statusText: response.statusText,
-        headers: Object.fromEntries(response.headers.entries())
+        body: JSON.stringify({ payload: payload })
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Database insert failed:', errorText);
-        throw new Error(`Database insert failed: ${response.status} - ${errorText}`);
+        console.error('Failed to update case payload:', errorText);
+      }
+    } catch (error) {
+      console.error('Error updating case payload:', error);
+    }
+  }
+
+  async updateExtractStatus(token, status, error = null) {
+    try {
+      const updateData = {
+        payload: {
+          extract_status: status,
+          extract_updated_at: new Date().toISOString()
+        }
+      };
+
+      if (error) {
+        updateData.payload.extract_error = error.slice(0, 500);
       }
 
-      const result = await response.json();
-      console.log('Case inserted successfully:', result);
-      return result;
+      const response = await fetch(`${this.supabaseUrl}/rest/v1/dmhoa_cases?token=eq.${token}`, {
+        method: 'PATCH',
+        headers: {
+          'apikey': this.supabaseKey,
+          'Authorization': `Bearer ${this.supabaseKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updateData)
+      });
+
+      if (!response.ok) {
+        console.error('Failed to update extract status:', await response.text());
+      }
     } catch (error) {
-      console.error('Database insert error:', error);
-      throw error;
+      console.error('Error updating extract status:', error);
     }
-  }
-
-  setUploadingState(isUploading) {
-    this.isUploading = isUploading;
-    this.updateUI();
-  }
-
-  sanitizeFilename(filename) {
-    // Remove or replace unsafe characters
-    return filename.replace(/[^a-zA-Z0-9.-]/g, '_').replace(/_{2,}/g, '_');
-  }
-
-  generateRandomString(length) {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let result = '';
-    for (let i = 0; i < length; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return result;
-  }
-
-  formatValue(value) {
-    if (!value) return 'Not specified';
-    return value.charAt(0).toUpperCase() + value.slice(1).replace('-', ' ');
-  }
-
-  truncateText(text, maxLength) {
-    if (!text) return 'Not provided';
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + '...';
   }
 }
 
