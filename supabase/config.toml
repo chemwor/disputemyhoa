@@ -8,7 +8,15 @@
     },
     "read-case": {
       "verify_jwt": false
+    },
+    "doc-extract-start": {
+      "verify_jwt": false
+    },
+    "save-case": {
+      "verify_jwt": false
+    },
+    "test-doc-extract": {
+      "verify_jwt": false
     }
   }
 }
-
