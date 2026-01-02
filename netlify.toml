@@ -12,11 +12,17 @@ command = "npm run build"
 # Node.js version for the build
 NODE_VERSION = "18"
 
-# Redirect rules for SPA-like behavior (optional)
+# Redirect rules - Remove the problematic 404 redirect
+# [[redirects]]
+# from = "/*"
+# to = "/index.html"
+# status = 404
+
+# Add proper redirects for clean URLs (optional)
 [[redirects]]
-from = "/*"
-to = "/index.html"
-status = 404
+from = "/case-preview"
+to = "/case-preview.html"
+status = 200
 
 # Custom headers for better performance
 [[headers]]
