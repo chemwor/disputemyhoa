@@ -211,6 +211,9 @@
         this.caseData = result.payload;
         console.log('Successfully loaded case data from API:', this.caseData);
 
+        // Track conversion if this is a paid case access
+        this.trackPaidCaseAccess();
+
         // Hide loading and populate preview
         this.hideLoading();
         this.populatePreview();
@@ -356,6 +359,16 @@
         return;
       }
 
+      // Track conversion event - Lead form submission
+      if (typeof gtag !== 'undefined') {
+        gtag('event', 'conversion', {
+          'send_to': 'AW-17007905582/submit_lead_form',
+          'event_category': 'Lead Generation',
+          'event_label': 'Email Submitted Before Checkout'
+        });
+        console.log('Lead form conversion tracked for email:', email);
+      }
+
       // Show loading state
       const checkoutBtn = document.getElementById('checkout-btn');
       const originalText = checkoutBtn.textContent;
@@ -447,7 +460,301 @@
     }
 
     getSupabaseAnonKey() {
-      return 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2ZHdya2hudHl1dHBua2x4c3Z6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1MDY3NTQsImV4cCI6MjA4MjA4Mjc1NH0.dFkoPjA60c9MH6C_YWYChehG3nKHHK3VKmKj0w722SU';
+      return 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2ZHdya2hudHl1dHBua2x4c3Z6Iiwicm9zZSI6ImFub24iLCJpYXQiOjE3NjY1MDY3NTQsImV4cCI6MjA4MjA4Mjc1NH0.dFkoPjA60c9MH6C_YWYChehG3nKHHK3VKmKj0w722SU';
+    }
+
+    // Helper methods that were missing
+    isValidEmail(email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailRegex.test(email);
+    }
+
+    formatValue(value) {
+      if (!value) return 'Not specified';
+      return value.charAt(0).toUpperCase() + value.slice(1).replace('-', ' ');
+    }
+
+    truncateText(text, maxLength) {
+      if (!text) return 'Not provided';
+      if (text.length <= maxLength) return text;
+      return text.substring(0, maxLength) + '...';
+    }
+
+    trackPaidCaseAccess() {
+      // Check if this case has been paid for
+      const isPaid = this.checkIfCasePaid();
+
+      if (isPaid && !this.hasTrackedPaidAccess()) {
+        // Track the paid case access conversion
+        if (typeof gtag !== 'undefined') {
+          gtag('event', 'conversion', {
+            'send_to': 'AW-17007905582/paid_case_access',
+            'event_category': 'Purchase',
+            'event_label': 'User accessed paid case after payment',
+            'value': 29,
+            'currency': 'USD'
+          });
+          console.log('Paid case access conversion tracked for case:', this.caseToken);
+
+          // Mark that we've tracked this to avoid duplicate tracking
+          this.markPaidAccessTracked();
+        }
+      }
+    }
+
+    checkIfCasePaid() {
+      // Check multiple indicators that the case has been paid for:
+
+      // 1. Check if case data indicates payment
+      if (this.caseData && (
+        this.caseData.paid === true ||
+        this.caseData.payment_status === 'completed' ||
+        this.caseData.stripe_payment_status === 'paid' ||
+        this.caseData.unlocked === true
+      )) {
+        return true;
+      }
+
+      // 2. Check URL parameters for payment success
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('payment_success') === 'true' ||
+          urlParams.get('session_id') ||
+          urlParams.get('payment_intent')) {
+        return true;
+      }
+
+      // 3. Check localStorage for payment completion
+      const paymentCompleted = localStorage.getItem('dmhoa_payment_completed_' + this.caseToken);
+      if (paymentCompleted === 'true') {
+        return true;
+      }
+
+      return false;
+    }
+
+    hasTrackedPaidAccess() {
+      // Check if we've already tracked this paid access to avoid duplicates
+      const tracked = localStorage.getItem('dmhoa_tracked_paid_access_' + this.caseToken);
+      return tracked === 'true';
+    }
+
+    markPaidAccessTracked() {
+      // Mark that we've tracked this paid access
+      localStorage.setItem('dmhoa_tracked_paid_access_' + this.caseToken, 'true');
+    }
+
+    showError() {
+      document.getElementById('error-state').classList.remove('hidden');
+      document.getElementById('main-content').classList.add('hidden');
+    }
+
+    populatePreview() {
+      // Set case ID
+      document.getElementById('case-id').textContent = this.caseToken;
+
+      // Populate summary
+      this.populateSummary();
+
+      // Populate dates and risk
+      this.populateDatesAndRisk();
+
+      // Populate next step
+      this.populateNextStep();
+    }
+
+    populateSummary() {
+      const summaryContent = document.getElementById('summary-content');
+      const data = this.caseData;
+
+      const bullets = [
+        `<div>• <strong>Notice type:</strong> ${this.formatValue(data.noticeType)}</div>`,
+        `<div>• <strong>The HOA claims the issue involves:</strong> ${this.truncateText(data.issueText, 100)}</div>`,
+        `<div>• <strong>You want to:</strong> ${this.formatValue(data.outcome)}</div>`,
+        `<div>• <strong>Property:</strong> ${this.formatValue(data.propertyType)} in ${data.state}</div>`,
+        `<div>• <strong>Your role:</strong> ${this.formatValue(data.role)}</div>`,
+        `<div>• <strong>Recommended approach:</strong> Keep communication clear and request specifics if anything is unclear.</div>`
+      ];
+
+      summaryContent.innerHTML = bullets.join('');
+    }
+
+    populateDatesAndRisk() {
+      const deadlineInfo = document.getElementById('deadline-info');
+      const riskLevel = document.getElementById('risk-level');
+
+      // Set deadline
+      if (this.caseData.deadline) {
+        const deadlineDate = new Date(this.caseData.deadline);
+        deadlineInfo.textContent = deadlineDate.toLocaleDateString();
+      } else {
+        deadlineInfo.textContent = 'Not provided';
+      }
+
+      // Set risk level based on notice type
+      const highRiskTypes = ['fine', 'hearing', 'collections'];
+      const isHighRisk = highRiskTypes.includes(this.caseData.noticeType);
+
+      if (isHighRisk) {
+        riskLevel.innerHTML = '<span class="inline-block px-2 py-1 rounded text-tagline-2 bg-red-100 text-red-800">High</span>';
+      } else {
+        riskLevel.innerHTML = '<span class="inline-block px-2 py-1 rounded text-tagline-2 bg-yellow-100 text-yellow-800">Low-Medium</span>';
+      }
+    }
+
+    populateNextStep() {
+      const nextStepEl = document.getElementById('next-step');
+      const outcome = this.caseData.outcome;
+
+      const nextSteps = {
+        'clarification': 'Request clarification and confirm what proof is required',
+        'extension': 'Request an extension and ask what satisfies compliance',
+        'alternative': 'Propose specific alternatives and ask if they would be acceptable',
+        'comply': 'Ask if lower-cost compliant alternatives are acceptable',
+        'dispute': 'Request evidence and cite the specific rule being enforced',
+        'not-sure': 'Ask for the exact requirement, deadline, and acceptable remedy'
+      };
+
+      nextStepEl.textContent = nextSteps[outcome] || 'Review the notice carefully and consider your options';
+    }
+
+    bindEvents() {
+      // Unlock button
+      document.getElementById('unlock-btn').addEventListener('click', () => {
+        this.showUnlockForm();
+      });
+
+      // Checkout button
+      document.getElementById('checkout-btn').addEventListener('click', () => {
+        this.proceedToCheckout();
+      });
+    }
+
+    showUnlockForm() {
+      document.getElementById('unlock-initial').classList.add('hidden');
+      document.getElementById('unlock-expanded').classList.remove('hidden');
+    }
+
+    async proceedToCheckout() {
+      const email = document.getElementById('unlock-email').value.trim();
+      const disclaimer = document.getElementById('legal-disclaimer').checked;
+
+      if (!email) {
+        alert('Please enter your email address.');
+        return;
+      }
+
+      if (!this.isValidEmail(email)) {
+        alert('Please enter a valid email address.');
+        return;
+      }
+
+      if (!disclaimer) {
+        alert('Please accept the legal disclaimer.');
+        return;
+      }
+
+      // Track conversion event - Lead form submission
+      if (typeof gtag !== 'undefined') {
+        gtag('event', 'conversion', {
+          'send_to': 'AW-17007905582/submit_lead_form',
+          'event_category': 'Lead Generation',
+          'event_label': 'Email Submitted Before Checkout'
+        });
+        console.log('Lead form conversion tracked for email:', email);
+      }
+
+      // Show loading state
+      const checkoutBtn = document.getElementById('checkout-btn');
+      const originalText = checkoutBtn.textContent;
+      checkoutBtn.textContent = 'Processing...';
+      checkoutBtn.disabled = true;
+
+      try {
+        // Save case data locally first
+        this.caseData.email = email;
+        this.caseData.unlockIntent = true;
+        localStorage.setItem('dmhoa_case_' + this.caseToken, JSON.stringify(this.caseData));
+
+        // Pull the saved form payload (adjust the key if yours is different)
+        const payload = JSON.parse(
+          localStorage.getItem('dmhoa_case_' + this.caseToken) || '{}'
+        );
+
+// Optional: quick guard so you don't send empty payload by mistake
+        if (!payload || Object.keys(payload).length === 0) {
+          console.warn('[case-preview] No payload found in localStorage for token:', this.caseToken);
+          // You can either block checkout or allow it:
+          // return alert('Please complete the case form first.');
+        }
+
+
+        // Try to call Supabase Edge Function
+        const response = await fetch(`${this.getSupabaseUrl()}/functions/v1/create-checkout-session`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${this.getSupabaseAnonKey()}`
+          },
+          body: JSON.stringify({
+            token: this.caseToken,
+            email: email,
+            payload: payload,
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: 'Server configuration error' }));
+
+          // Check if it's a server configuration issue (missing env vars)
+          if (response.status === 500) {
+            console.warn('Server configuration issue detected. Using fallback checkout.');
+            this.handleCheckoutFallback(email);
+            return;
+          }
+
+          throw new Error(errorData.error || 'Failed to create checkout session');
+        }
+
+        const data = await response.json();
+
+        // Redirect to Stripe Checkout
+        window.location.href = data.url;
+
+      } catch (error) {
+        console.error('Checkout error:', error);
+
+        // If it's a network/server error, use fallback
+        if (error.message.includes('Missing required environment variables') ||
+          error.message.includes('Server configuration error')) {
+          console.warn('Using checkout fallback due to server configuration issue');
+          this.handleCheckoutFallback(email);
+        } else {
+          alert('Failed to proceed to checkout: ' + error.message);
+          // Reset button state
+          checkoutBtn.textContent = originalText;
+          checkoutBtn.disabled = false;
+        }
+      }
+    }
+
+    handleCheckoutFallback(email) {
+      // Temporary fallback while server environment is being configured
+      console.log('Checkout fallback activated for:', email);
+
+      // Show success message and redirect to a temporary success page
+      alert(`Thank you! Your email (${email}) has been saved. We'll contact you shortly to complete your order. Case ID: ${this.caseToken}`);
+
+      // You can redirect to a temporary page or show instructions
+      // For now, let's redirect back to the main page with a success parameter
+      window.location.href = `index.html?checkout=pending&email=${encodeURIComponent(email)}&case=${this.caseToken}`;
+    }
+
+    getSupabaseUrl() {
+      return 'https://yvdwrkhntyutpnklxsvz.supabase.co';
+    }
+
+    getSupabaseAnonKey() {
+      return 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2ZHdya2hudHl1dHBua2x4c3Z6Iiwicm9zZSI6ImFub24iLCJpYXQiOjE3NjY1MDY3NTQsImV4cCI6MjA4MjA4Mjc1NH0.dFkoPjA60c9MH6C_YWYChehG3nKHHK3VKmKj0w722SU';
     }
 
     // Helper methods that were missing
