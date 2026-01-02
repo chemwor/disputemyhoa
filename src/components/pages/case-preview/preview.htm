@@ -362,9 +362,9 @@
       // Track conversion event - Lead form submission
       if (typeof gtag !== 'undefined') {
         gtag('event', 'conversion', {
-          'send_to': 'AW-17007905582/submit_lead_form',
-          'event_category': 'Lead Generation',
-          'event_label': 'Email Submitted Before Checkout'
+          'send_to': 'AW-17007905582/-HfLCKPCvdsbEK6WgK4_',
+          'value': 1.0,
+          'currency': 'USD'
         });
         console.log('Lead form conversion tracked for email:', email);
       }
@@ -463,23 +463,6 @@
       return 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2ZHdya2hudHl1dHBua2x4c3Z6Iiwicm9zZSI6ImFub24iLCJpYXQiOjE3NjY1MDY3NTQsImV4cCI6MjA4MjA4Mjc1NH0.dFkoPjA60c9MH6C_YWYChehG3nKHHK3VKmKj0w722SU';
     }
 
-    // Helper methods that were missing
-    isValidEmail(email) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      return emailRegex.test(email);
-    }
-
-    formatValue(value) {
-      if (!value) return 'Not specified';
-      return value.charAt(0).toUpperCase() + value.slice(1).replace('-', ' ');
-    }
-
-    truncateText(text, maxLength) {
-      if (!text) return 'Not provided';
-      if (text.length <= maxLength) return text;
-      return text.substring(0, maxLength) + '...';
-    }
-
     trackPaidCaseAccess() {
       // Check if this case has been paid for
       const isPaid = this.checkIfCasePaid();
@@ -488,13 +471,12 @@
         // Track the paid case access conversion
         if (typeof gtag !== 'undefined') {
           gtag('event', 'conversion', {
-            'send_to': 'AW-17007905582/paid_case_access',
-            'event_category': 'Purchase',
-            'event_label': 'User accessed paid case after payment',
-            'value': 29,
-            'currency': 'USD'
+            'send_to': 'AW-17007905582/EDBXCKbCvdsbEK6WgK4_',
+            'value': 29.0,
+            'currency': 'USD',
+            'transaction_id': this.caseToken // Use case token as transaction ID for tracking
           });
-          console.log('Paid case access conversion tracked for case:', this.caseToken);
+          console.log('Purchase conversion tracked for case:', this.caseToken);
 
           // Mark that we've tracked this to avoid duplicate tracking
           this.markPaidAccessTracked();
@@ -656,9 +638,9 @@
       // Track conversion event - Lead form submission
       if (typeof gtag !== 'undefined') {
         gtag('event', 'conversion', {
-          'send_to': 'AW-17007905582/submit_lead_form',
-          'event_category': 'Lead Generation',
-          'event_label': 'Email Submitted Before Checkout'
+          'send_to': 'AW-17007905582/-HfLCKPCvdsbEK6WgK4_',
+          'value': 1.0,
+          'currency': 'USD'
         });
         console.log('Lead form conversion tracked for email:', email);
       }
