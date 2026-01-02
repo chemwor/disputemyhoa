@@ -2,6 +2,12 @@
 Swiper sliders js 
 =========================== */
 
+import { Swiper } from 'swiper';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+import 'swiper/css/autoplay';
+
 function initReviewsSwiper() {
   const reviewsSwiper = new Swiper('.reviews-swiper', {
     slidesPerView: 1,
