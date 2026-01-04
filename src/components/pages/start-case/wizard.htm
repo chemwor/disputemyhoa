@@ -260,7 +260,7 @@ class StartCaseWizard {
     this.isUploading = false;
 
     // Supabase configuration - Correct anon key
-    this.supabaseUrl = 'https://yvdwrkhntyutpnklxsvz.supabase.co';
+    this.supabaseUrl = 'https://dmhoa-246713e0bd92.herokuapp.com';
     this.supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2ZHdya2hudHl1dHBua2x4c3Z6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1MDY3NTQsImV4cCI6MjA4MjA4Mjc1NH0.dFkoPjA60c9MH6C_YWYChehG3nKHHK3VKmKj0w722SU';
 
     this.init();
@@ -631,7 +631,7 @@ class StartCaseWizard {
     try {
       console.log(`Attempting to trigger document extraction for token: ${token}`);
       console.log('Request details:', {
-        endpoint: `${this.supabaseUrl}/functions/v1/doc-extract-start`,
+        endpoint: `${this.supabaseUrl}/api/doc-extract-start`,
         token,
         storagePath,
         filename,
@@ -639,7 +639,7 @@ class StartCaseWizard {
         docSecret: docSecret.substring(0, 8) + '...' // Don't log full secret
       });
 
-      const response = await fetch(`${this.supabaseUrl}/functions/v1/doc-extract-start`, {
+      const response = await fetch(`${this.supabaseUrl}/api/doc-extract-start`, {
         method: 'POST',
         headers: {
           'apikey': this.supabaseKey,
@@ -689,7 +689,7 @@ class StartCaseWizard {
 
   async insertCaseToDatabase(token, payload) {
     try {
-      const response = await fetch(`${this.supabaseUrl}/functions/v1/save-case`, {
+      const response = await fetch(`${this.supabaseUrl}/api/save-case`, {
         method: 'POST',
         headers: {
           'apikey': this.supabaseKey,
@@ -726,7 +726,7 @@ class StartCaseWizard {
   async updateCasePayload(token, payload) {
     try {
       // Use the same save-case Edge Function for updates (it does upsert)
-      const response = await fetch(`${this.supabaseUrl}/functions/v1/save-case`, {
+      const response = await fetch(`${this.supabaseUrl}/api/save-case`, {
         method: 'POST',
         headers: {
           'apikey': this.supabaseKey,

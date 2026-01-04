@@ -185,7 +185,7 @@
         this.showLoading();
 
         // Use the full Supabase function URL (not relative path)
-        const response = await fetch(`https://yvdwrkhntyutpnklxsvz.supabase.co/functions/v1/read-case?token=${encodeURIComponent(this.caseToken)}`, {
+        const response = await fetch(`https://dmhoa-246713e0bd92.herokuapp.com/api/case-data?token=${encodeURIComponent(this.caseToken)}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -395,7 +395,7 @@
 
 
         // Try to call Supabase Edge Function
-        const response = await fetch(`${this.getSupabaseUrl()}/functions/v1/create-checkout-session`, {
+        const response = await fetch(`${this.getSupabaseUrl()}/api/create-checkout-session`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -456,7 +456,7 @@
     }
 
     getSupabaseUrl() {
-      return 'https://yvdwrkhntyutpnklxsvz.supabase.co';
+      return 'https://dmhoa-246713e0bd92.herokuapp.com';
     }
 
     getSupabaseAnonKey() {
@@ -671,7 +671,7 @@
 
 
         // Try to call Supabase Edge Function
-        const response = await fetch(`${this.getSupabaseUrl()}/functions/v1/create-checkout-session`, {
+        const response = await fetch(`${this.getSupabaseUrl()}/api/create-checkout-session`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -732,7 +732,7 @@
     }
 
     getSupabaseUrl() {
-      return 'https://yvdwrkhntyutpnklxsvz.supabase.co';
+      return 'https://dmhoa-246713e0bd92.herokuapp.com';
     }
 
     getSupabaseAnonKey() {

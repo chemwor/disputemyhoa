@@ -348,7 +348,7 @@
     // Config
     // ==========
     getSupabaseUrl() {
-      return 'https://yvdwrkhntyutpnklxsvz.supabase.co';
+      return 'https://dmhoa-246713e0bd92.herokuapp.com';
     }
 
     getSupabaseAnonKey() {
@@ -430,7 +430,7 @@
     async fetchCaseFromSupabase() {
       try {
         const res = await fetch(
-          `${this.getSupabaseUrl()}/functions/v1/read-case?token=${encodeURIComponent(this.caseToken)}`,
+          `${this.getSupabaseUrl()}/api/case-data?token=${encodeURIComponent(this.caseToken)}`,
           {
             method: 'GET',
             headers: {
@@ -526,7 +526,7 @@
 
     async fetchOutputsFromSupabase() {
       const res = await fetch(
-        `${this.getSupabaseUrl()}/functions/v1/read-outputs?token=${encodeURIComponent(this.caseToken)}`,
+        `${this.getSupabaseUrl()}/api/read-outputs?token=${encodeURIComponent(this.caseToken)}`,
         {
           method: 'GET',
           headers: {
@@ -543,7 +543,7 @@
     }
 
     async triggerGenerateOutputs() {
-      const res = await fetch(`${this.getSupabaseUrl()}/functions/v1/generate-case-outputs`, {
+      const res = await fetch(`${this.getSupabaseUrl()}/api/case-analysis`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -973,7 +973,7 @@ Sincerely,
       if (!this.caseToken) return;
 
       const res = await fetch(
-        `${this.getSupabaseUrl()}/functions/v1/read-messages?token=${encodeURIComponent(this.caseToken)}&limit=50`,
+        `${this.getSupabaseUrl()}/api/read-messages?token=${encodeURIComponent(this.caseToken)}&limit=50`,
         {
           method: 'GET',
           headers: {
@@ -1043,7 +1043,7 @@ Sincerely,
     }
 
     async saveMessageToDB(role, content) {
-      const res = await fetch(`${this.getSupabaseUrl()}/functions/v1/create-message`, {
+      const res = await fetch(`${this.getSupabaseUrl()}/api/store-message`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1169,7 +1169,7 @@ Sincerely,
       this.renderMessages();
 
       try {
-        const res = await fetch(`${this.getSupabaseUrl()}/functions/v1/send-message`, {
+        const res = await fetch(`${this.getSupabaseUrl()}/api/send-message`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
