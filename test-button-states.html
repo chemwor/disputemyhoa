@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Wizard Button States</title>
+    <style>
+        .bg-ns-green { background-color: #22c55e; }
+        .bg-ns-green\/40 { background-color: rgba(34, 197, 94, 0.4); }
+        .hover\:bg-ns-green\/90:hover { background-color: rgba(34, 197, 94, 0.9); }
+        .cursor-not-allowed { cursor: not-allowed; }
+        .cursor-pointer { cursor: pointer; }
+        button {
+            padding: 12px 24px;
+            color: white;
+            border-radius: 8px;
+            border: none;
+            transition: all 0.3s;
+            margin: 10px;
+        }
+        input {
+            padding: 8px;
+            margin: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .container { padding: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test Button State Changes</h1>
+        <div>
+            <input type="text" id="test-input" placeholder="Type something to enable button">
+            <br>
+            <button id="test-btn" class="bg-ns-green/40 cursor-not-allowed" disabled>
+                Next (Disabled)
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function updateButtonState(isValid) {
+            const btn = document.getElementById('test-btn');
+            if (isValid) {
+                btn.disabled = false;
+                btn.classList.remove('bg-ns-green/40', 'cursor-not-allowed');
+                btn.classList.add('bg-ns-green', 'hover:bg-ns-green/90', 'cursor-pointer');
+                btn.textContent = 'Next (Enabled)';
+            } else {
+                btn.disabled = true;
+                btn.classList.remove('bg-ns-green', 'hover:bg-ns-green/90', 'cursor-pointer');
+                btn.classList.add('bg-ns-green/40', 'cursor-not-allowed');
+                btn.textContent = 'Next (Disabled)';
+            }
+        }
+
+        document.getElementById('test-input').addEventListener('input', (e) => {
+            const isValid = e.target.value.trim().length > 0;
+            updateButtonState(isValid);
+        });
+    </script>
+</body>
+</html>

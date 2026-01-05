@@ -239,7 +239,7 @@
             Back
           </button>
           <div class="flex-1"></div>
-          <button id="next-btn" class="px-6 py-3 bg-ns-green text-white rounded-lg hover:bg-ns-green/90 transition-colors">
+          <button id="next-btn" class="px-6 py-3 bg-ns-green/40 text-white rounded-lg transition-colors cursor-not-allowed" disabled>
             Next
           </button>
           <button id="generate-btn" class="px-6 py-3 bg-ns-green text-white rounded-lg hover:bg-ns-green/90 transition-colors hidden">
@@ -317,6 +317,10 @@ class StartCaseWizard {
 
   nextStep() {
     if (!this.validateCurrentStep()) {
+      // Show specific error message for step 3
+      if (this.currentStep === 3) {
+        this.showError('Please either upload a file or paste text (minimum 50 characters).');
+      }
       return;
     }
 
@@ -352,7 +356,7 @@ class StartCaseWizard {
       });
     }
 
-    if (this.currentStep === 2) {
+    else if (this.currentStep === 2) {
       const noticeType = document.getElementById('notice-type').value.trim();
       const issueText = document.getElementById('issue-text').value.trim();
       const outcome = document.getElementById('outcome').value.trim();
@@ -368,17 +372,18 @@ class StartCaseWizard {
       isValid = noticeValid && issueValid && outcomeValid;
     }
 
-    if (this.currentStep === 3) {
+    else if (this.currentStep === 3) {
       const fileUpload = document.getElementById('file-upload').files.length > 0;
       const pasteText = document.getElementById('paste-text').value.trim();
       const pasteValid = pasteText.length >= 50;
 
       isValid = fileUpload || pasteValid;
 
-      if (!isValid) {
-        this.showError('Please either upload a file or paste text (minimum 50 characters).');
-      }
+      // Don't show error alert here, just let the button state update
     }
+
+    // Update next button state based on validation
+    this.updateNextButtonState(isValid);
 
     return isValid;
   }
@@ -395,6 +400,19 @@ class StartCaseWizard {
 
   showError(message) {
     alert(message);
+  }
+
+  updateNextButtonState(isValid) {
+    const nextBtn = document.getElementById('next-btn');
+    if (isValid) {
+      nextBtn.disabled = false;
+      nextBtn.classList.remove('bg-ns-green/40', 'cursor-not-allowed');
+      nextBtn.classList.add('bg-ns-green', 'hover:bg-ns-green/90', 'cursor-pointer');
+    } else {
+      nextBtn.disabled = true;
+      nextBtn.classList.remove('bg-ns-green', 'hover:bg-ns-green/90', 'cursor-pointer');
+      nextBtn.classList.add('bg-ns-green/40', 'cursor-not-allowed');
+    }
   }
 
   collectCurrentStepData() {
@@ -459,6 +477,11 @@ class StartCaseWizard {
     } else {
       generateBtn.textContent = 'Generate Free Preview';
       generateBtn.disabled = false;
+    }
+
+    // Validate current step and update next button state
+    if (this.currentStep < this.totalSteps) {
+      this.validateCurrentStep();
     }
   }
 
