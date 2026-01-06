@@ -211,6 +211,9 @@
         this.caseData = result.payload;
         console.log('Successfully loaded case data from API:', this.caseData);
 
+        // Track conversion for preview page view
+        this.trackPreviewPageView();
+
         // Track conversion if this is a paid case access
         this.trackPaidCaseAccess();
 
@@ -461,6 +464,35 @@
 
     getSupabaseAnonKey() {
       return 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2ZHdya2hudHl1dHBua2x4c3Z6Iiwicm9zZSI6ImFub24iLCJpYXQiOjE3NjY1MDY3NTQsImV4cCI6MjA4MjA4Mjc1NH0.dFkoPjA60c9MH6C_YWYChehG3nKHHK3VKmKj0w722SU';
+    }
+
+    trackPreviewPageView() {
+      // Track conversion for preview page view (only once per case)
+      if (!this.hasTrackedPreviewView()) {
+        if (typeof gtag !== 'undefined') {
+          gtag('event', 'conversion', {
+            'send_to': 'AW-17007905582/-HfLCKPCvdsbEK6WgK4_',
+            'value': 1.0,
+            'currency': 'USD',
+            'transaction_id': this.caseToken // Use case token as transaction ID for tracking
+          });
+          console.log('Preview page view conversion tracked for case:', this.caseToken);
+
+          // Mark that we've tracked this to avoid duplicate tracking
+          this.markPreviewViewTracked();
+        }
+      }
+    }
+
+    hasTrackedPreviewView() {
+      // Check if we've already tracked this preview view to avoid duplicates
+      const tracked = localStorage.getItem('dmhoa_preview_tracked_' + this.caseToken);
+      return tracked === 'true';
+    }
+
+    markPreviewViewTracked() {
+      // Mark that we've tracked the preview view for this case
+      localStorage.setItem('dmhoa_preview_tracked_' + this.caseToken, 'true');
     }
 
     trackPaidCaseAccess() {
