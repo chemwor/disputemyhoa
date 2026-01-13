@@ -62,9 +62,27 @@
       <div>Screen: <span id="screen-size"></span></div>
       <div>Touch: <span id="touch-support"></span></div>
       <div>Menu: <span id="menu-status">Not opened</span></div>
+      <div>Errors: <span id="error-count">0</span></div>
     </div>
 
     <script>
+      // Error monitoring
+      let errorCount = 0;
+      const errors = [];
+
+      window.addEventListener('error', function(event) {
+        errorCount++;
+        errors.push({
+          message: event.message,
+          filename: event.filename,
+          lineno: event.lineno,
+          colno: event.colno,
+          timestamp: new Date().toLocaleTimeString()
+        });
+        document.getElementById('error-count').textContent = errorCount;
+        console.error('Captured error:', event.message, 'at', event.filename + ':' + event.lineno);
+      });
+
       // Debug information
       function updateDebugInfo() {
         document.getElementById('screen-size').textContent = `${window.innerWidth}x${window.innerHeight}`;
@@ -90,6 +108,15 @@
         if (sidebar) {
           observer.observe(sidebar, { attributes: true, attributeFilter: ['class'] });
         }
+
+        // Log successful initialization after 1 second
+        setTimeout(() => {
+          if (errorCount === 0) {
+            console.log('✅ No JavaScript errors detected during initialization');
+          } else {
+            console.log('❌ JavaScript errors detected:', errors);
+          }
+        }, 1000);
       });
     </script>
   </body>

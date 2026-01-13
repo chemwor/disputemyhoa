@@ -9,10 +9,21 @@ const accordionAnimation = {
   init() {
     this.accordion = document.querySelector('.accordion');
     this.accordionItems = document.querySelectorAll('.accordion-item');
+
+    // Exit early if no accordion elements exist
+    if (!this.accordionItems || this.accordionItems.length === 0) {
+      return;
+    }
+
     this.activeItem = null;
     this.accordionItems.forEach((item) => {
       const action = item.querySelector('.accordion-action');
       const content = item.querySelector('.accordion-content');
+
+      // Skip if required elements don't exist
+      if (!action || !content) {
+        return;
+      }
 
       if (item.classList.contains('active-accordion')) {
         content.classList.remove('hidden');
