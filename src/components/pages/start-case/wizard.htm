@@ -224,6 +224,13 @@
         <!-- Step 4: Confirm & Generate -->
         <div id="step-4" class="wizard-step hidden">
           <h2 class="text-heading-5 mb-6">Review & Generate Preview</h2>
+
+          <div class="mb-6">
+            <label for="email" class="block text-tagline-1 font-medium mb-2">Email Address <span class="text-red-500">*</span></label>
+            <input type="email" id="email" name="email" class="w-full px-4 py-3 border border-stroke-1 rounded-lg focus:outline-none focus:border-ns-green" placeholder="your.email@example.com" required>
+            <p class="text-tagline-2 text-secondary/60 mt-1">We'll send your case preview and updates here</p>
+          </div>
+
           <div class="bg-background-3 rounded-lg p-6 mb-6">
             <h3 class="text-tagline-1 font-medium mb-4">Case Summary</h3>
             <div id="review-summary" class="space-y-2 text-tagline-1 text-secondary/80">
@@ -313,6 +320,9 @@ class StartCaseWizard {
     document.getElementById('paste-text').addEventListener('input', () => {
       this.validateCurrentStep();
     });
+
+    // Step 4 validation - email field (will be added when step is shown)
+    // We'll bind this dynamically when step 4 is displayed
   }
 
   nextStep() {
@@ -332,6 +342,10 @@ class StartCaseWizard {
 
       if (this.currentStep === 4) {
         this.populateReview();
+        // Bind email validation for Step 4
+        document.getElementById('email').addEventListener('input', () => {
+          this.validateCurrentStep();
+        });
       }
     }
   }
@@ -385,6 +399,14 @@ class StartCaseWizard {
     // Update next button state based on validation
     this.updateNextButtonState(isValid);
 
+    if (this.currentStep === 4) {
+      const email = document.getElementById('email').value.trim();
+      const emailValid = email !== '' && this.isValidEmail(email);
+
+      this.toggleFieldError(document.getElementById('email'), !emailValid);
+      isValid = emailValid;
+    }
+
     return isValid;
   }
 
@@ -434,6 +456,15 @@ class StartCaseWizard {
       this.formData.pastedText = document.getElementById('paste-text').value.trim();
       this.formData.primaryFile = document.getElementById('file-upload').files[0] || null;
       this.formData.additionalFiles = Array.from(document.getElementById('additional-docs').files || []);
+    }
+
+    if (this.currentStep === 4) {
+      this.formData.email = document.getElementById('email').value.trim();
+
+      // Track conversion for lead capture (email collection)
+      if (this.formData.email && !this.hasTrackedEmailCapture()) {
+        this.trackEmailCapture();
+      }
     }
   }
 
@@ -527,7 +558,7 @@ class StartCaseWizard {
         issueText: this.formData.issueText,
         outcome: this.formData.outcome,
         pastedText: this.formData.pastedText || null,
-        email: null,
+        email: this.formData.email,
         extract_status: 'pending',
         additional_docs: []
       };
@@ -655,7 +686,7 @@ class StartCaseWizard {
     try {
       console.log(`Attempting to trigger document extraction for token: ${token}`);
       console.log('Request details:', {
-        endpoint: `${this.supabaseUrl}/api/doc-extract-start`,
+        endpoint: `https://dmhoa-246713e0bd92.herokuapp.com/api/doc-extract-start`,
         token,
         storagePath,
         filename,
@@ -663,7 +694,7 @@ class StartCaseWizard {
         docSecret: docSecret.substring(0, 8) + '...' // Don't log full secret
       });
 
-      const response = await fetch(`${this.supabaseUrl}/api/doc-extract-start`, {
+      const response = await fetch(`https://dmhoa-246713e0bd92.herokuapp.com/api/doc-extract-start`, {
         method: 'POST',
         headers: {
           'apikey': this.supabaseKey,
@@ -713,7 +744,7 @@ class StartCaseWizard {
 
   async insertCaseToDatabase(token, payload) {
     try {
-      const response = await fetch(`${this.supabaseUrl}/api/save-case`, {
+      const response = await fetch(`https://dmhoa-246713e0bd92.herokuapp.com/api/save-case`, {
         method: 'POST',
         headers: {
           'apikey': this.supabaseKey,
@@ -750,7 +781,7 @@ class StartCaseWizard {
   async updateCasePayload(token, payload) {
     try {
       // Use the same save-case Edge Function for updates (it does upsert)
-      const response = await fetch(`${this.supabaseUrl}/api/save-case`, {
+      const response = await fetch(`https://dmhoa-246713e0bd92.herokuapp.com/api/save-case`, {
         method: 'POST',
         headers: {
           'apikey': this.supabaseKey,
@@ -861,6 +892,38 @@ class StartCaseWizard {
     if (!text) return 'Not provided';
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + '...';
+  }
+
+  isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+
+  trackEmailCapture() {
+    // Track conversion for email capture in wizard
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'conversion', {
+        'send_to': 'AW-17007905582/-HfLCKPCvdsbEK6WgK4_',
+        'value': 1.0,
+        'currency': 'USD',
+        'transaction_id': 'wizard_email_' + Date.now()
+      });
+      console.log('Email capture conversion tracked:', this.formData.email);
+
+      // Mark that we've tracked this to avoid duplicate tracking
+      this.markEmailCaptureTracked();
+    }
+  }
+
+  hasTrackedEmailCapture() {
+    // Check if we've already tracked email capture for this session
+    const tracked = sessionStorage.getItem('dmhoa_email_captured');
+    return tracked === 'true';
+  }
+
+  markEmailCaptureTracked() {
+    // Mark that we've tracked email capture for this session
+    sessionStorage.setItem('dmhoa_email_captured', 'true');
   }
 }
 

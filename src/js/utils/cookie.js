@@ -52,22 +52,35 @@ const TopNav = {
   hide(nav) {
     const id = this.getId(nav);
 
-    nav.classList.add('hidden');
-    navbar.classList.add('is-cookie-false');
-    navbar.classList.remove('is-cookie-true');
-    navbar.style.transition = 'all 0.5s ease-in-out';
-    nav.classList.remove('visible');
+    if (nav) {
+      nav.classList.add('hidden');
+      nav.classList.remove('visible');
+    }
+
+    if (navbar) {
+      navbar.classList.add('is-cookie-false');
+      navbar.classList.remove('is-cookie-true');
+      navbar.style.transition = 'all 0.5s ease-in-out';
+    }
+
     Cookie.set(this.cookieName(id), 'true');
   },
 
   // Show navigation and clear state
   show(nav) {
     const id = this.getId(nav);
-    nav.classList.add('visible');
-    nav.classList.remove('hidden');
-    navbar.classList.add('is-cookie-true');
-    navbar.classList.remove('is-cookie-false');
-    navbar.style.transition = 'all 0.5s ease-in-out';
+
+    if (nav) {
+      nav.classList.add('visible');
+      nav.classList.remove('hidden');
+    }
+
+    if (navbar) {
+      navbar.classList.add('is-cookie-true');
+      navbar.classList.remove('is-cookie-false');
+      navbar.style.transition = 'all 0.5s ease-in-out';
+    }
+
     Cookie.remove(this.cookieName(id));
   },
 
@@ -77,17 +90,25 @@ const TopNav = {
     navs.forEach((nav) => {
       const id = this.getId(nav);
       if (this.isHidden(id)) {
-        nav.classList.add('hidden');
-        nav.classList.remove('visible');
-        navbar.classList.add('is-cookie-false');
-        navbar.classList.remove('is-cookie-true');
-        navbar.style.transition = 'all 0.5s ease-in-out';
+        if (nav) {
+          nav.classList.add('hidden');
+          nav.classList.remove('visible');
+        }
+        if (navbar) {
+          navbar.classList.add('is-cookie-false');
+          navbar.classList.remove('is-cookie-true');
+          navbar.style.transition = 'all 0.5s ease-in-out';
+        }
       } else {
-        nav.classList.add('visible');
-        nav.classList.remove('hidden');
-        navbar.classList.add('is-cookie-true');
-        navbar.classList.remove('is-cookie-false');
-        navbar.style.transition = 'all 0.5s ease-in-out';
+        if (nav) {
+          nav.classList.add('visible');
+          nav.classList.remove('hidden');
+        }
+        if (navbar) {
+          navbar.classList.add('is-cookie-true');
+          navbar.classList.remove('is-cookie-false');
+          navbar.style.transition = 'all 0.5s ease-in-out';
+        }
       }
     });
   },
@@ -107,6 +128,12 @@ const TopNav = {
 
   // Initialize everything
   init() {
+    // Exit early if no top navigation elements exist
+    const navs = document.querySelectorAll('.top-nav');
+    if (!navs || navs.length === 0) {
+      return;
+    }
+
     this.initVisibility();
     this.initCloseButtons();
   },

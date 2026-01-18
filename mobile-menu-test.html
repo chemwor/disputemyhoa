@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en" data-force-theme="light" class="light">
+  <head>
+    <Component src="src/components/shared/head-links.htm" />
+    <title>Mobile Menu Test - Dispute My HOA</title>
+    <style>
+      .debug-info {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        background: rgba(0,0,0,0.8);
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+        font-family: monospace;
+        font-size: 12px;
+        z-index: 9998;
+      }
+    </style>
+  </head>
+  <body class="bg-background-3 dark:bg-background-7">
+    <Component src="src/components/pages/ai-resume-builder/top-nav.htm" />
+    <Component src="src/components/pages/ai-resume-builder/header.htm" />
+
+    <main class="pt-32">
+      <div class="main-container">
+        <div class="max-w-4xl mx-auto text-center space-y-8 py-16">
+          <h1 class="text-4xl font-bold text-secondary">Mobile Menu Test Page</h1>
+          <p class="text-lg text-secondary/70">
+            This page is for testing the mobile menu functionality.
+            Try tapping the hamburger menu button on mobile devices.
+          </p>
+
+          <div class="bg-white rounded-lg p-8 shadow-sm border text-left">
+            <h2 class="text-xl font-semibold text-secondary mb-4">Test Instructions:</h2>
+            <ol class="space-y-3 text-secondary/70">
+              <li>1. Open this page on a mobile device</li>
+              <li>2. Tap the hamburger menu button (three lines) in the top right</li>
+              <li>3. The mobile menu should slide in from the right</li>
+              <li>4. Tap the X button to close the menu</li>
+              <li>5. The menu should slide back out of view</li>
+            </ol>
+          </div>
+
+          <div class="bg-accent/10 border border-accent/20 rounded-lg p-6">
+            <h3 class="text-lg font-semibold text-secondary mb-2">What was fixed:</h3>
+            <ul class="text-left space-y-2 text-secondary/70">
+              <li>• Added touch event handlers for better mobile compatibility</li>
+              <li>• Improved CSS with proper z-index and pointer events</li>
+              <li>• Added initialization delay for mobile devices</li>
+              <li>• Enhanced button styling for touch interaction</li>
+              <li>• Added CSS fallback for JavaScript failures</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <Component src="src/components/pages/ai-resume-builder/footer.htm" />
+
+    <div class="debug-info">
+      <div>Screen: <span id="screen-size"></span></div>
+      <div>Touch: <span id="touch-support"></span></div>
+      <div>Menu: <span id="menu-status">Not opened</span></div>
+      <div>Errors: <span id="error-count">0</span></div>
+    </div>
+
+    <script>
+      // Error monitoring
+      let errorCount = 0;
+      const errors = [];
+
+      window.addEventListener('error', function(event) {
+        errorCount++;
+        errors.push({
+          message: event.message,
+          filename: event.filename,
+          lineno: event.lineno,
+          colno: event.colno,
+          timestamp: new Date().toLocaleTimeString()
+        });
+        document.getElementById('error-count').textContent = errorCount;
+        console.error('Captured error:', event.message, 'at', event.filename + ':' + event.lineno);
+      });
+
+      // Debug information
+      function updateDebugInfo() {
+        document.getElementById('screen-size').textContent = `${window.innerWidth}x${window.innerHeight}`;
+        document.getElementById('touch-support').textContent = 'ontouchstart' in window ? 'Yes' : 'No';
+      }
+
+      updateDebugInfo();
+      window.addEventListener('resize', updateDebugInfo);
+
+      // Monitor sidebar state
+      const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+          if (mutation.target.classList.contains('sidebar')) {
+            const isOpen = mutation.target.classList.contains('show-sidebar');
+            document.getElementById('menu-status').textContent = isOpen ? 'Open' : 'Closed';
+          }
+        });
+      });
+
+      // Start observing when DOM is ready
+      document.addEventListener('DOMContentLoaded', function() {
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar) {
+          observer.observe(sidebar, { attributes: true, attributeFilter: ['class'] });
+        }
+
+        // Log successful initialization after 1 second
+        setTimeout(() => {
+          if (errorCount === 0) {
+            console.log('✅ No JavaScript errors detected during initialization');
+          } else {
+            console.log('❌ JavaScript errors detected:', errors);
+          }
+        }, 1000);
+      });
+    </script>
+  </body>
+</html>
+
