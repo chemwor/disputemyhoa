@@ -622,6 +622,9 @@
           localStorage.getItem('dmhoa_case_' + this.caseToken) || '{}'
         );
 
+        console.log('Starting checkout process for token:', this.caseToken);
+        console.log('Payload data:', payload);
+
         // Optional: quick guard so you don't send empty payload by mistake
         if (!payload || Object.keys(payload).length === 0) {
           console.warn('[case-preview] No payload found in localStorage for token:', this.caseToken);
@@ -629,22 +632,29 @@
           // return alert('Please complete the case form first.');
         }
 
+        const requestData = {
+          case_token: this.caseToken, // Use 'case_token' as expected by backend
+          email: payload.email || '', // Use email from original form data
+          payload: payload,
+        };
+
+        console.log('Sending checkout request:', requestData);
+
         // Try to call Supabase Edge Function
         const response = await fetch(`${this.getSupabaseUrl()}/api/create-checkout-session`, {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${this.getSupabaseAnonKey()}`
+            'Content-Type': 'application/json'
           },
-          body: JSON.stringify({
-            token: this.caseToken,
-            email: payload.email || '', // Use email from original form data
-            payload: payload,
-          })
+          body: JSON.stringify(requestData)
         });
+
+        console.log('Checkout response status:', response.status);
+        console.log('Checkout response headers:', response.headers);
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({ error: 'Server configuration error' }));
+          console.error('Checkout failed with error:', errorData);
 
           // Check if it's a server configuration issue (missing env vars)
           if (response.status === 500) {
@@ -657,9 +667,16 @@
         }
 
         const data = await response.json();
+        console.log('Checkout response data:', data);
 
-        // Redirect to Stripe Checkout
-        window.location.href = data.url;
+        // Redirect to Stripe Checkout - handle both 'url' and 'checkout_url' for compatibility
+        const checkoutUrl = data.url || data.checkout_url;
+        if (!checkoutUrl) {
+          throw new Error('No checkout URL received from server');
+        }
+
+        console.log('Redirecting to Stripe checkout:', checkoutUrl);
+        window.location.href = checkoutUrl;
 
       } catch (error) {
         console.error('Checkout error:', error);
