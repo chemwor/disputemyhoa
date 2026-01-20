@@ -650,10 +650,19 @@
         });
 
         console.log('Checkout response status:', response.status);
-        console.log('Checkout response headers:', response.headers);
+        console.log('Checkout response headers:', Object.fromEntries(response.headers.entries()));
 
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ error: 'Server configuration error' }));
+          const errorText = await response.text();
+          console.error('Raw error response:', errorText);
+
+          let errorData;
+          try {
+            errorData = JSON.parse(errorText);
+          } catch (e) {
+            errorData = { error: 'Server configuration error' };
+          }
+
           console.error('Checkout failed with error:', errorData);
 
           // Check if it's a server configuration issue (missing env vars)
@@ -666,17 +675,112 @@
           throw new Error(errorData.error || 'Failed to create checkout session');
         }
 
-        const data = await response.json();
-        console.log('Checkout response data:', data);
+        // Get raw response text first to debug
+        const responseText = await response.text();
+        console.log('Raw checkout response text:', responseText);
 
-        // Redirect to Stripe Checkout - handle both 'url' and 'checkout_url' for compatibility
-        const checkoutUrl = data.url || data.checkout_url;
-        if (!checkoutUrl) {
-          throw new Error('No checkout URL received from server');
+        let data;
+        try {
+          data = JSON.parse(responseText);
+        } catch (e) {
+          console.error('Failed to parse response JSON:', e);
+          throw new Error('Invalid response from server');
         }
 
-        console.log('Redirecting to Stripe checkout:', checkoutUrl);
-        window.location.href = checkoutUrl;
+        console.log('Parsed checkout response data:', data);
+        console.log('Response data type:', typeof data);
+        console.log('Response data keys:', Object.keys(data));
+
+        // Handle all possible response formats based on the API structure
+        let checkoutUrl;
+
+        // Method 1: Direct properties
+        if (data && typeof data === 'object') {
+          if (data.checkout_url && typeof data.checkout_url === 'string') {
+            checkoutUrl = data.checkout_url;
+            console.log('Method 1a: Using checkout_url:', checkoutUrl);
+          } else if (data.url && typeof data.url === 'string') {
+            checkoutUrl = data.url;
+            console.log('Method 1b: Using url:', checkoutUrl);
+          }
+        }
+
+        // Method 2: String response
+        if (!checkoutUrl && typeof data === 'string' && data.startsWith('http')) {
+          checkoutUrl = data;
+          console.log('Method 2: Using direct URL string:', checkoutUrl);
+        }
+
+        // Method 3: Look for any property that looks like a Stripe URL
+        if (!checkoutUrl && data && typeof data === 'object') {
+          for (const [key, value] of Object.entries(data)) {
+            if (typeof value === 'string' && value.includes('stripe.com')) {
+              checkoutUrl = value;
+              console.log('Method 3: Found Stripe URL in property', key, ':', checkoutUrl);
+              break;
+            }
+          }
+        }
+
+        // Method 4: Look for any property that starts with https://checkout
+        if (!checkoutUrl && data && typeof data === 'object') {
+          for (const [key, value] of Object.entries(data)) {
+            if (typeof value === 'string' && value.startsWith('https://checkout')) {
+              checkoutUrl = value;
+              console.log('Method 4: Found checkout URL in property', key, ':', checkoutUrl);
+              break;
+            }
+          }
+        }
+
+        if (!checkoutUrl) {
+          console.error('No valid checkout URL found using any method. Full response:', data);
+          console.error('Available properties:', Object.keys(data || {}));
+          console.error('Property values:', Object.values(data || {}));
+          throw new Error(`No checkout URL received from server. Response keys: ${Object.keys(data || {}).join(', ')}`);
+        }
+
+        if (!checkoutUrl || checkoutUrl === 'undefined' || checkoutUrl === undefined) {
+          console.error('Checkout URL is undefined or invalid:', checkoutUrl);
+          throw new Error('Invalid checkout URL received from server');
+        }
+
+        console.log('Final checkout URL to redirect to:', checkoutUrl);
+
+        // Additional validation before redirect
+        if (typeof checkoutUrl !== 'string') {
+          console.error('Checkout URL is not a string:', typeof checkoutUrl, checkoutUrl);
+          throw new Error('Checkout URL must be a string');
+        }
+
+        // Handle potential encoding issues
+        let cleanUrl = checkoutUrl.trim();
+        if (cleanUrl.includes('%')) {
+          try {
+            cleanUrl = decodeURIComponent(cleanUrl);
+            console.log('Decoded URL:', cleanUrl);
+          } catch (e) {
+            console.warn('URL decoding failed, using original:', e.message);
+          }
+        }
+
+        if (cleanUrl.length < 10) {
+          console.error('Checkout URL is too short:', cleanUrl);
+          throw new Error('Checkout URL appears to be invalid (too short)');
+        }
+
+        if (!cleanUrl.startsWith('http')) {
+          console.error('Checkout URL does not start with http:', cleanUrl);
+          throw new Error('Checkout URL must be a valid HTTP(S) URL');
+        }
+
+        console.log('All validations passed, redirecting to:', cleanUrl);
+
+        // Use setTimeout to ensure any pending JavaScript operations complete
+        setTimeout(() => {
+          console.log('Executing redirect now...');
+          window.location.href = cleanUrl;
+        }, 100);
 
       } catch (error) {
         console.error('Checkout error:', error);

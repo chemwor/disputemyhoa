@@ -81,7 +81,7 @@ const vendorMinifier = () => {
                 compress: {
                   drop_console: false, // Keep console logs for debugging
                   drop_debugger: true,
-                  pure_funcs: ['console.log'], // Remove console.log calls
+                  pure_funcs: [], // Don't remove console.log calls for debugging
                   passes: 2,
                 },
                 mangle: {
