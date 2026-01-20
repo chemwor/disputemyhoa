@@ -207,31 +207,9 @@
 
             <!-- Unlock Form -->
             <div id="unlock-form">
-              <!-- Initial state -->
-              <div id="unlock-initial">
-                <button id="unlock-btn" class="w-full px-6 py-3 bg-ns-green text-white rounded-lg hover:bg-ns-green/90 transition-colors font-medium">
-                  Unlock
-                </button>
-              </div>
-
-              <!-- Email collection state -->
-              <div id="unlock-expanded" class="hidden space-y-4">
-                <div>
-                  <label for="unlock-email" class="block text-tagline-1 font-medium mb-2">Email Address <span class="text-red-500">*</span></label>
-                  <input type="email" id="unlock-email" name="email" class="w-full px-4 py-3 border border-stroke-1 rounded-lg focus:outline-none focus:border-ns-green" placeholder="your.email@example.com">
-                </div>
-
-                <div>
-                  <label class="flex items-start cursor-pointer">
-                    <input type="checkbox" id="legal-disclaimer" name="legalDisclaimer" class="mt-1 mr-3">
-                    <span class="text-tagline-2">I understand this is drafting and educational assistance — not legal advice. <span class="text-red-500">*</span></span>
-                  </label>
-                </div>
-
-                <button id="checkout-btn" class="w-full px-6 py-3 bg-ns-green text-white rounded-lg hover:bg-ns-green/90 transition-colors font-medium">
-                  Continue to Checkout
-                </button>
-              </div>
+              <button id="unlock-btn" class="w-full px-6 py-3 bg-ns-green text-white rounded-lg hover:bg-ns-green/90 transition-colors font-medium">
+                Unlock Case Response
+              </button>
             </div>
           </div>
         </div>
@@ -605,60 +583,37 @@
     }
 
     bindEvents() {
-      // Unlock button
+      // Unlock button - go directly to checkout
       document.getElementById('unlock-btn').addEventListener('click', () => {
-        this.showUnlockForm();
-      });
-
-      // Checkout button
-      document.getElementById('checkout-btn').addEventListener('click', () => {
         this.proceedToCheckout();
       });
     }
 
     showUnlockForm() {
-      document.getElementById('unlock-initial').classList.add('hidden');
-      document.getElementById('unlock-expanded').classList.remove('hidden');
+      // No longer needed - keeping for backward compatibility
+      // Direct to checkout instead
+      this.proceedToCheckout();
     }
 
     async proceedToCheckout() {
-      const email = document.getElementById('unlock-email').value.trim();
-      const disclaimer = document.getElementById('legal-disclaimer').checked;
-
-      if (!email) {
-        alert('Please enter your email address.');
-        return;
-      }
-
-      if (!this.isValidEmail(email)) {
-        alert('Please enter a valid email address.');
-        return;
-      }
-
-      if (!disclaimer) {
-        alert('Please accept the legal disclaimer.');
-        return;
-      }
-
-      // Track conversion event - Lead form submission
+      // Track conversion event - Direct checkout
       if (typeof gtag !== 'undefined') {
         gtag('event', 'conversion', {
           'send_to': 'AW-17007905582/-HfLCKPCvdsbEK6WgK4_',
           'value': 1.0,
           'currency': 'USD'
         });
-        console.log('Lead form conversion tracked for email:', email);
+        console.log('Direct checkout conversion tracked for case:', this.caseToken);
       }
 
       // Show loading state
-      const checkoutBtn = document.getElementById('checkout-btn');
+      const checkoutBtn = document.getElementById('unlock-btn');
       const originalText = checkoutBtn.textContent;
       checkoutBtn.textContent = 'Processing...';
       checkoutBtn.disabled = true;
 
       try {
         // Save case data locally first
-        this.caseData.email = email;
         this.caseData.unlockIntent = true;
         localStorage.setItem('dmhoa_case_' + this.caseToken, JSON.stringify(this.caseData));
 
@@ -667,13 +622,12 @@
           localStorage.getItem('dmhoa_case_' + this.caseToken) || '{}'
         );
 
-// Optional: quick guard so you don't send empty payload by mistake
+        // Optional: quick guard so you don't send empty payload by mistake
         if (!payload || Object.keys(payload).length === 0) {
           console.warn('[case-preview] No payload found in localStorage for token:', this.caseToken);
           // You can either block checkout or allow it:
           // return alert('Please complete the case form first.');
         }
-
 
         // Try to call Supabase Edge Function
         const response = await fetch(`${this.getSupabaseUrl()}/api/create-checkout-session`, {
@@ -684,7 +638,7 @@
           },
           body: JSON.stringify({
             token: this.caseToken,
-            email: email,
+            email: payload.email || '', // Use email from original form data
             payload: payload,
           })
         });
@@ -695,7 +649,7 @@
           // Check if it's a server configuration issue (missing env vars)
           if (response.status === 500) {
             console.warn('Server configuration issue detected. Using fallback checkout.');
-            this.handleCheckoutFallback(email);
+            this.handleCheckoutFallback(payload.email || '');
             return;
           }
 
@@ -714,7 +668,7 @@
         if (error.message.includes('Missing required environment variables') ||
           error.message.includes('Server configuration error')) {
           console.warn('Using checkout fallback due to server configuration issue');
-          this.handleCheckoutFallback(email);
+          this.handleCheckoutFallback(payload?.email || '');
         } else {
           alert('Failed to proceed to checkout: ' + error.message);
           // Reset button state
@@ -726,14 +680,16 @@
 
     handleCheckoutFallback(email) {
       // Temporary fallback while server environment is being configured
-      console.log('Checkout fallback activated for:', email);
+      console.log('Checkout fallback activated for:', email || 'no email provided');
 
       // Show success message and redirect to a temporary success page
-      alert(`Thank you! Your email (${email}) has been saved. We'll contact you shortly to complete your order. Case ID: ${this.caseToken}`);
+      const emailText = email ? ` Your email (${email}) has been saved.` : '';
+      alert(`Thank you!${emailText} We'll contact you shortly to complete your order. Case ID: ${this.caseToken}`);
 
       // You can redirect to a temporary page or show instructions
       // For now, let's redirect back to the main page with a success parameter
-      window.location.href = `index.html?checkout=pending&email=${encodeURIComponent(email)}&case=${this.caseToken}`;
+      const emailParam = email ? `&email=${encodeURIComponent(email)}` : '';
+      window.location.href = `index.html?checkout=pending${emailParam}&case=${this.caseToken}`;
     }
 
     getSupabaseUrl() {

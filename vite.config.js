@@ -23,9 +23,26 @@ const jsToBottomNoModule = () => {
     name: 'no-attribute',
     transformIndexHtml(html) {
       html = html.replace(`type="module" crossorigin`, '');
-      let scriptTag = html.match(/<script[^>]*>(.*?)<\/script[^>]*>/)[0];
+
+      // Add null check before accessing match results
+      const scriptMatch = html.match(/<script[^>]*>(.*?)<\/script[^>]*>/);
+      if (!scriptMatch) {
+        // If no script tag is found, return the html as-is
+        console.warn('Warning: No script tag found in HTML during jsToBottomNoModule transformation');
+        return html;
+      }
+
+      let scriptTag = scriptMatch[0];
       html = html.replace(scriptTag, '');
-      html = html.replace('<!-- SCRIPT -->', scriptTag);
+
+      // Check if the SCRIPT placeholder exists before trying to replace it
+      if (html.includes('<!-- SCRIPT -->')) {
+        html = html.replace('<!-- SCRIPT -->', scriptTag);
+      } else {
+        // If no placeholder, append the script tag before the closing body tag
+        html = html.replace('</body>', scriptTag + '\n</body>');
+      }
+
       return html;
     },
   };
