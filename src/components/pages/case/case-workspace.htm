@@ -389,7 +389,14 @@
           this.isUnlocked = false;
         } else {
           this.caseData = caseRow.payload || {};
-          this.isUnlocked = !!caseRow.unlocked;
+          // Check if case is unlocked/paid - handle both 'unlocked' and 'status' fields
+          this.isUnlocked = !!(caseRow.unlocked || caseRow.status === 'paid');
+
+          // If outputs are embedded in the case data, use them directly
+          if (caseRow.outputs && caseRow.outputs_status === 'ready') {
+            this.outputs = caseRow.outputs;
+            console.log('Loaded outputs from case data:', this.outputs);
+          }
         }
 
         // If redirected back from Stripe success and still locked, poll
@@ -401,8 +408,8 @@
         // Apply dynamic UI copy after case data is loaded
         this.applyDynamicUICopy();
 
-        // If unlocked, fetch/generate outputs
-        if (this.isUnlocked) {
+        // If unlocked, fetch/generate outputs (unless already loaded from case data)
+        if (this.isUnlocked && !this.outputs) {
           await this.loadOrGenerateOutputs();
         }
 
@@ -459,13 +466,22 @@
           attempts++;
           try {
             const caseRow = await this.fetchCaseFromSupabase();
-            if (caseRow && caseRow.unlocked) {
+            if (caseRow && (caseRow.unlocked || caseRow.status === 'paid')) {
               this.isUnlocked = true;
               this.caseData = caseRow.payload || {};
+
+              // Load outputs if available
+              if (caseRow.outputs && caseRow.outputs_status === 'ready') {
+                this.outputs = caseRow.outputs;
+                console.log('Loaded outputs after payment confirmation:', this.outputs);
+              }
+
               this.hidePaymentConfirmation();
 
-              // NEW: now that we unlocked, get outputs
-              await this.loadOrGenerateOutputs();
+              // If we don't have outputs yet, try to load/generate them
+              if (!this.outputs) {
+                await this.loadOrGenerateOutputs();
+              }
 
               // Apply dynamic UI copy after unlocking
               this.applyDynamicUICopy();
@@ -730,10 +746,14 @@
       const data = this.caseData || {};
 
       // Prefer AI output if present
-      if (this.isUnlocked && this.outputs && this.outputs.letter_summary) {
+      if (this.isUnlocked && this.outputs && (this.outputs.letter_summary || this.outputs.summary_html)) {
+        const summaryText = this.outputs.letter_summary || 'Draft letters for your case are available below.';
+        const summaryHtml = this.outputs.summary_html || '';
+
         summaryContent.innerHTML = `
           <div><strong>Summary:</strong></div>
-          <div class="text-secondary/80">${this.escapeHtml(this.outputs.letter_summary)}</div>
+          <div class="text-secondary/80">${this.escapeHtml(summaryText)}</div>
+          ${summaryHtml ? `<div class="mt-3">${summaryHtml}</div>` : ''}
           ${
           this.outputs.risks_and_deadlines?.risks?.length
             ? `<div class="mt-3"><strong>Key risks:</strong><ul class="list-disc pl-5 space-y-1">${
@@ -808,6 +828,22 @@
       // Prefer AI output drafts
       if (this.outputs && this.outputs.drafts) {
         const d = this.outputs.drafts || {};
+        const titles = this.outputs.draft_titles || {};
+
+        // Update draft titles if available
+        if (titles.clarification) {
+          const titleEl = document.getElementById('draft-title-clarification');
+          if (titleEl) titleEl.textContent = titles.clarification;
+        }
+        if (titles.extension) {
+          const titleEl = document.getElementById('draft-title-extension');
+          if (titleEl) titleEl.textContent = titles.extension;
+        }
+        if (titles.compliance) {
+          const titleEl = document.getElementById('draft-title-compliance');
+          if (titleEl) titleEl.textContent = titles.compliance;
+        }
+
         clarificationEl.innerHTML = this.escapeHtml(d.clarification || '').replace(/\n/g, '<br>');
         extensionEl.innerHTML = this.escapeHtml(d.extension || '').replace(/\n/g, '<br>');
         complianceEl.innerHTML = this.escapeHtml(d.compliance || '').replace(/\n/g, '<br>');
