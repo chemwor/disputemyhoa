@@ -546,6 +546,10 @@ class StartCaseWizard {
       // Generate case token
       const token = 'case_' + Date.now() + '_' + this.generateRandomString(6);
 
+      // Show processing screen immediately after token generation, before any backend calls
+      console.log('Showing processing screen...');
+      this.showProcessingScreen(token);
+
       // Create case payload
       const casePayload = {
         token: token,
@@ -633,9 +637,8 @@ class StartCaseWizard {
         }
       }
 
-      // Show loading screen and start polling for preview
-      console.log('Starting document processing and preview generation...');
-      this.showProcessingScreen(token);
+      // Start polling for preview (processing screen already shown)
+      console.log('Starting preview polling...');
       this.startPreviewPolling(token);
 
     } catch (error) {
@@ -648,6 +651,9 @@ class StartCaseWizard {
   showProcessingScreen(token) {
     // Hide the wizard form
     document.querySelector('.wizard-container')?.classList.add('hidden');
+
+    // Scroll to top immediately to show the processing screen
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 
     // Create and show processing screen
     const processingScreen = document.createElement('div');

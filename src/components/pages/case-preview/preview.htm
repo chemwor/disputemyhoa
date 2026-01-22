@@ -340,6 +340,9 @@
       // Hide main content
       document.getElementById('main-content')?.classList.add('hidden');
 
+      // Scroll to top immediately to show the processing screen
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
       // Create processing screen
       const processingScreen = document.createElement('div');
       processingScreen.id = 'processing-screen';
@@ -540,6 +543,9 @@
         processingScreen.remove();
       }
       document.getElementById('main-content')?.classList.remove('hidden');
+
+      // Scroll to top when content loads so user can see the results
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     showError() {
@@ -594,25 +600,17 @@
         const docCountSpan = document.getElementById('doc-count');
         const docStatusSpan = document.getElementById('doc-status-text');
 
-        if (this.caseData.doc_count !== undefined) {
+        if (this.caseData.doc_count !== undefined && docCountSpan) {
           docCountSpan.textContent = this.caseData.doc_count;
         }
 
-        if (this.caseData.doc_status) {
+        if (this.caseData.doc_status && docStatusSpan) {
           docStatusSpan.textContent = this.caseData.doc_status;
-
-          // Update status badge
-          const statusBadge = document.getElementById('preview-status-badge');
-          if (this.caseData.doc_status === 'ready') {
-            statusBadge.textContent = 'Preview ready';
-            statusBadge.className = 'badge badge-green-light-v2 font-normal';
-          } else if (this.caseData.doc_status === 'processing') {
-            statusBadge.textContent = 'Processing documents...';
-            statusBadge.className = 'badge badge-yellow-light-v2 font-normal';
-          }
         }
 
-        docStatusDiv.classList.remove('hidden');
+        if (docStatusDiv) {
+          docStatusDiv.classList.remove('hidden');
+        }
       }
     }
 
