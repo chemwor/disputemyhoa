@@ -408,12 +408,15 @@
         // Apply dynamic UI copy after case data is loaded
         this.applyDynamicUICopy();
 
-        // If unlocked, fetch/generate outputs (unless already loaded from case data)
-        if (this.isUnlocked && !this.outputs) {
-          await this.loadOrGenerateOutputs();
-        }
-
+        // For unlocked cases, ensure outputs are ready before showing workspace
         if (this.isUnlocked) {
+          // If we don't have ready outputs yet, show processing and wait
+          if (!this.outputs) {
+            this.showProcessingOutputs();
+            await this.loadOrGenerateOutputs();
+            this.hideProcessingOutputs();
+          }
+
           await this.loadMessagesFromDB();
         } else {
           this.messages = [];
@@ -478,9 +481,11 @@
 
               this.hidePaymentConfirmation();
 
-              // If we don't have outputs yet, try to load/generate them
+              // If we don't have outputs yet, show processing and wait
               if (!this.outputs) {
+                this.showProcessingOutputs();
                 await this.loadOrGenerateOutputs();
+                this.hideProcessingOutputs();
               }
 
               // Apply dynamic UI copy after unlocking
@@ -523,20 +528,19 @@
         const result = out?.result || out?.outputs || null;
 
         if (!result || (status && status !== 'ready' && status !== 'completed')) {
-          this.showGeneratingOutputs();
+          // Note: Processing screen is already shown by caller, so don't show another one
+          console.log('Outputs not ready, triggering generation and polling...');
 
           // Server should be idempotent
           await this.triggerGenerateOutputs();
 
           out = await this.pollForOutputsReady(60);
-          this.hideGeneratingOutputs();
         }
 
         const finalResult = out?.result || out?.outputs || null;
         if (finalResult) this.outputs = finalResult;
       } catch (err) {
         console.error('loadOrGenerateOutputs error:', err);
-        this.hideGeneratingOutputs();
       }
     }
 
@@ -689,6 +693,89 @@
     hidePaymentConfirmation() {
       const confirmationState = document.getElementById('payment-confirmation-state');
       if (confirmationState) confirmationState.classList.add('hidden');
+    }
+
+    showProcessingOutputs() {
+      // Hide main workspace while processing
+      document.getElementById('main-workspace').classList.add('hidden');
+
+      let processingState = document.getElementById('processing-outputs-state');
+      if (!processingState) {
+        processingState = document.createElement('div');
+        processingState.id = 'processing-outputs-state';
+        processingState.className = 'max-w-2xl mx-auto text-center pt-24 lg:pt-32';
+        processingState.innerHTML = `
+          <div class="bg-white rounded-[20px] border border-stroke-1 p-8 lg:p-12">
+            <!-- Animated Progress Indicator -->
+            <div class="mb-8">
+              <div class="inline-flex items-center justify-center w-20 h-20 bg-blue-50 rounded-full mb-4">
+                <svg class="w-10 h-10 text-blue-600 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Status Message -->
+            <div class="mb-6">
+              <h2 class="text-heading-4 text-secondary mb-3">Finalizing Your Case Analysis</h2>
+              <p class="text-tagline-1 text-secondary/70 mb-4">
+                We're generating your personalized response drafts and action plan...
+              </p>
+            </div>
+
+            <!-- What We're Doing -->
+            <div class="bg-gray-50 rounded-lg p-4 text-left mb-6">
+              <h3 class="text-tagline-1 font-medium text-gray-800 mb-3">Creating your personalized content:</h3>
+              <div class="space-y-2">
+                <div class="flex items-center text-tagline-2 text-gray-700">
+                  <div class="w-2 h-2 bg-blue-500 rounded-full mr-3 animate-pulse"></div>
+                  <span>Generating response letter drafts</span>
+                </div>
+                <div class="flex items-center text-tagline-2 text-gray-700">
+                  <div class="w-2 h-2 bg-blue-500 rounded-full mr-3 animate-pulse" style="animation-delay: 0.5s"></div>
+                  <span>Creating your action plan checklist</span>
+                </div>
+                <div class="flex items-center text-tagline-2 text-gray-700">
+                  <div class="w-2 h-2 bg-blue-500 rounded-full mr-3 animate-pulse" style="animation-delay: 1s"></div>
+                  <span>Analyzing risks and deadlines</span>
+                </div>
+                <div class="flex items-center text-tagline-2 text-gray-700">
+                  <div class="w-2 h-2 bg-blue-500 rounded-full mr-3 animate-pulse" style="animation-delay: 1.5s"></div>
+                  <span>Preparing guidance and next steps</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Estimated Time -->
+            <div class="text-tagline-2 text-secondary/60 mb-6">
+              This usually takes 30-60 seconds...
+            </div>
+
+            <!-- Case Info -->
+            <div class="pt-6 border-t border-stroke-1">
+              <p class="text-tagline-2 text-secondary/60">
+                Case ID: <span class="font-mono text-secondary">${this.caseToken}</span>
+              </p>
+            </div>
+          </div>
+        `;
+        document.querySelector('.main-container').appendChild(processingState);
+      }
+      processingState.classList.remove('hidden');
+
+      // Auto-scroll to show the processing screen
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    hideProcessingOutputs() {
+      const processingState = document.getElementById('processing-outputs-state');
+      if (processingState) {
+        processingState.remove();
+      }
+      document.getElementById('main-workspace').classList.remove('hidden');
+
+      // Auto-scroll to show the content
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     showPaymentTimeout() {
