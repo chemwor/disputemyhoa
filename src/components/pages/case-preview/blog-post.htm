@@ -1,0 +1,139 @@
+<!-- =========================
+Blog Post Template - DisputeMyHOA
+===========================-->
+<article class="py-16 md:py-24 bg-secondary">
+  <div class="main-container px-5">
+    <div class="max-w-3xl mx-auto">
+      <!-- Back to Blog -->
+      <a href="../blog.html" class="inline-flex items-center gap-2 text-white/60 hover:text-white mb-8 transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Back to Blog
+      </a>
+
+      <!-- Article Header -->
+      <header class="mb-12" data-ns-animate>
+        <span class="inline-block px-4 py-1.5 bg-emerald-500/20 text-emerald-400 rounded-full text-tagline-2 font-medium mb-4">{=$category}</span>
+        <h1 class="text-heading-2 md:text-display-4 font-semibold text-white mb-4">
+          {=$title}
+        </h1>
+        <p class="text-body-1 text-white/60 mb-6">{=$description}</p>
+        <div class="flex items-center gap-4 text-tagline-2 text-white/40">
+          <span>By DisputeMyHOA Team</span>
+          <span>•</span>
+          <span>{=$date}</span>
+          <span>•</span>
+          <span>{=$read_time} min read</span>
+        </div>
+      </header>
+
+      <!-- Article Content -->
+      <div class="blog-content prose prose-invert prose-lg max-w-none" data-ns-animate data-delay="0.1">
+        {=$content}
+      </div>
+
+      <!-- CTA Box -->
+      <div class="mt-12 p-8 bg-white/5 border border-white/10 rounded-2xl text-center" data-ns-animate>
+        <h3 class="text-heading-5 font-semibold text-white mb-3">Need Help With Your HOA Violation?</h3>
+        <p class="text-body-2 text-white/60 mb-6">Get professional response letters tailored to your specific situation.</p>
+        <a href="../start-case.html" class="inline-flex items-center gap-2 px-6 py-3 bg-emerald-500 text-white rounded-full font-medium hover:bg-emerald-600 transition-colors">
+          Start Your Case - $29
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+
+      <!-- Related Articles -->
+      <div class="mt-12 pt-12 border-t border-white/10" data-ns-animate>
+        <h3 class="text-heading-5 font-semibold text-white mb-6">Related Articles</h3>
+        <div class="grid gap-4">
+          {=$related}
+        </div>
+      </div>
+    </div>
+  </div>
+</article>
+
+<style>
+  .blog-content h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: white;
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+  }
+  .blog-content h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: white;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+  }
+  .blog-content p {
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 1.25rem;
+    line-height: 1.75;
+  }
+  .blog-content ul, .blog-content ol {
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 1.25rem;
+    padding-left: 1.5rem;
+  }
+  .blog-content li {
+    margin-bottom: 0.5rem;
+  }
+  .blog-content strong {
+    color: white;
+    font-weight: 600;
+  }
+  .blog-content a {
+    color: #34d399;
+    text-decoration: underline;
+  }
+  .blog-content a:hover {
+    color: #6ee7b7;
+  }
+  .blog-content blockquote {
+    border-left: 4px solid #34d399;
+    padding-left: 1rem;
+    margin: 1.5rem 0;
+    color: rgba(255,255,255,0.6);
+    font-style: italic;
+  }
+  .blog-content code {
+    background: rgba(255,255,255,0.1);
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+  }
+  .blog-content pre {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    overflow-x: auto;
+    margin: 1.5rem 0;
+  }
+  .blog-content pre code {
+    background: none;
+    padding: 0;
+  }
+  .blog-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+  }
+  .blog-content th, .blog-content td {
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 0.75rem;
+    text-align: left;
+    color: rgba(255,255,255,0.7);
+  }
+  .blog-content th {
+    background: rgba(255,255,255,0.05);
+    color: white;
+    font-weight: 600;
+  }
+</style>
