@@ -17,8 +17,8 @@ FAQ section
     <!-- FAQ Tabs and Content Container -->
     <div class="pt-[70px]" data-ns-animate data-delay="0.5">
       <!-- Tab Navigation -->
-      <div class="flex justify-center mb-10">
-        <div class="inline-flex bg-background-2 dark:bg-background-7 p-2 rounded-[20px] gap-2">
+      <div class="flex justify-center mb-10 overflow-x-auto -mx-5 px-5 md:mx-0 md:px-0 md:overflow-visible scrollbar-hide">
+        <div class="inline-flex bg-background-2 dark:bg-background-7 p-2 rounded-[20px] gap-2 flex-nowrap">
           <button
             class="faq-tab-btn active px-6 py-3 rounded-[16px] text-tagline-2 font-medium transition-all whitespace-nowrap"
             data-tab="general"
@@ -140,5 +140,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .faq-tab-content.active {
   display: block;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 </style>
