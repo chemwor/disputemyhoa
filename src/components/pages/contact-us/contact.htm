@@ -119,7 +119,9 @@ Contact
           data-delay="0.3"
           class="max-w-[847px] w-full mx-auto bg-white dark:bg-background-6 rounded-4xl p-6 md:p-8 lg:p-11"
         >
-          <form action="/index.html" method="POST" class="space-y-8">
+          <form name="contact" method="POST" data-netlify="true" class="space-y-8">
+            <!-- Hidden field required for Netlify Forms -->
+            <input type="hidden" name="form-name" value="contact" />
             <!-- name and phone number  -->
             <div class="flex items-center flex-col md:flex-row gap-8 justify-between">
               <!--  name -->
@@ -224,7 +226,7 @@ Contact
                 class="text-tagline-3 cursor-pointer text-secondary/60 dark:text-accent/60"
               >
                 I agree with the
-                <a href="#" class="text-primary-500 underline text-tagline-3"
+                <a href="./privacy-policy.html" class="text-primary-500 underline text-tagline-3"
                   >terms and conditions</a
                 >
               </label>
