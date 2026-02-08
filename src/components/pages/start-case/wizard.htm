@@ -277,6 +277,34 @@ class StartCaseWizard {
   init() {
     this.bindEvents();
     this.updateUI();
+    this.prefillFromSession();
+  }
+
+  prefillFromSession() {
+    try {
+      const caseDataStr = sessionStorage.getItem('caseData');
+      if (!caseDataStr) return;
+      const data = JSON.parse(caseDataStr);
+
+      // Step 1 fields
+      if (data.propertyType) document.getElementById('property-type').value = data.propertyType;
+      if (data.role) document.getElementById('role').value = data.role;
+      if (data.state) document.getElementById('state').value = data.state;
+      if (data.deadline) document.getElementById('deadline').value = data.deadline;
+
+      // Step 2 fields
+      if (data.noticeType) document.getElementById('notice-type').value = data.noticeType;
+      if (data.issueText) document.getElementById('issue-text').value = data.issueText;
+      if (data.outcome) document.getElementById('outcome').value = data.outcome;
+
+      // Step 3 fields
+      if (data.pastedText) document.getElementById('paste-text').value = data.pastedText;
+
+      // Basic validation update after prefill
+      this.validateCurrentStep();
+    } catch (e) {
+      console.warn('Prefill failed:', e);
+    }
   }
 
   bindEvents() {
@@ -543,14 +571,15 @@ class StartCaseWizard {
     try {
       this.setUploadingState(true);
 
-      // Generate case token
-      const token = 'case_' + Date.now() + '_' + this.generateRandomString(6);
+      // Use existing case token if available to avoid multiple cases
+      const existingToken = sessionStorage.getItem('currentCaseToken');
+      const token = existingToken || ('case_' + Date.now() + '_' + this.generateRandomString(6));
 
-      // Show processing screen immediately after token generation, before any backend calls
+      // Show processing screen immediately after token resolution
       console.log('Showing processing screen...');
       this.showProcessingScreen(token);
 
-      // Create case payload
+      // Create case payload (merged data for backend to upsert/update)
       const casePayload = {
         token: token,
         createdAt: new Date().toISOString(),
@@ -567,10 +596,14 @@ class StartCaseWizard {
         additional_docs: []
       };
 
-      // Insert case into database FIRST and WAIT for completion
-      console.log('Creating case in database...');
+      // Persist token and current payload in session for continuity
+      sessionStorage.setItem('currentCaseToken', token);
+      sessionStorage.setItem('caseData', JSON.stringify(casePayload));
+
+      // Insert or update case in database (backend merges if exists)
+      console.log('Saving case via backend (create or update):', token);
       await this.insertCaseToDatabase(token, casePayload);
-      console.log('Case created successfully:', token);
+      console.log('Case saved:', token);
 
       // Handle primary file upload if present
       if (this.formData.primaryFile) {
@@ -582,29 +615,21 @@ class StartCaseWizard {
           casePayload.notice_storage_path = storagePath;
           casePayload.extract_status = 'uploaded';
 
-          // Update the database with the storage path and WAIT for completion
+          // Update the database with the storage path
           console.log('Updating case with storage path...');
           await this.updateCasePayload(token, casePayload);
           console.log('Case updated with storage path');
 
-          // NOW trigger document extraction after ensuring case exists with storage path
+          // Trigger document extraction after ensuring case update
           console.log('Triggering document extraction...');
           setTimeout(async () => {
             try {
-              const extractResult = await this.triggerDocExtraction(token, storagePath, this.formData.primaryFile.name, this.formData.primaryFile.type);
-              if (extractResult && extractResult.error) {
-                console.warn('Document extraction trigger failed:', extractResult.error);
-                this.updateExtractStatus(token, 'extract_trigger_failed', extractResult.error);
-              } else {
-                console.log('Document extraction triggered successfully');
-                this.updateExtractStatus(token, 'extract_triggered');
-              }
+              await this.triggerDocExtraction(token, storagePath, this.formData.primaryFile.name, this.formData.primaryFile.type);
+              console.log('Document extraction triggered');
             } catch (error) {
               console.warn('Document extraction trigger error:', error);
-              this.updateExtractStatus(token, 'extract_trigger_failed', error.message);
             }
-          }, 1000); // Wait 1 second to ensure database consistency
-
+          }, 1000);
         } catch (uploadError) {
           console.error('Primary file upload failed:', uploadError);
           casePayload.extract_status = 'upload_failed';
@@ -626,18 +651,15 @@ class StartCaseWizard {
             });
           } catch (additionalUploadError) {
             console.error('Additional file upload failed:', additionalUploadError);
-            // Continue with other files
           }
         }
-
-        // Update database with additional docs
         if (casePayload.additional_docs.length > 0) {
           await this.updateCasePayload(token, casePayload);
           console.log('Updated case with additional docs');
         }
       }
 
-      // Start polling for preview (processing screen already shown)
+      // Start polling for preview
       console.log('Starting preview polling...');
       this.startPreviewPolling(token);
 
