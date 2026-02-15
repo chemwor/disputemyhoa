@@ -1139,11 +1139,35 @@ class QuickPreviewManager {
     const analysisBtn = document.getElementById('get-specific-analysis');
     if (analysisBtn) {
       analysisBtn.addEventListener('click', () => {
+        // Build URL with original case data + any form data the user has filled out
         const params = new URLSearchParams();
+
+        // Original case data
         if (this.caseToken) params.set('case', this.caseToken);
-        if (this.caseData?.noticeType) params.set('type', this.caseData.noticeType);
+        if (this.caseData?.noticeType) params.set('noticeType', this.caseData.noticeType);
         if (this.caseData?.email) params.set('email', this.caseData.email);
-        window.location.href = `start-case-full.html${params.toString() ? '?' + params.toString() : ''}`;
+
+        // Get current form values (user may have filled some out)
+        const propertyType = document.getElementById('property-type')?.value;
+        const role = document.getElementById('role')?.value;
+        const state = document.getElementById('state')?.value;
+        const deadline = document.getElementById('deadline')?.value;
+        const outcome = document.getElementById('outcome')?.value;
+        const fullDescription = document.getElementById('full-description')?.value;
+        const pastedText = document.getElementById('paste-text')?.value?.trim();
+
+        // Use form values if filled, otherwise fall back to case data
+        params.set('propertyType', propertyType || this.caseData?.propertyType || '');
+        params.set('role', role || this.caseData?.role || '');
+        params.set('state', state || this.caseData?.state || '');
+        params.set('deadline', deadline || this.caseData?.deadline || '');
+        params.set('outcome', outcome || this.caseData?.outcome || '');
+        params.set('issueText', fullDescription || this.caseData?.issueText || '');
+        if (pastedText || this.caseData?.pastedText) {
+          params.set('pastedText', pastedText || this.caseData?.pastedText || '');
+        }
+
+        window.location.href = `start-case-full.html?${params.toString()}`;
       });
     }
 
@@ -1159,11 +1183,35 @@ class QuickPreviewManager {
     if (stepByStepLink) {
       stepByStepLink.addEventListener('click', (e) => {
         e.preventDefault();
+        // Build URL with original case data + any form data the user has filled out
         const params = new URLSearchParams();
+
+        // Original case data
         if (this.caseToken) params.set('case', this.caseToken);
-        if (this.caseData?.noticeType) params.set('type', this.caseData.noticeType);
+        if (this.caseData?.noticeType) params.set('noticeType', this.caseData.noticeType);
         if (this.caseData?.email) params.set('email', this.caseData.email);
-        window.location.href = `start-case-full.html${params.toString() ? '?' + params.toString() : ''}`;
+
+        // Get current form values (user may have filled some out)
+        const propertyType = document.getElementById('property-type')?.value;
+        const role = document.getElementById('role')?.value;
+        const state = document.getElementById('state')?.value;
+        const deadline = document.getElementById('deadline')?.value;
+        const outcome = document.getElementById('outcome')?.value;
+        const fullDescription = document.getElementById('full-description')?.value;
+        const pastedText = document.getElementById('paste-text')?.value?.trim();
+
+        // Use form values if filled, otherwise fall back to case data
+        params.set('propertyType', propertyType || this.caseData?.propertyType || '');
+        params.set('role', role || this.caseData?.role || '');
+        params.set('state', state || this.caseData?.state || '');
+        params.set('deadline', deadline || this.caseData?.deadline || '');
+        params.set('outcome', outcome || this.caseData?.outcome || '');
+        params.set('issueText', fullDescription || this.caseData?.issueText || '');
+        if (pastedText || this.caseData?.pastedText) {
+          params.set('pastedText', pastedText || this.caseData?.pastedText || '');
+        }
+
+        window.location.href = `start-case-full.html?${params.toString()}`;
       });
     }
 
@@ -1321,7 +1369,7 @@ class QuickPreviewManager {
 
       // Start polling for completion (processing screen already shown)
       console.log('Starting preview polling...');
-      this.startPreviewPolling(this.caseToken);
+      this.startPreviewPolling(this.caseToken, completeData.fullCaseFormLink);
 
     } catch (error) {
       console.error('Error processing complete case:', error);
@@ -1483,12 +1531,9 @@ class QuickPreviewManager {
 
     processingScreen.innerHTML = processingHTML;
     document.querySelector('.main-container').appendChild(processingScreen);
-
-    // Start polling for completion and redirect to case preview (same as working wizard)
-    this.startPreviewPolling(token);
   }
 
-  startPreviewPolling(token) {
+  startPreviewPolling(token, redirectLink) {
     const maxAttempts = 60; // 5 minutes max
     let attempts = 0;
 
@@ -1499,7 +1544,7 @@ class QuickPreviewManager {
         // Check case status - you might need to implement this endpoint or use existing polling logic
         // For now, simulate the delay and redirect like the working wizard
         if (attempts >= 10) { // After ~50 seconds
-          window.location.href = 'case-preview.html?case=' + encodeURIComponent(token);
+          window.location.href = redirectLink;
           return;
         }
 
@@ -1510,7 +1555,7 @@ class QuickPreviewManager {
         console.error('Polling error:', error);
         if (attempts >= maxAttempts) {
           // Fallback redirect
-          window.location.href = 'case-preview.html?case=' + encodeURIComponent(token);
+          window.location.href = redirectLink;
         } else {
           setTimeout(checkStatus, 5000);
         }
