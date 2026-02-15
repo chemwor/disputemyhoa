@@ -281,13 +281,13 @@ class StartCaseWizard {
   }
 
   prefillFromSession() {
-    // Check URL params first for case token
+    // Check URL params first for case data
     const urlParams = new URLSearchParams(window.location.search);
     const caseToken = urlParams.get('case');
 
     if (caseToken) {
-      // Fetch case data from database and prefill
-      this.fetchAndPrefillFromDatabase(caseToken);
+      // Parse data directly from URL params (avoids CORS issues)
+      this.prefillFromUrlParams(urlParams, caseToken);
       return;
     }
 
@@ -295,45 +295,34 @@ class StartCaseWizard {
     this.prefillFromSessionStorage();
   }
 
-  async fetchAndPrefillFromDatabase(caseToken) {
+  prefillFromUrlParams(urlParams, caseToken) {
     try {
-      console.log('Fetching case data from database for token:', caseToken);
+      console.log('Prefilling from URL params for token:', caseToken);
 
-      const response = await fetch(`${this.supabaseUrl}/rest/v1/dmhoa_cases?token=eq.${caseToken}&select=payload`, {
-        method: 'GET',
-        headers: {
-          'apikey': this.supabaseKey,
-          'Authorization': `Bearer ${this.supabaseKey}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      // Build data object from URL params
+      const data = {
+        token: caseToken,
+        noticeType: urlParams.get('noticeType') || '',
+        issueText: urlParams.get('issueText') || '',
+        email: urlParams.get('email') || '',
+        propertyType: urlParams.get('propertyType') || '',
+        role: urlParams.get('role') || '',
+        state: urlParams.get('state') || '',
+        deadline: urlParams.get('deadline') || '',
+        outcome: urlParams.get('outcome') || '',
+        pastedText: urlParams.get('pastedText') || ''
+      };
 
-      if (!response.ok) {
-        console.warn('Failed to fetch case from database, falling back to session');
-        this.prefillFromSessionStorage();
-        return;
-      }
-
-      const result = await response.json();
-
-      if (!result || result.length === 0) {
-        console.warn('Case not found in database, falling back to session');
-        this.prefillFromSessionStorage();
-        return;
-      }
-
-      const data = result[0].payload || {};
-
-      // Store the case token for later updates
+      // Store the case token for later updates (so saving updates the original case)
       sessionStorage.setItem('currentCaseToken', caseToken);
       sessionStorage.setItem('caseData', JSON.stringify(data));
 
-      // Prefill form with fetched data
+      // Prefill form with URL data
       this.prefillFormFields(data);
 
-      console.log('Form prefilled from database successfully');
+      console.log('Form prefilled from URL params successfully');
     } catch (e) {
-      console.warn('Database prefill failed, falling back to session:', e);
+      console.warn('URL params prefill failed, falling back to session:', e);
       this.prefillFromSessionStorage();
     }
   }
