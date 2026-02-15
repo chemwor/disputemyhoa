@@ -2,83 +2,164 @@
 <section class="xl:pt-[180px] lg:pt-[140px] pt-[100px] pb-16 lg:pb-24">
   <div class="main-container">
 
+    <style>
+      /* Locked info visual emphasis */
+      .locked-info-item {
+        background: #4C6EF6FF;
+        color: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 1rem;
+        position: relative;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      }
+      .locked-info-item::before {
+        content: "🔒";
+        position: absolute;
+        right: 1.25rem;
+        top: 1.25rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        opacity: 0.9;
+        padding: 0.25rem 0.5rem;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.18);
+        border: 1px solid rgba(255,255,255,0.22);
+      }
+      .locked-title {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 0.75rem;
+      }
+      .comparison { margin-left: 0.25rem; opacity: 0.95; }
+      .generic-version { opacity: 0.85; font-style: italic; }
+      .vs-text { margin: 0.5rem 0; font-weight: 600; }
+      .personalized-version { font-weight: 500; background: rgba(255,255,255,0.12); padding: 0.5rem; border-radius: 6px; }
+
+      /* Main CTA button prominence */
+      .main-cta-button {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        padding: 1.5rem 3rem;
+        font-size: 1.25rem;
+        font-weight: 600;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+        transition: all 0.3s ease;
+        width: 100%;
+        max-width: 680px;
+      }
+      .main-cta-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 35px rgba(16, 185, 129, 0.4);
+      }
+    </style>
+
     <div class="max-w-4xl mx-auto">
-      <!-- Header -->
+      <!-- Section 1: Header (Keep simple) -->
       <div class="text-center mb-8 lg:mb-12">
-        <h1 class="text-heading-3 lg:text-heading-2 mb-4">Your Quick Preview</h1>
-        <p id="case-summary" class="text-tagline-1 text-secondary/80">Here's what we know about your case type</p>
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+          <svg class="w-8 h-8 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+          </svg>
+        </div>
+        <h1 class="text-heading-3 lg:text-heading-2 mb-3">Your Quick Preview Is Ready!</h1>
+        <p id="case-summary" class="text-tagline-1 text-secondary/80">
+          Based on your <span id="notice-type-display" class="font-semibold text-blue-600">HOA notice</span> issue
+        </p>
       </div>
 
       <!-- Quick Preview Card -->
-      <div class="bg-white rounded-[20px] border border-stroke-1 p-6 lg:p-8 mb-8">
-        <!-- Notice Type Badge -->
-        <div class="flex items-center mb-6">
-          <div id="notice-badge" class="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-tagline-2 font-medium">
-            HOA Notice
-          </div>
-          <div class="flex-1"></div>
-          <span class="text-tagline-2 text-secondary/60">Specific Information</span>
+      <div class="bg-white rounded-[20px] border-2 border-stroke-1 shadow-lg p-6 lg:p-8 mb-8">
+
+        <!-- Section 2: What This Type of Notice Typically Means -->
+        <div id="notice-details" class="mb-10">
+          <!-- populated by JS -->
         </div>
 
-        <!-- Generic Information -->
-        <div id="generic-info" class="space-y-6 mb-8">
-          <!-- Default content will be replaced by JavaScript -->
-          <h3 class="text-heading-6 mb-4">General HOA Notice Rights</h3>
-          <ul class="space-y-3 mb-6">
-            <li class="flex items-start">
-              <svg class="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-              </svg>
-              <span class="text-tagline-1">All HOA actions must follow proper procedures</span>
-            </li>
-            <li class="flex items-start">
-              <svg class="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-              </svg>
-              <span class="text-tagline-1">You have the right to review relevant documents</span>
-            </li>
-            <li class="flex items-start">
-              <svg class="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-              </svg>
-              <span class="text-tagline-1">Response deadlines must be reasonable</span>
-            </li>
-            <li class="flex items-start">
-              <svg class="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-              </svg>
-              <span class="text-tagline-1">You can request hearings or appeals</span>
-            </li>
-            <li class="flex items-start">
-              <svg class="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-              </svg>
-              <span class="text-tagline-1">Legal representation is always an option</span>
-            </li>
-          </ul>
-          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <p class="text-tagline-1 text-blue-800"><strong>Typical Results:</strong> Outcomes vary widely based on specific circumstances and proper response strategy</p>
+        <!-- Section 3: Your Response Options -->
+        <div id="response-options" class="mb-10">
+          <!-- populated by JS -->
+        </div>
+
+        <!-- Section 4: THE CRITICAL MISSING INFORMATION (Information Gap) -->
+        <div class="mb-10">
+          <div class="bg-gradient-to-r from-red-50 to-orange-50 border border-orange-200 rounded-lg p-6 mb-5">
+            <h3 class="text-heading-5 text-red-900 mb-3">Missing (Critical Information Not Yet Provided)</h3>
+            <p class="text-tagline-1 text-red-800">Without your complete case details, we can’t tell you:</p>
+          </div>
+          <div id="locked-info" class="space-y-4">
+            <!-- injected by JS -->
           </div>
         </div>
 
-        <!-- Upgrade CTA -->
-        <div class="bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200 rounded-lg p-6 text-center">
-          <div class="mb-4">
-            <svg class="w-12 h-12 text-blue-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-          </div>
-          <h3 class="text-heading-5 mb-2">Want even MORE detail?</h3>
-          <p class="text-tagline-1 text-secondary/80 mb-6">Get a fully personalized analysis with specific deadlines, legal recommendations, and exact next steps for YOUR situation.</p>
-          <button id="get-specific-analysis" class="bg-ns-green text-white px-8 py-4 rounded-lg hover:bg-ns-green/90 transition-colors font-medium mb-3">
-            Get Personalized Analysis (Still Free) →
-          </button>
-          <p class="text-tagline-2 text-secondary/60">Takes 2 minutes • Tailored to your specific case • Still completely free</p>
-          <p class="text-tagline-2 text-secondary/60 mt-2">
-            <a href="start-case-full.html" class="text-blue-600 hover:text-blue-800 underline" id="step-by-step-link">
-              Prefer the step-by-step wizard? Click here
-            </a>
+        <!-- Section 5: Big CTA Section -->
+        <div class="bg-gradient-to-br from-blue-50 via-green-50 to-emerald-50 border-2 border-green-300 rounded-xl p-8 text-center mb-10">
+          <h3 class="text-heading-4 mb-3">Get Your Complete Personalized Analysis</h3>
+          <p class="text-tagline-1 text-secondary/80 mb-6 max-w-2xl mx-auto">
+            To see everything above customized to YOUR exact situation.
+            <span class="font-semibold">Still 100% free</span> — and you’ll see everything before deciding to unlock.
           </p>
+
+          <button id="get-specific-analysis" class="main-cta-button mx-auto mb-4">
+            Complete My Case Details (Still 100% Free)
+          </button>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl mx-auto mb-6 text-left">
+            <div class="flex items-center text-tagline-2 text-green-800">
+              <span class="mr-2">•</span> Just 5 more details needed
+            </div>
+            <div class="flex items-center text-tagline-2 text-green-800">
+              <span class="mr-2">•</span> Takes 2 minutes
+            </div>
+            <div class="flex items-center text-tagline-2 text-green-800">
+              <span class="mr-2">•</span> See EVERYTHING before deciding
+            </div>
+            <div class="flex items-center text-tagline-2 text-green-800">
+              <span class="mr-2">•</span> No credit card required
+            </div>
+          </div>
+
+          <div class="bg-white/80 border border-green-200 rounded-lg p-6 text-left max-w-2xl mx-auto">
+            <p class="text-tagline-2 font-semibold text-secondary mb-3">What you’ll get (still free):</p>
+            <ul class="space-y-2 text-tagline-2 text-secondary/80">
+              <li><span class="text-green-700 font-semibold">-</span> YOUR exact deadline and urgency level</li>
+              <li><span class="text-green-700 font-semibold">-</span> Analysis of YOUR specific HOA clause cited</li>
+              <li><span class="text-green-700 font-semibold">-</span> Best strategy for YOUR state and situation</li>
+              <li><span class="text-green-700 font-semibold">-</span> 3 complete response letters with YOUR details</li>
+              <li><span class="text-green-700 font-semibold">-</span> Evidence checklist + timeline and next steps</li>
+            </ul>
+            <p class="text-tagline-2 text-secondary/70 mt-4">
+              Then, if you find it valuable, you can unlock the full response package ($29) — backed by a 100% money-back guarantee.
+            </p>
+          </div>
+
+          <p class="text-tagline-2 text-secondary/60 mt-4">
+            Prefer the step-by-step wizard? <a href="start-case-full.html" class="text-blue-600 hover:text-blue-800 underline" id="step-by-step-link">Click here</a>
+          </p>
+        </div>
+
+        <!-- Section 6: Social Proof / Trust -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center pt-6 border-t border-stroke-1">
+          <div>
+            <p class="text-tagline-2 font-semibold text-secondary">500+ homeowners</p>
+            <p class="text-tagline-3 text-secondary/60">helped</p>
+          </div>
+          <div>
+            <p class="text-tagline-2 font-semibold text-secondary">4.8/5 rating</p>
+            <p class="text-tagline-3 text-secondary/60">average</p>
+          </div>
+          <div>
+            <p class="text-tagline-2 font-semibold text-secondary">100% guarantee</p>
+            <p class="text-tagline-3 text-secondary/60">money-back</p>
+          </div>
+          <div>
+            <p class="text-tagline-2 font-semibold text-secondary">No credit card</p>
+            <p class="text-tagline-3 text-secondary/60">for preview</p>
+          </div>
         </div>
       </div>
 
@@ -257,7 +338,515 @@ class QuickPreviewManager {
     this.caseData = null;
     this.caseToken = null;
 
+    this.noticeTypeContent = this.buildNoticeTypeContent();
+
     this.init();
+  }
+
+  buildNoticeTypeContent() {
+    return {
+      'violation': {
+        title: 'Violation Notice',
+        intro: 'Violation notices are issued when the HOA believes a rule, covenant, or community guideline was broken.',
+        typicallyInvolves: [
+          'Exterior items visible from street (trash bins, storage, signage)',
+          'Noise, nuisance, or pet-related rule complaints',
+          'Use restrictions (short-term rentals, business use, occupancy limits)',
+          'Repeat issues previously warned about',
+          'Alleged violation without clear proof or rule citation'
+        ],
+        timeline: '10–30 days to respond or correct (often shorter for repeat issues)',
+        consequences: '$25–$150 initial fine, escalating with repeats; hearing / enforcement possible',
+        resolutionRate: '≈65% resolve via compliance or clarification; disputes succeed when rules/proof are weak',
+        responseOptions: [
+          {
+            title: 'COMPLY BEFORE DEADLINE',
+            description: 'Fix the issue quickly to avoid escalation.',
+            outcomes: ['Often leads to fine waiver or no further action', 'Fastest resolution']
+          },
+          {
+            title: 'REQUEST CLARIFICATION OR EVIDENCE',
+            description: 'Ask them to cite the exact rule and provide proof/photos.',
+            outcomes: ['Forces specificity', 'Helps you avoid admitting fault']
+          },
+          {
+            title: 'DISPUTE / REQUEST HEARING',
+            description: 'Challenge inaccurate notices or inconsistent enforcement.',
+            outcomes: ['Works best with photos, logs, neighbor statements', 'Higher effort but can stop unfair fines']
+          }
+        ]
+      },
+      'warning': {
+        title: 'Warning / Courtesy Notice',
+        intro: 'Warning notices are usually a “fix it before it becomes formal” step. This is often the easiest point to resolve.',
+        typicallyInvolves: [
+          'First-time complaints or minor observations',
+          'Unclear rule references or informal wording',
+          'Non-urgent issues that can be corrected quickly',
+          'A request to “confirm compliance”',
+          'A heads-up before formal violation / fines'
+        ],
+        timeline: '7–21 days to address (varies widely by HOA)',
+        consequences: 'Usually no immediate fine, but can convert into a violation/fine if ignored',
+        resolutionRate: '≈80–90% resolve quickly with a short written response + proof',
+        responseOptions: [
+          {
+            title: 'FIX + SEND PROOF',
+            description: 'Comply and reply with a short confirmation and photos.',
+            outcomes: ['Often closes the issue immediately', 'Reduces repeat scrutiny']
+          },
+          {
+            title: 'ASK WHAT SPECIFICALLY NEEDS TO CHANGE',
+            description: 'If it’s vague, ask for exact requirement and rule citation.',
+            outcomes: ['Prevents guesswork', 'Creates a paper trail']
+          },
+          {
+            title: 'REQUEST A RECHECK / QUICK CALL',
+            description: 'Ask for a reinspection or short conversation to confirm you’re aligned.',
+            outcomes: ['Shows cooperation', 'Avoids escalation']
+          }
+        ]
+      },
+      'maintenance': {
+        title: 'Maintenance Violation',
+        intro: 'HOAs cite maintenance issues when they believe your property doesn’t meet appearance or upkeep standards.',
+        typicallyInvolves: [
+          'Grass height exceeding limits (typically 6–8 inches)',
+          'Weeds, dead plants, or unmaintained landscaping',
+          'Peeling paint, damaged siding, or needed repairs',
+          'Visible storage items, trash bins, or clutter',
+          'Stains, mildew, or roof/fence condition concerns'
+        ],
+        timeline: '10–30 days to correct',
+        consequences: '$25–$100 initial fine, increasing weekly if not addressed',
+        resolutionRate: '≈70% resolve through compliance or an extension request',
+        responseOptions: [
+          {
+            title: 'COMPLY BEFORE DEADLINE',
+            description: 'Fix the issue within the timeframe provided.',
+            outcomes: ['Often results in fine waiver', 'Fastest resolution']
+          },
+          {
+            title: 'REQUEST EXTENSION',
+            description: 'Ask for additional time if repairs require scheduling or funds.',
+            outcomes: ['Shows good faith', 'Often granted; typical extension 10–30 days']
+          },
+          {
+            title: 'QUESTION THE VIOLATION',
+            description: 'Challenge incorrect claims (measurements, photos, date stamps).',
+            outcomes: ['Best with evidence', 'Higher risk if rules clearly apply']
+          }
+        ]
+      },
+      'architectural': {
+        title: 'Architectural / Modification (ARC) Notice',
+        intro: 'Architectural notices involve approvals for exterior changes, additions, or modifications covered by ARC/ACC rules.',
+        typicallyInvolves: [
+          'Unapproved paint color, landscaping, fencing, or exterior changes',
+          'Sheds, solar panels, patios, decks, or hardscape work',
+          'Windows/doors, roof changes, gutters, shutters',
+          'Projects started before written approval',
+          'Denials without clear guideline citation'
+        ],
+        timeline: '14–45 days common for review/appeal windows (sometimes shorter)',
+        consequences: '$50–$250 fines; stop-work demands; removal/restore orders in tougher HOAs',
+        resolutionRate: '≈45–60% resolve with revised application or board appeal, especially with comps',
+        responseOptions: [
+          {
+            title: 'SUBMIT / RESUBMIT FOR APPROVAL',
+            description: 'Provide plans, specs, and photos that match the guidelines.',
+            outcomes: ['Most reliable path to close the notice', 'Avoids enforcement escalation']
+          },
+          {
+            title: 'REQUEST A VARIANCE / EXCEPTION',
+            description: 'Ask for an exception with a reason (safety, accessibility, matching nearby approvals).',
+            outcomes: ['Often works when supported by neighbor examples', 'May require a hearing']
+          },
+          {
+            title: 'APPEAL THE DECISION',
+            description: 'Challenge inconsistent enforcement or vague standards.',
+            outcomes: ['Stronger with “similar approved projects” evidence', 'Can delay enforcement']
+          }
+        ]
+      },
+      'parking': {
+        title: 'Parking Violation',
+        intro: 'Parking violations are cited when vehicles allegedly violate community parking rules.',
+        typicallyInvolves: [
+          'Commercial vehicles, RVs, boats, or trailers in driveways',
+          'Parking in guest spots, fire lanes, or no-parking zones',
+          'Vehicles without current registration',
+          'Overnight parking restrictions',
+          'Blocking sidewalks or partial street obstruction'
+        ],
+        timeline: '7–14 days to remove/relocate (sometimes immediate tow risk depending on rules)',
+        consequences: '$50–$150 per occurrence; daily fines possible; towing/booting risk in some HOAs',
+        resolutionRate: '≈60% resolve by relocating the vehicle or getting a short-term exception',
+        responseOptions: [
+          {
+            title: 'RELOCATE / COMPLY QUICKLY',
+            description: 'Move the vehicle to an allowed spot/storage location.',
+            outcomes: ['Usually closes it fast', 'Reduces risk of towing/further fines']
+          },
+          {
+            title: 'REQUEST TEMPORARY EXCEPTION',
+            description: 'Ask for a short window (travel, repairs, moving, medical).',
+            outcomes: ['Often granted if reasonable', 'Get it in writing']
+          },
+          {
+            title: 'DISPUTE INCORRECT FACTS',
+            description: 'If your vehicle is allowed or signage is inconsistent, dispute with photos.',
+            outcomes: ['Works best with time-stamped photos', 'May require hearing/appeal']
+          }
+        ]
+      },
+      'fine': {
+        title: 'Fine / Penalty Notice',
+        intro: 'Fine notices mean the HOA is already claiming a violation occurred and is seeking payment.',
+        typicallyInvolves: [
+          'Fine for a prior violation notice (maintenance, parking, noise, etc.)',
+          'Escalated fine for repeat violations',
+          'Administrative fees added (inspection, processing)',
+          'Fine schedule that may not match governing documents',
+          'Notice missing hearing/appeal options'
+        ],
+        timeline: 'Often 10–30 days to pay or request hearing (some require faster disputes)',
+        consequences: '$25–$500+ depending on HOA; late fees/collections risk if ignored',
+        resolutionRate: '≈45% see reductions with a proper dispute + documentation',
+        responseOptions: [
+          {
+            title: 'REQUEST HEARING / DISPUTE',
+            description: 'Challenge the fine amount, proof, or procedure.',
+            outcomes: ['Can reduce or waive the fine', 'Creates a record for future disputes']
+          },
+          {
+            title: 'NEGOTIATE / PAYMENT PLAN',
+            description: 'If valid but hardship exists, negotiate a plan or partial waiver.',
+            outcomes: ['Prevents collections escalation', 'Often available if requested early']
+          },
+          {
+            title: 'PAY WITHOUT ADMITTING FAULT (IF STRATEGIC)',
+            description: 'If it’s cheaper than fighting, pay and document that you disagree.',
+            outcomes: ['Stops escalation', 'But may not address the underlying rule dispute']
+          }
+        ]
+      },
+      'late-fee': {
+        title: 'Late Fee Notice',
+        intro: 'Late fee notices typically relate to dues/assessments posted late or alleged non-payment.',
+        typicallyInvolves: [
+          'Payment posted after grace period',
+          'Processing delays or misapplied payments',
+          'Auto-pay failure or bank rejection',
+          'Incorrect fee amounts or repeated monthly late fees',
+          'Missing ledger detail'
+        ],
+        timeline: '5–30 days to dispute before additional fees accrue',
+        consequences: '$10–$50+ per month plus admin fees; can roll into collections',
+        resolutionRate: '≈60% succeed when you show proof of payment / posting error',
+        responseOptions: [
+          {
+            title: 'PROVIDE PAYMENT PROOF',
+            description: 'Send bank confirmation, check image, or receipt.',
+            outcomes: ['Often gets fees removed', 'Stops compounding penalties']
+          },
+          {
+            title: 'REQUEST LEDGER + ITEMIZATION',
+            description: 'Ask for a full account ledger and fee basis.',
+            outcomes: ['Catches errors', 'Helps you dispute improper charges']
+          },
+          {
+            title: 'PAY + DISPUTE IN WRITING',
+            description: 'If needed to avoid escalation, pay the base amount and dispute fees.',
+            outcomes: ['Reduces enforcement risk', 'Preserves your objection record']
+          }
+        ]
+      },
+      'collections': {
+        title: 'Collections Notice',
+        intro: 'Collections notices mean unpaid amounts may be sent to a collector or attorney. This is where documentation matters most.',
+        typicallyInvolves: [
+          'Delinquent assessments/dues',
+          'Accumulated late fees and admin charges',
+          'Attorney fees added',
+          'Disputed balances not properly credited',
+          'Demand letters threatening lien'
+        ],
+        timeline: 'Often 10–30 days before next escalation step',
+        consequences: 'Fees increase quickly; credit impact varies; lien risk depending on state/HOA rules',
+        resolutionRate: '≈55% resolve via payment plans or corrected accounting when disputed early',
+        responseOptions: [
+          {
+            title: 'REQUEST VALIDATION / LEDGER',
+            description: 'Ask for itemized charges and documentation supporting the debt.',
+            outcomes: ['Catches improper fees', 'Strengthens your dispute position']
+          },
+          {
+            title: 'NEGOTIATE PAYMENT PLAN',
+            description: 'Propose a realistic plan to stop further escalation.',
+            outcomes: ['Often accepted', 'May pause further enforcement']
+          },
+          {
+            title: 'DISPUTE THE AMOUNT OR PROCEDURE',
+            description: 'If notices/hearings were not proper, dispute in writing.',
+            outcomes: ['Works best with timeline + copies of prior notices', 'Can reduce fees']
+          }
+        ]
+      },
+      'assessment': {
+        title: 'Assessment / Special Assessment Notice',
+        intro: 'Assessment notices relate to regular dues or special assessments for major projects/repairs.',
+        typicallyInvolves: [
+          'Special project assessments (roof, roads, painting)',
+          'Increased monthly dues',
+          'Disputed vote/approval process',
+          'Installment schedule confusion',
+          'Incorrect allocation to your unit/lot'
+        ],
+        timeline: 'Usually 30–90 days notice (but can be shorter)',
+        consequences: 'Non-payment can trigger late fees, collections, and potential lien steps',
+        resolutionRate: '≈30–40% improvements possible (payment plans, corrected amounts, adjusted schedules)',
+        responseOptions: [
+          {
+            title: 'REQUEST DOCUMENTS + BASIS',
+            description: 'Ask for budget, minutes, vote record, and assessment calculation.',
+            outcomes: ['Clarifies legitimacy', 'Helps spot procedural problems']
+          },
+          {
+            title: 'REQUEST INSTALLMENT / PLAN',
+            description: 'Negotiate a payment plan early.',
+            outcomes: ['Most common path', 'Avoids enforcement escalation']
+          },
+          {
+            title: 'CHALLENGE PROCEDURE (IF APPLICABLE)',
+            description: 'If the HOA skipped required steps, dispute in writing.',
+            outcomes: ['May delay or modify assessment', 'Higher effort']
+          }
+        ]
+      },
+      'hearing': {
+        title: 'Hearing Notice',
+        intro: 'A hearing notice is usually the HOA’s formal step before fines/discipline/enforcement. Preparedness matters here.',
+        typicallyInvolves: [
+          'A scheduled meeting to discuss an alleged violation',
+          'Opportunity to present evidence or explanation',
+          'Potential decision on fines, enforcement, or ongoing compliance',
+          'Time limits for submissions',
+          'Rules about representation/bringing witnesses'
+        ],
+        timeline: 'Often 7–21 days to prepare (varies by HOA)',
+        consequences: 'Fines can start after hearing; non-attendance may result in default decision',
+        resolutionRate: '≈40–60% see improved outcomes by attending with evidence and a written response',
+        responseOptions: [
+          {
+            title: 'ATTEND + PRESENT EVIDENCE',
+            description: 'Bring photos, receipts, communication logs, and witnesses if allowed.',
+            outcomes: ['Best chance to correct misunderstandings', 'Can reduce penalties']
+          },
+          {
+            title: 'REQUEST RESCHEDULE / ACCOMMODATION',
+            description: 'If the date is unreasonable, request a new date in writing.',
+            outcomes: ['Protects due process', 'Avoids missing the hearing']
+          },
+          {
+            title: 'SUBMIT WRITTEN STATEMENT',
+            description: 'Send a clear written response before the hearing.',
+            outcomes: ['Creates record', 'Helps focus discussion on facts and rules']
+          }
+        ]
+      },
+      'final-notice': {
+        title: 'Final Notice Before Enforcement',
+        intro: 'Final notices typically signal imminent escalation (attorney, collections, lien, tow, or other enforcement).',
+        typicallyInvolves: [
+          'Last chance to comply or pay before next step',
+          'Short deadlines',
+          'Threat of attorney involvement',
+          'Threat of lien or other enforcement action',
+          'Prior notices referenced'
+        ],
+        timeline: 'Often 5–15 days',
+        consequences: 'Escalation costs can increase fast (fees, attorney charges, enforcement steps)',
+        resolutionRate: '≈50% prevent escalation by acting immediately with a documented plan',
+        responseOptions: [
+          {
+            title: 'IMMEDIATE COMPLIANCE / PAYMENT PLAN',
+            description: 'Act fast and document your plan.',
+            outcomes: ['Most effective to stop escalation', 'Get confirmations in writing']
+          },
+          {
+            title: 'REQUEST EMERGENCY HEARING',
+            description: 'If you dispute facts, request a hearing quickly.',
+            outcomes: ['Can pause enforcement', 'Requires fast, organized documentation']
+          },
+          {
+            title: 'DOCUMENT PROCEDURAL FAILURES',
+            description: 'If notices were improper, write a formal dispute timeline.',
+            outcomes: ['Useful if it escalates to attorney/court', 'May reduce extra fees']
+          }
+        ]
+      },
+      'attorney': {
+        title: 'Attorney / Legal Notice',
+        intro: 'Attorney notices mean escalation. You should respond carefully and keep everything in writing.',
+        typicallyInvolves: [
+          'Demand letter from HOA counsel',
+          'Threat of lien, lawsuit, or collections',
+          'Settlement terms or payment demand',
+          'Attorney fees added',
+          'Short response deadlines'
+        ],
+        timeline: 'Often 5–15 days',
+        consequences: 'Attorney fees can grow quickly; formal legal deadlines may apply',
+        resolutionRate: '≈65% settle on payment terms or disputed corrections when addressed quickly',
+        responseOptions: [
+          {
+            title: 'REQUEST ITEMIZATION + BASIS',
+            description: 'Ask for ledger, rule citations, and how fees were calculated.',
+            outcomes: ['Reduces inflated charges', 'Clarifies your exposure']
+          },
+          {
+            title: 'NEGOTIATE SETTLEMENT / PLAN',
+            description: 'Propose a payment plan or settlement with terms in writing.',
+            outcomes: ['May stop further legal action', 'Limits additional fees']
+          },
+          {
+            title: 'CONSULT COUNSEL (IF NEEDED)',
+            description: 'If stakes are high, consider legal advice.',
+            outcomes: ['Helps avoid admissions', 'Clarifies rights and best moves']
+          }
+        ]
+      },
+      'lien': {
+        title: 'Lien Warning',
+        intro: 'Lien warnings can affect your ability to sell/refinance and may trigger larger legal costs if ignored.',
+        typicallyInvolves: [
+          'Threat of lien filing for unpaid amounts',
+          'Demand for full balance + fees',
+          'Notice of intent to lien',
+          'Short windows to dispute',
+          'Reference to statutes/governing docs'
+        ],
+        timeline: 'Often 10 days or less (varies)',
+        consequences: 'Lien filing + attorney fees; potential foreclosure risk in extreme cases',
+        resolutionRate: '≈60% prevent lien via plan/payment or corrected accounting when acted on quickly',
+        responseOptions: [
+          {
+            title: 'PAY / PLAN TO PREVENT LIEN',
+            description: 'Act fast to stop filing and get proof in writing.',
+            outcomes: ['Most direct way to prevent lien', 'Stops fee growth']
+          },
+          {
+            title: 'DISPUTE WITH DOCUMENTS',
+            description: 'If amount is wrong, dispute with ledger issues documented.',
+            outcomes: ['Can reduce charges', 'May still require partial payment to pause']
+          },
+          {
+            title: 'REQUEST PROCEDURAL COMPLIANCE',
+            description: 'Ask them to confirm they followed required steps before lien.',
+            outcomes: ['Sometimes identifies errors', 'Useful if it escalates']
+          }
+        ]
+      },
+      'inspection': {
+        title: 'Inspection Notice',
+        intro: 'Inspection notices are often used to confirm compliance or document alleged problems.',
+        typicallyInvolves: [
+          'Exterior inspection for maintenance/violations',
+          'Interior inspection requests (less common; rules vary)',
+          'Reinspection after a prior violation',
+          'Notice that photos will be taken',
+          'Scheduling windows'
+        ],
+        timeline: 'Typically 3–14 days notice for scheduling (varies)',
+        consequences: 'Findings can lead to violations/fines; unclear inspections can be challenged',
+        resolutionRate: '≈80% resolve by cooperating + documenting your condition',
+        responseOptions: [
+          {
+            title: 'CONFIRM SCHEDULE + BE PRESENT',
+            description: 'Ask for time window and attend if permitted.',
+            outcomes: ['Reduces misunderstandings', 'Lets you document what they see']
+          },
+          {
+            title: 'DOCUMENT CONDITION FIRST',
+            description: 'Take your own time-stamped photos/video.',
+            outcomes: ['Protects you if they claim something inaccurate', 'Helps disputes later']
+          },
+          {
+            title: 'REQUEST SCOPE / AUTHORITY',
+            description: 'If inspection scope isn’t clear, request the governing-doc basis.',
+            outcomes: ['Prevents overreach', 'Clarifies expectations']
+          }
+        ]
+      },
+      'rule-change': {
+        title: 'Rule Change Notice',
+        intro: 'Rule change notices can create new compliance obligations. Timing and “grandfathering” can matter a lot.',
+        typicallyInvolves: [
+          'New restrictions on parking/pets/rentals',
+          'New appearance standards',
+          'Changes to fines or enforcement process',
+          'Voting/board meeting announcements',
+          'Effective dates and transition periods'
+        ],
+        timeline: 'Often 30+ days before enforcement (varies)',
+        consequences: 'Non-compliance can trigger violations/fines once effective',
+        resolutionRate: '≈25–40% see modifications with organized homeowner feedback',
+        responseOptions: [
+          {
+            title: 'VERIFY PROCESS + EFFECTIVE DATE',
+            description: 'Check if proper notice/vote requirements were met.',
+            outcomes: ['Identifies procedural defects', 'Clarifies timeline']
+          },
+          {
+            title: 'SUBMIT COMMENTS / ATTEND MEETING',
+            description: 'Provide written feedback and proposed adjustments.',
+            outcomes: ['Can lead to changes', 'Creates record of objection']
+          },
+          {
+            title: 'ASK ABOUT GRANDFATHERING',
+            description: 'If you’re already compliant under old rules, ask about exceptions.',
+            outcomes: ['Can protect existing conditions', 'Reduces disruption']
+          }
+        ]
+      },
+      'other': {
+        title: 'HOA Notice (Other)',
+        intro: 'Not sure what category this is? That’s common — and it’s exactly where small details change the best strategy.',
+        typicallyInvolves: [
+          'Notices that are vague or don’t cite a specific rule',
+          'Mixed issues (dues + violation + hearing)',
+          'First-time letters from management company',
+          'Community-wide policy updates',
+          'Procedural notices'
+        ],
+        timeline: 'Varies widely (often 10–30 days)',
+        consequences: 'Varies: may be a warning or may signal escalation',
+        resolutionRate: 'Most resolve once the exact rule/deadline and your state rights are identified',
+        responseOptions: [
+          {
+            title: 'ASK FOR SPECIFIC RULE + DEADLINE',
+            description: 'Request clarity in writing.',
+            outcomes: ['Reduces guesswork', 'Creates paper trail']
+          },
+          {
+            title: 'RESPOND WITH FACTS + PROOF',
+            description: 'If you disagree, respond with calm documentation.',
+            outcomes: ['Often stops escalation', 'Positions you well for hearing']
+          },
+          {
+            title: 'REQUEST HEARING / APPEAL INFO',
+            description: 'Ask what the next steps are and how to appeal.',
+            outcomes: ['Protects your rights', 'Clarifies timeline']
+          }
+        ]
+      }
+    };
+  }
+
+  normalizeNoticeType(rawType) {
+    if (!rawType) return null;
+    return String(rawType).trim().toLowerCase().replace(/_/g, '-');
   }
 
   init() {
@@ -303,6 +892,7 @@ class QuickPreviewManager {
     this.updateDebugInfo();
     this.loadCaseData();
     this.displayGenericPreview();
+    this.injectLockedInfo();
     this.bindEvents();
     console.log('=== DEBUG: Initialization complete ===');
   }
@@ -338,356 +928,245 @@ class QuickPreviewManager {
     console.log('caseToken:', caseToken);
     console.log('sessionStorage keys:', Object.keys(sessionStorage));
 
-    // If no session data, check URL parameters for testing
-    if (!caseDataStr || !caseToken) {
-      const urlParams = new URLSearchParams(window.location.search);
-      const testNoticeType = urlParams.get('test-notice-type');
+    // If session data missing, populate from URL params for quick preview
+    const urlParams = new URLSearchParams(window.location.search);
+    const typeParam = this.normalizeNoticeType(urlParams.get('type'));
+    const emailParam = urlParams.get('email');
 
-      if (testNoticeType) {
-        console.log('=== DEBUG: Using test data from URL parameter ===');
-        console.log('Test notice type:', testNoticeType);
-
-        // Create test data
-        const testData = {
-          token: 'test_token',
-          noticeType: testNoticeType,
-          issueText: 'Test issue description',
-          // other test fields...
-        };
-
-        this.caseData = testData;
-        this.caseToken = 'test_token';
-        console.log('Created test data:', this.caseData);
-        return;
+    if (!caseDataStr) {
+      const seedData = {};
+      if (typeParam) seedData.noticeType = typeParam;
+      if (emailParam) seedData.email = emailParam;
+      if (Object.keys(seedData).length) {
+        // Do not create a new token; only set data for display
+        this.caseData = seedData;
+        this.caseToken = caseToken || null;
+        console.log('Seeded case data from URL params:', this.caseData);
       }
+    }
+
+    // Test param to force type
+    const testNoticeType = this.normalizeNoticeType(urlParams.get('test-notice-type'));
+    if (testNoticeType) {
+      console.log('=== DEBUG: Using test data from URL parameter ===');
+      const testData = {
+        token: 'test_token',
+        noticeType: testNoticeType,
+        issueText: 'Test issue description'
+      };
+      this.caseData = testData;
+      this.caseToken = 'test_token';
+      this.caseData.noticeType = testNoticeType;
+      return;
     }
 
     if (caseDataStr && caseToken) {
       try {
         this.caseData = JSON.parse(caseDataStr);
+        // If URL has a type param, prefer it over stored value for preview consistency
+        if (typeParam) this.caseData.noticeType = typeParam;
+        if (emailParam) this.caseData.email = emailParam;
         this.caseToken = caseToken;
         console.log('Successfully loaded case data:', this.caseData);
-        console.log('Notice type found:', this.caseData.noticeType);
-        console.log('Has noticeType:', !!this.caseData.noticeType);
-
-        // Update debug info
         this.updateDebugInfo();
       } catch (error) {
         console.error('Error parsing case data:', error);
         this.caseData = null;
         this.caseToken = null;
       }
-    } else {
+    } else if (!this.caseData) {
       console.log('No case data found - missing caseDataStr or caseToken');
-      console.log('caseDataStr exists:', !!caseDataStr);
-      console.log('caseToken exists:', !!caseToken);
-      this.caseData = null;
-      this.caseToken = null;
+      this.caseData = typeParam ? { noticeType: typeParam, email: emailParam || null } : null;
+      this.caseToken = caseToken || null;
     }
   }
 
   displayGenericPreview() {
-    console.log('=== DEBUG: displayGenericPreview called ===');
-    console.log('Has caseData:', !!this.caseData);
-    console.log('Has noticeType:', this.caseData?.noticeType);
+    const noticeType = this.normalizeNoticeType(this.caseData?.noticeType) || 'other';
 
-    // If we don't have case data, just show the generic content that's already in the HTML
-    if (!this.caseData || !this.caseData.noticeType) {
-      console.log('=== SHOWING GENERIC CONTENT ===');
-      console.log('Reason: Missing caseData or noticeType');
-      console.log('caseData exists:', !!this.caseData);
-      if (this.caseData) {
-        console.log('noticeType value:', this.caseData.noticeType);
-        console.log('noticeType is truthy:', !!this.caseData.noticeType);
-      }
-      return;
+    const noticeDisplayEl = document.getElementById('notice-type-display');
+    if (noticeDisplayEl) noticeDisplayEl.textContent = this.getNoticeTypeDisplay(noticeType);
+
+    const caseSummary = document.getElementById('case-summary');
+    if (caseSummary) {
+      caseSummary.innerHTML = `Based on your <span class="font-semibold text-blue-600">${this.getNoticeTypeDisplay(noticeType)}</span> issue`;
     }
 
-    console.log('=== SHOWING SPECIFIC CONTENT ===');
-    console.log('Notice type:', this.caseData.noticeType);
+    const content = this.noticeTypeContent[noticeType] || this.noticeTypeContent['other'];
 
-    try {
-      // Update header summary with specific notice type
-      const caseSummary = document.getElementById('case-summary');
-      if (caseSummary) {
-        const noticeDisplay = this.getNoticeTypeDisplay(this.caseData.noticeType);
-        caseSummary.textContent = `Here's what we know about ${noticeDisplay} cases`;
-        console.log('✅ Updated case summary for:', noticeDisplay);
-      } else {
-        console.log('❌ Could not find case-summary element');
-      }
+    // Section 2
+    const noticeDetailsEl = document.getElementById('notice-details');
+    if (noticeDetailsEl) {
+      noticeDetailsEl.innerHTML = this.renderNoticeDetails(content);
+    }
 
-      // Update notice badge with specific type
-      const noticeBadge = document.getElementById('notice-badge');
-      if (noticeBadge) {
-        const noticeDisplay = this.getNoticeTypeDisplay(this.caseData.noticeType);
-        noticeBadge.textContent = noticeDisplay;
-        console.log('✅ Updated notice badge to:', noticeDisplay);
-      } else {
-        console.log('❌ Could not find notice-badge element');
-      }
-
-      // Replace generic content with specific content for this notice type
-      const specificInfo = this.getGenericInfoForNoticeType(this.caseData.noticeType);
-      const genericInfoElement = document.getElementById('generic-info');
-      if (genericInfoElement) {
-        console.log('✅ Found generic-info element, replacing content...');
-        console.log('Content length:', specificInfo.length);
-        genericInfoElement.innerHTML = specificInfo;
-        console.log('✅ Updated with specific content for:', this.caseData.noticeType);
-      } else {
-        console.log('❌ Could not find generic-info element');
-      }
-
-    } catch (error) {
-      console.error('❌ Error in displayGenericPreview:', error);
-      // If there's an error, just leave the generic content
+    // Section 3
+    const responseOptionsEl = document.getElementById('response-options');
+    if (responseOptionsEl) {
+      responseOptionsEl.innerHTML = this.renderResponseOptions(content);
     }
   }
 
-  getNoticeTypeDisplay(noticeType) {
-    const typeMap = {
-      // General Notices
-      'violation': 'Violation Notice',
-      'warning': 'Warning / Courtesy Notice',
-      'maintenance': 'Maintenance Issue',
-      'architectural': 'Architectural / ARC Notice',
-
-      // Financial / Enforcement
-      'fine': 'Fine or Penalty Notice',
-      'late-fee': 'Late Fee Notice',
-      'collections': 'Collections Notice',
-      'assessment': 'Assessment or Special Assessment',
-
-      // Escalation / Legal
-      'hearing': 'Hearing Notice',
-      'final-notice': 'Final Notice Before Enforcement',
-      'attorney': 'Attorney or Legal Action Notice',
-      'lien': 'Lien or Foreclosure Warning',
-
-      // Informational / Other
-      'inspection': 'Inspection Notice',
-      'rule-change': 'Rule or Covenant Change Notice',
-      'other': 'Other / Unclear Notice'
-    };
-    return typeMap[noticeType] || 'HOA Notice';
-  }
-
-  getGenericInfoForNoticeType(noticeType) {
-    const genericContent = {
-      'violation': {
-        title: 'Violation Notice Rights & Options',
-        points: [
-          'HOAs must follow proper notice procedures and cite specific rule violations',
-          'Violations must be clearly defined in your CC&Rs or community rules',
-          'You have the right to request evidence or documentation of the violation',
-          'Response deadlines are typically 10-30 days from notice date',
-          'You can request a hearing to present your side of the situation'
-        ],
-        typical: 'Typical outcomes include case dismissal (40%), compliance agreements (30%), or reduced penalties (25%)'
-      },
-      'warning': {
-        title: 'Warning / Courtesy Notice Response',
-        points: [
-          'Warning notices are often preliminary steps before formal violations',
-          'Use this opportunity to address issues before they escalate',
-          'Document any steps you take to resolve the concern',
-          'Respond promptly to show good faith cooperation',
-          'Consider requesting clarification if the warning is unclear'
-        ],
-        typical: 'Most warning notices (85%) can be resolved through direct communication and prompt action'
-      },
-      'maintenance': {
-        title: 'Maintenance Issue Rights',
-        points: [
-          'HOAs can require property maintenance that affects community standards',
-          'Requirements must be reasonable and consistently enforced',
-          'You may request reasonable timelines for completion',
-          'Some maintenance may be eligible for payment plans',
-          'Emergency repairs typically have shorter compliance deadlines'
-        ],
-        typical: 'Most maintenance issues (70%) are resolved through compliance or negotiated timelines'
-      },
-      'architectural': {
-        title: 'Architectural / ARC Notice Options',
-        points: [
-          'All exterior modifications typically require ARC approval',
-          'Approval processes must follow written guidelines and timelines',
-          'Denials must be based on documented architectural standards',
-          'You have the right to appeal ARC decisions to the board',
-          'Similar approved projects in the community support your case'
-        ],
-        typical: 'ARC appeals succeed in 45% of cases, especially with comparable community examples'
-      },
-      'fine': {
-        title: 'Fine or Penalty Notice Rights',
-        points: [
-          'HOAs must prove violations occurred before imposing fines',
-          'Fine amounts must comply with state laws and CC&R limits',
-          'You have the right to contest fines through formal hearings',
-          'Payment of fines does not admit guilt or waive your rights',
-          'Some states require specific notice periods before fines'
-        ],
-        typical: 'Fine challenges result in reduction (45%), dismissal (25%), or payment plans (20%)'
-      },
-      'late-fee': {
-        title: 'Late Fee Notice Response',
-        points: [
-          'Late fees must be reasonable and specified in governing documents',
-          'Payment posting dates and grace periods vary by association',
-          'You can dispute incorrect late fee assessments',
-          'Payment plans may be available to prevent additional fees',
-          'Some states limit late fee amounts or frequency'
-        ],
-        typical: 'Late fee disputes succeed in 60% of cases with proper documentation'
-      },
-      'collections': {
-        title: 'Collections Notice Rights',
-        points: [
-          'HOAs must follow fair debt collection practices under federal law',
-          'You have the right to dispute amounts owed in writing',
-          'Payment plans may be required by state law before collections',
-          'Collection fees must be reasonable and properly documented',
-          'Legal action requires proper notice and procedural compliance'
-        ],
-        typical: 'Collections cases result in payment plans (55%), disputed amounts (25%), or settlements (15%)'
-      },
-      'assessment': {
-        title: 'Assessment or Special Assessment Rights',
-        points: [
-          'Special assessments must follow proper board approval procedures',
-          'Members typically have rights to vote on large assessments',
-          'Assessment purposes must be clearly documented and legitimate',
-          'Payment plans are often available for large assessments',
-          'You can challenge improper or excessive assessments'
-        ],
-        typical: 'Assessment challenges succeed in 30% of cases, often resulting in payment plan options'
-      },
-      'hearing': {
-        title: 'Hearing Notice Preparation',
-        points: [
-          'You have the right to attend and present your defense',
-          'Bring witnesses, photos, and relevant documentation',
-          'The hearing panel must be impartial and follow procedures',
-          'You can request reasonable accommodations for scheduling',
-          'Written follow-up of hearing decisions is typically required'
-        ],
-        typical: 'Hearing attendance results in case dismissal (35%), reduced penalties (40%), or compliance agreements (20%)'
-      },
-      'final-notice': {
-        title: 'Final Notice Before Enforcement',
-        points: [
-          'Final notices indicate imminent legal or enforcement action',
-          'Response deadlines are typically very short (5-15 days)',
-          'This is often your last opportunity to resolve without attorneys',
-          'Consider immediate compliance or requesting emergency hearing',
-          'Document all communications and response attempts'
-        ],
-        typical: 'Final notice responses prevent escalation in 50% of cases when addressed promptly'
-      },
-      'attorney': {
-        title: 'Attorney or Legal Action Notice',
-        points: [
-          'This represents serious escalation requiring immediate attention',
-          'You have the right to legal representation at this stage',
-          'Response deadlines are typically very short (5-15 days)',
-          'Settlement negotiations may still be possible',
-          'Preserve all documents and communications immediately'
-        ],
-        typical: 'Legal action cases result in settlements (65%), case dismissal (15%), or negotiated agreements (15%)'
-      },
-      'lien': {
-        title: 'Lien or Foreclosure Warning Response',
-        points: [
-          'Liens affect your credit score and ability to sell or refinance',
-          'HOAs must follow specific legal procedures before filing liens',
-          'You maintain the right to dispute the underlying debt',
-          'Payment plans may prevent lien filing if arranged quickly',
-          'Response time is typically very limited (often 10 days or less)'
-        ],
-        typical: 'Lien prevention succeeds through payment agreements (60%), debt disputes (20%), or settlements (15%)'
-      },
-      'inspection': {
-        title: 'Inspection Notice Rights',
-        points: [
-          'Inspection requests must be reasonable and properly scheduled',
-          'You have the right to be present during inspections',
-          'Inspection findings must be documented and shared with you',
-          'Follow-up requirements should be clearly communicated',
-          'You can request clarification on any inspection findings'
-        ],
-        typical: 'Most inspection issues (80%) are resolved through compliance or clarification discussions'
-      },
-      'rule-change': {
-        title: 'Rule or Covenant Change Notice',
-        points: [
-          'Rule changes must follow proper board procedures and voting',
-          'Members often have rights to comment or object to changes',
-          'New rules typically have effective dates allowing compliance time',
-          'Grandfathering provisions may apply to existing conditions',
-          'You can attend board meetings to voice concerns about changes'
-        ],
-        typical: 'Rule change objections result in modifications (25%), delayed implementation (40%), or grandfather clauses (20%)'
-      },
-      'other': {
-        title: 'General HOA Notice Response',
-        points: [
-          'All HOA actions must follow proper procedures in governing documents',
-          'You have the right to request clarification on unclear notices',
-          'Response deadlines must be reasonable and clearly stated',
-          'You can request hearings or appeals for most HOA actions',
-          'Legal representation is always an option for serious matters'
-        ],
-        typical: 'Unclear notice responses often result in clarification (60%) or procedural corrections (25%)'
-      }
-    };
-
-    const content = genericContent[noticeType] || genericContent['other'];
+  renderNoticeDetails(content) {
+    const involves = (content.typicallyInvolves || []).map(item => `
+      <li class="flex items-start">
+        <span class="text-blue-600 mr-3 mt-0.5">-</span>
+        <span class="text-tagline-1">${item}</span>
+      </li>
+    `).join('');
 
     return `
-      <h3 class="text-heading-6 mb-4">${content.title}</h3>
-      <ul class="space-y-3 mb-6">
-        ${content.points.map(point => `
-          <li class="flex items-start">
-            <svg class="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-            </svg>
-            <span class="text-tagline-1">${point}</span>
-          </li>
-        `).join('')}
-      </ul>
-      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <p class="text-tagline-1 text-blue-800"><strong>Typical Results:</strong> ${content.typical}</p>
+      <h2 class="text-heading-5 mb-3">What ${content.title.toUpperCase()} typically involves</h2>
+      <p class="text-tagline-1 text-secondary/80 mb-5">${content.intro || ''}</p>
+      <ul class="space-y-2 mb-6">${involves}</ul>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <p class="text-tagline-2 text-secondary/60 mb-1">Typical timeline</p>
+          <p class="text-tagline-1 font-semibold text-blue-900">${content.timeline || 'Varies'}</p>
+        </div>
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <p class="text-tagline-2 text-secondary/60 mb-1">Typical consequences</p>
+          <p class="text-tagline-1 font-semibold text-blue-900">${content.consequences || 'Varies'}</p>
+        </div>
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <p class="text-tagline-2 text-secondary/60 mb-1">Resolution rate</p>
+          <p class="text-tagline-1 font-semibold text-blue-900">${content.resolutionRate || 'Varies'}</p>
+        </div>
       </div>
     `;
   }
 
+  renderResponseOptions(content) {
+    const options = (content.responseOptions || []).slice(0, 3);
+
+    const cards = options.map((opt, idx) => {
+      const outcomes = (opt.outcomes || []).map(o => `<li class="text-tagline-2 text-secondary/80">- ${o}</li>`).join('');
+      return `
+        <div class="bg-white border border-stroke-1 rounded-xl p-5">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-8 h-8 rounded-full bg-orange-100 text-orange-800 flex items-center justify-center font-semibold">${idx + 1}</div>
+            <h4 class="text-heading-6">${opt.title}</h4>
+          </div>
+          <p class="text-tagline-1 text-secondary/80 mb-3">${opt.description || ''}</p>
+          <ul class="space-y-1">${outcomes}</ul>
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <h2 class="text-heading-5 mb-4">Your typical response options</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">${cards}</div>
+      <p class="text-tagline-2 text-secondary/60 mt-4">
+        Still 100% free: complete the wizard to see which option fits YOUR state, HOA rules, and deadlines.
+      </p>
+    `;
+  }
+
+  getNoticeTypeDisplay(noticeType) {
+    const typeMap = {
+      'violation': 'Violation Notice',
+      'warning': 'Warning / Courtesy Notice',
+      'maintenance': 'Maintenance Issue',
+      'architectural': 'Architectural / ARC Notice',
+      'parking': 'Parking Violation',
+      'fine': 'Fine / Penalty Notice',
+      'late-fee': 'Late Fee Notice',
+      'collections': 'Collections Notice',
+      'assessment': 'Assessment / Special Assessment',
+      'hearing': 'Hearing Notice',
+      'final-notice': 'Final Notice Before Enforcement',
+      'attorney': 'Attorney / Legal Notice',
+      'lien': 'Lien Warning',
+      'inspection': 'Inspection Notice',
+      'rule-change': 'Rule Change Notice',
+      'other': 'HOA Notice'
+    };
+    return typeMap[noticeType] || 'HOA Notice';
+  }
+
+  // Keep locked-info rendering, but adjust generic values by notice type.
+  injectLockedInfo() {
+    const container = document.getElementById('locked-info');
+    if (!container) return;
+
+    const noticeType = this.normalizeNoticeType(this.caseData?.noticeType) || 'other';
+
+    const typicalTimeline = (this.noticeTypeContent[noticeType] || this.noticeTypeContent.other)?.timeline || 'Varies';
+
+    const lockedBlocks = [
+      {
+        title: 'YOUR EXACT DEADLINE',
+        generic: `Generic: "${typicalTimeline}"`,
+        personalized: 'Personalized: "Your deadline is March 15 (23 days away) — URGENT"'
+      },
+      {
+        title: 'THE SPECIFIC RULE THEY CITED',
+        generic: 'Generic: "HOAs can enforce community rules"',
+        personalized: 'Personalized: "Your HOA cited CC&R Section 4.2(b) which states…"'
+      },
+      {
+        title: 'STATE-SPECIFIC RIGHTS',
+        generic: 'Generic: "You may have rights"',
+        personalized: 'Personalized: "In your state, specific statutes govern notice, hearings, and fines…"'
+      },
+      {
+        title: 'YOUR BEST RESPONSE STRATEGY',
+        generic: 'Generic: "Comply, request extension, or dispute"',
+        personalized: 'Personalized: "Based on your deadline + state + history, we recommend…"'
+      },
+      {
+        title: '3 COMPLETE RESPONSE LETTERS',
+        generic: 'Generic: "Sample templates"',
+        personalized: 'Personalized: "3 ready-to-send letters with YOUR details and the right tone"'
+      }
+    ];
+
+    container.innerHTML = lockedBlocks.map(b => `
+      <div class="locked-info-item">
+        <div class="locked-title">${b.title}</div>
+        <div class="comparison">
+          <div class="generic-version">${b.generic}</div>
+          <div class="vs-text">vs</div>
+          <div class="personalized-version">${b.personalized}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+
   bindEvents() {
-    // Redirect to full step-by-step wizard when user clicks to get specific analysis
-    document.getElementById('get-specific-analysis').addEventListener('click', () => {
-      // Navigate to the full wizard (keep sessionStorage for prefill)
-      window.location.href = 'start-case-full.html';
-    });
-
-    // Handle complete form submission
-    document.getElementById('complete-case-form').addEventListener('submit', (e) => {
-      e.preventDefault();
-      this.submitCompleteCase();
-    });
-
-    // Handle step-by-step wizard link
-    const stepByStepLink = document.getElementById('step-by-step-link');
-    if (stepByStepLink) {
-      stepByStepLink.addEventListener('click', (e) => {
-        // Clear any existing session data to start fresh in the full wizard
-        sessionStorage.removeItem('caseData');
-        sessionStorage.removeItem('currentCaseToken');
-        console.log('Cleared session data, redirecting to full wizard');
-        // Let the default link behavior proceed
+    const analysisBtn = document.getElementById('get-specific-analysis');
+    if (analysisBtn) {
+      analysisBtn.addEventListener('click', () => {
+        const params = new URLSearchParams();
+        if (this.caseToken) params.set('case', this.caseToken);
+        if (this.caseData?.noticeType) params.set('type', this.caseData.noticeType);
+        if (this.caseData?.email) params.set('email', this.caseData.email);
+        window.location.href = `start-case-full.html${params.toString() ? '?' + params.toString() : ''}`;
       });
     }
 
-    // Add form validation
+    const formEl = document.getElementById('complete-case-form');
+    if (formEl) {
+      formEl.addEventListener('submit', (e) => {
+        e.preventDefault();
+        this.submitCompleteCase();
+      });
+    }
+
+    const stepByStepLink = document.getElementById('step-by-step-link');
+    if (stepByStepLink) {
+      stepByStepLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        const params = new URLSearchParams();
+        if (this.caseToken) params.set('case', this.caseToken);
+        if (this.caseData?.noticeType) params.set('type', this.caseData.noticeType);
+        if (this.caseData?.email) params.set('email', this.caseData.email);
+        window.location.href = `start-case-full.html${params.toString() ? '?' + params.toString() : ''}`;
+      });
+    }
+
     this.bindFormValidation();
   }
 
@@ -788,7 +1267,10 @@ class QuickPreviewManager {
         // Mark as customized preview
         completionPhase: 'customized_preview',
         extract_status: 'pending',
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
+
+        // Generate link to full case form with pre-filled data
+        fullCaseFormLink: `${window.location.origin}/start-case-full.html?case=${encodeURIComponent(this.caseToken)}`
       };
 
       // Update case in database with complete data using same method as working wizard
