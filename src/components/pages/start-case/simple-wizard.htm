@@ -300,6 +300,19 @@ class SimpleCaseWizard {
       const token = 'case_' + Date.now() + '_' + this.generateRandomString(6);
 
       // Create case payload - exact same structure as working wizard
+      // Build URL params for the full case form link (encode data in URL to avoid CORS issues)
+      const linkParams = new URLSearchParams({
+        case: token,
+        noticeType: this.formData.noticeType || '',
+        issueText: this.formData.issueText || '',
+        email: this.formData.email || '',
+        propertyType: this.formData.propertyType || '',
+        role: this.formData.role || '',
+        state: this.formData.state || '',
+        deadline: this.formData.deadline || '',
+        outcome: this.formData.outcome || ''
+      });
+
       const casePayload = {
         token: token,
         createdAt: new Date().toISOString(),
@@ -315,7 +328,7 @@ class SimpleCaseWizard {
         extract_status: 'pending',
         additional_docs: [],
         completionPhase: 'simple', // Mark as coming from simple form
-        fullCaseFormLink: `${window.location.origin}/start-case-full.html?case=${encodeURIComponent(token)}`
+        fullCaseFormLink: `${window.location.origin}/start-case-full.html?${linkParams.toString()}`
       };
 
       // Insert case into database - exact same method as working wizard

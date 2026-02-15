@@ -1267,11 +1267,23 @@ class QuickPreviewManager {
         // Mark as customized preview
         completionPhase: 'customized_preview',
         extract_status: 'pending',
-        updatedAt: new Date().toISOString(),
-
-        // Generate link to full case form with pre-filled data
-        fullCaseFormLink: `${window.location.origin}/start-case-full.html?case=${encodeURIComponent(this.caseToken)}`
+        updatedAt: new Date().toISOString()
       };
+
+      // Build URL params for the full case form link (encode data in URL to avoid CORS issues)
+      const linkParams = new URLSearchParams({
+        case: this.caseToken,
+        noticeType: completeData.noticeType || '',
+        issueText: completeData.issueText || '',
+        email: completeData.email || '',
+        propertyType: completeData.propertyType || '',
+        role: completeData.role || '',
+        state: completeData.state || '',
+        deadline: completeData.deadline || '',
+        outcome: completeData.outcome || '',
+        pastedText: completeData.pastedText || ''
+      });
+      completeData.fullCaseFormLink = `${window.location.origin}/start-case-full.html?${linkParams.toString()}`;
 
       // Update case in database with complete data using same method as working wizard
       console.log('Updating case with complete data...');
