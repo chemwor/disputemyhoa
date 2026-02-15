@@ -314,7 +314,8 @@ class SimpleCaseWizard {
         email: this.formData.email,
         extract_status: 'pending',
         additional_docs: [],
-        completionPhase: 'simple' // Mark as coming from simple form
+        completionPhase: 'simple', // Mark as coming from simple form
+        fullCaseFormLink: `${window.location.origin}/start-case-full.html?case=${encodeURIComponent(token)}`
       };
 
       // Insert case into database - exact same method as working wizard
