@@ -1267,7 +1267,10 @@ class QuickPreviewManager {
         // Mark as customized preview
         completionPhase: 'customized_preview',
         extract_status: 'pending',
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
+
+        // Generate link to full case form with pre-filled data
+        fullCaseFormLink: `${window.location.origin}/start-case-full.html?case=${encodeURIComponent(this.caseToken)}`
       };
 
       // Update case in database with complete data using same method as working wizard

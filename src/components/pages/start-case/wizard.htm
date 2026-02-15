@@ -281,11 +281,76 @@ class StartCaseWizard {
   }
 
   prefillFromSession() {
+    // Check URL params first for case token
+    const urlParams = new URLSearchParams(window.location.search);
+    const caseToken = urlParams.get('case');
+
+    if (caseToken) {
+      // Fetch case data from database and prefill
+      this.fetchAndPrefillFromDatabase(caseToken);
+      return;
+    }
+
+    // Fall back to session storage
+    this.prefillFromSessionStorage();
+  }
+
+  async fetchAndPrefillFromDatabase(caseToken) {
+    try {
+      console.log('Fetching case data from database for token:', caseToken);
+
+      const response = await fetch(`${this.supabaseUrl}/rest/v1/dmhoa_cases?token=eq.${caseToken}&select=payload`, {
+        method: 'GET',
+        headers: {
+          'apikey': this.supabaseKey,
+          'Authorization': `Bearer ${this.supabaseKey}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        console.warn('Failed to fetch case from database, falling back to session');
+        this.prefillFromSessionStorage();
+        return;
+      }
+
+      const result = await response.json();
+
+      if (!result || result.length === 0) {
+        console.warn('Case not found in database, falling back to session');
+        this.prefillFromSessionStorage();
+        return;
+      }
+
+      const data = result[0].payload || {};
+
+      // Store the case token for later updates
+      sessionStorage.setItem('currentCaseToken', caseToken);
+      sessionStorage.setItem('caseData', JSON.stringify(data));
+
+      // Prefill form with fetched data
+      this.prefillFormFields(data);
+
+      console.log('Form prefilled from database successfully');
+    } catch (e) {
+      console.warn('Database prefill failed, falling back to session:', e);
+      this.prefillFromSessionStorage();
+    }
+  }
+
+  prefillFromSessionStorage() {
     try {
       const caseDataStr = sessionStorage.getItem('caseData');
       if (!caseDataStr) return;
       const data = JSON.parse(caseDataStr);
+      this.prefillFormFields(data);
+    } catch (e) {
+      console.warn('Session prefill failed:', e);
+    }
+  }
 
+  prefillFormFields(data) {
+    try {
       // Step 1 fields
       if (data.propertyType) document.getElementById('property-type').value = data.propertyType;
       if (data.role) document.getElementById('role').value = data.role;
@@ -300,10 +365,13 @@ class StartCaseWizard {
       // Step 3 fields
       if (data.pastedText) document.getElementById('paste-text').value = data.pastedText;
 
+      // Step 4 fields
+      if (data.email) document.getElementById('email').value = data.email;
+
       // Basic validation update after prefill
       this.validateCurrentStep();
     } catch (e) {
-      console.warn('Prefill failed:', e);
+      console.warn('Prefill fields failed:', e);
     }
   }
 
