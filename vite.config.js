@@ -144,9 +144,9 @@ export default defineConfig({
         },
       },
     },
-    minify: false,
+    minify: 'terser',
     modulePreload: false,
-    cssMinify: false,
+    cssMinify: true,
     assetsDir: 'assets',
   },
   server: {
