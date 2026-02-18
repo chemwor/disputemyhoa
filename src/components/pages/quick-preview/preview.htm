@@ -1338,6 +1338,17 @@ class QuickPreviewManager {
       await this.updateCasePayload(this.caseToken, completeData);
       console.log('Case updated successfully');
 
+      // Track Quick Preview conversion
+      if (typeof gtag !== 'undefined') {
+        gtag('event', 'conversion', {
+          'send_to': 'AW-17007905582/PZVoCLjy3PobEK6WgK4_',
+          'value': 1.0,
+          'currency': 'USD',
+          'transaction_id': 'quick_preview_' + this.caseToken
+        });
+        console.log('Quick Preview conversion tracked for case:', this.caseToken);
+      }
+
       // Handle file upload if present
       const fileInput = document.getElementById('file-upload');
       if (fileInput.files.length > 0) {
