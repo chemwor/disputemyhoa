@@ -284,6 +284,9 @@
       this.messages = [];
       this.documents = [];
 
+      // Progress animation interval
+      this.progressInterval = null;
+
       // UI copy map for dynamic customization
       this.UI_COPY = {
         outcome: {
@@ -414,7 +417,12 @@
           if (!this.outputs) {
             this.showProcessingOutputs();
             await this.loadOrGenerateOutputs();
-            this.hideProcessingOutputs();
+            await this.hideProcessingOutputs();
+
+            // If outputs still not ready after polling, show refresh notification
+            if (!this.outputs) {
+              this.showOutputsPendingNotification();
+            }
           }
 
           await this.loadMessagesFromDB();
@@ -485,7 +493,12 @@
               if (!this.outputs) {
                 this.showProcessingOutputs();
                 await this.loadOrGenerateOutputs();
-                this.hideProcessingOutputs();
+                await this.hideProcessingOutputs();
+
+                // If outputs still not ready after polling, show refresh notification
+                if (!this.outputs) {
+                  this.showOutputsPendingNotification();
+                }
               }
 
               // Apply dynamic UI copy after unlocking
@@ -699,6 +712,12 @@
       // Hide main workspace while processing
       document.getElementById('main-workspace').classList.add('hidden');
 
+      // Clear any existing progress interval
+      if (this.progressInterval) {
+        clearInterval(this.progressInterval);
+        this.progressInterval = null;
+      }
+
       let processingState = document.getElementById('processing-outputs-state');
       if (!processingState) {
         processingState = document.createElement('div');
@@ -718,37 +737,48 @@
             <!-- Status Message -->
             <div class="mb-6">
               <h2 class="text-heading-4 text-secondary mb-3">Finalizing Your Case Analysis</h2>
-              <p class="text-tagline-1 text-secondary/70 mb-4">
+              <p id="processing-status-text" class="text-tagline-1 text-secondary/70 mb-4">
                 We're generating your personalized response drafts and action plan...
               </p>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="mb-6">
+              <div class="flex justify-between text-tagline-2 text-secondary/60 mb-2">
+                <span id="processing-stage-text">Initializing...</span>
+                <span id="processing-percent-text">0%</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                <div id="processing-progress-bar" class="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
+              </div>
             </div>
 
             <!-- What We're Doing -->
             <div class="bg-gray-50 rounded-lg p-4 text-left mb-6">
               <h3 class="text-tagline-1 font-medium text-gray-800 mb-3">Creating your personalized content:</h3>
               <div class="space-y-2">
-                <div class="flex items-center text-tagline-2 text-gray-700">
+                <div id="stage-summary" class="flex items-center text-tagline-2 text-gray-700">
                   <div class="w-2 h-2 bg-blue-500 rounded-full mr-3 animate-pulse"></div>
+                  <span>Analyzing your case details</span>
+                </div>
+                <div id="stage-drafts" class="flex items-center text-tagline-2 text-gray-400">
+                  <div class="w-2 h-2 bg-gray-300 rounded-full mr-3"></div>
                   <span>Generating response letter drafts</span>
                 </div>
-                <div class="flex items-center text-tagline-2 text-gray-700">
-                  <div class="w-2 h-2 bg-blue-500 rounded-full mr-3 animate-pulse" style="animation-delay: 0.5s"></div>
+                <div id="stage-action" class="flex items-center text-tagline-2 text-gray-400">
+                  <div class="w-2 h-2 bg-gray-300 rounded-full mr-3"></div>
                   <span>Creating your action plan checklist</span>
                 </div>
-                <div class="flex items-center text-tagline-2 text-gray-700">
-                  <div class="w-2 h-2 bg-blue-500 rounded-full mr-3 animate-pulse" style="animation-delay: 1s"></div>
-                  <span>Analyzing risks and deadlines</span>
-                </div>
-                <div class="flex items-center text-tagline-2 text-gray-700">
-                  <div class="w-2 h-2 bg-blue-500 rounded-full mr-3 animate-pulse" style="animation-delay: 1.5s"></div>
-                  <span>Preparing guidance and next steps</span>
+                <div id="stage-final" class="flex items-center text-tagline-2 text-gray-400">
+                  <div class="w-2 h-2 bg-gray-300 rounded-full mr-3"></div>
+                  <span>Finalizing guidance and next steps</span>
                 </div>
               </div>
             </div>
 
             <!-- Estimated Time -->
             <div class="text-tagline-2 text-secondary/60 mb-6">
-              This usually takes 30-60 seconds...
+              <span id="processing-time-text">Estimated time remaining: ~45 seconds</span>
             </div>
 
             <!-- Case Info -->
@@ -763,19 +793,166 @@
       }
       processingState.classList.remove('hidden');
 
+      // Start the fake progress animation
+      this.startProgressAnimation();
+
       // Auto-scroll to show the processing screen
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    hideProcessingOutputs() {
-      const processingState = document.getElementById('processing-outputs-state');
-      if (processingState) {
-        processingState.remove();
-      }
-      document.getElementById('main-workspace').classList.remove('hidden');
+    startProgressAnimation() {
+      // Progress configuration
+      const stages = [
+        { percent: 15, stage: 'Analyzing your case details', stageId: 'stage-summary', time: '~40 seconds' },
+        { percent: 35, stage: 'Generating response letters', stageId: 'stage-drafts', time: '~30 seconds' },
+        { percent: 55, stage: 'Creating action plan', stageId: 'stage-action', time: '~20 seconds' },
+        { percent: 75, stage: 'Finalizing guidance', stageId: 'stage-final', time: '~10 seconds' },
+        { percent: 88, stage: 'Almost done...', stageId: null, time: 'Just a moment...' }
+      ];
 
-      // Auto-scroll to show the content
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      let currentProgress = 0;
+      let currentStageIndex = 0;
+      const totalDuration = 50000; // 50 seconds to reach ~88%
+      const intervalTime = 500; // Update every 500ms
+      const incrementPerInterval = 88 / (totalDuration / intervalTime);
+
+      this.progressInterval = setInterval(() => {
+        currentProgress += incrementPerInterval;
+
+        // Cap at 88% until actual completion
+        if (currentProgress > 88) {
+          currentProgress = 88;
+        }
+
+        // Update progress bar
+        const progressBar = document.getElementById('processing-progress-bar');
+        const percentText = document.getElementById('processing-percent-text');
+        const stageText = document.getElementById('processing-stage-text');
+        const timeText = document.getElementById('processing-time-text');
+
+        if (progressBar) {
+          progressBar.style.width = `${currentProgress}%`;
+        }
+        if (percentText) {
+          percentText.textContent = `${Math.round(currentProgress)}%`;
+        }
+
+        // Check if we should advance to next stage
+        while (currentStageIndex < stages.length && currentProgress >= stages[currentStageIndex].percent) {
+          const stage = stages[currentStageIndex];
+
+          if (stageText) {
+            stageText.textContent = stage.stage;
+          }
+          if (timeText) {
+            timeText.textContent = `Estimated time remaining: ${stage.time}`;
+          }
+
+          // Update stage indicators
+          this.updateStageIndicator(currentStageIndex);
+
+          currentStageIndex++;
+        }
+
+        // Stop at 88% and hold
+        if (currentProgress >= 88) {
+          clearInterval(this.progressInterval);
+          this.progressInterval = null;
+        }
+      }, intervalTime);
+    }
+
+    updateStageIndicator(completedIndex) {
+      const stageIds = ['stage-summary', 'stage-drafts', 'stage-action', 'stage-final'];
+
+      stageIds.forEach((id, index) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+
+        const dot = el.querySelector('div');
+
+        if (index < completedIndex) {
+          // Completed stages - green checkmark
+          el.className = 'flex items-center text-tagline-2 text-green-700';
+          if (dot) {
+            dot.className = 'w-2 h-2 bg-green-500 rounded-full mr-3';
+          }
+        } else if (index === completedIndex) {
+          // Current stage - blue pulsing
+          el.className = 'flex items-center text-tagline-2 text-gray-700';
+          if (dot) {
+            dot.className = 'w-2 h-2 bg-blue-500 rounded-full mr-3 animate-pulse';
+          }
+        } else {
+          // Future stages - gray
+          el.className = 'flex items-center text-tagline-2 text-gray-400';
+          if (dot) {
+            dot.className = 'w-2 h-2 bg-gray-300 rounded-full mr-3';
+          }
+        }
+      });
+    }
+
+    completeProgress() {
+      // Clear any running interval
+      if (this.progressInterval) {
+        clearInterval(this.progressInterval);
+        this.progressInterval = null;
+      }
+
+      // Animate to 100%
+      const progressBar = document.getElementById('processing-progress-bar');
+      const percentText = document.getElementById('processing-percent-text');
+      const stageText = document.getElementById('processing-stage-text');
+      const timeText = document.getElementById('processing-time-text');
+
+      if (progressBar) {
+        progressBar.style.width = '100%';
+        progressBar.className = 'bg-gradient-to-r from-green-500 to-green-600 h-3 rounded-full transition-all duration-500 ease-out';
+      }
+      if (percentText) {
+        percentText.textContent = '100%';
+      }
+      if (stageText) {
+        stageText.textContent = 'Complete!';
+      }
+      if (timeText) {
+        timeText.textContent = 'Your content is ready!';
+      }
+
+      // Mark all stages complete
+      this.updateStageIndicator(4);
+    }
+
+    async hideProcessingOutputs() {
+      // Clear any running progress interval
+      if (this.progressInterval) {
+        clearInterval(this.progressInterval);
+        this.progressInterval = null;
+      }
+
+      const processingState = document.getElementById('processing-outputs-state');
+
+      // If outputs are ready, show completion animation first
+      if (this.outputs && processingState) {
+        this.completeProgress();
+
+        // Wait a moment to show the completed state, then hide
+        await new Promise(resolve => setTimeout(resolve, 800));
+
+        if (processingState) {
+          processingState.remove();
+        }
+        document.getElementById('main-workspace').classList.remove('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        // No outputs, just hide immediately
+        if (processingState) {
+          processingState.remove();
+        }
+        document.getElementById('main-workspace').classList.remove('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     }
 
     showPaymentTimeout() {
@@ -800,6 +977,51 @@
       timeoutState.classList.remove('hidden');
     }
 
+    showOutputsPendingNotification() {
+      let pendingState = document.getElementById('outputs-pending-notification');
+      if (!pendingState) {
+        pendingState = document.createElement('div');
+        pendingState.id = 'outputs-pending-notification';
+        pendingState.className = 'max-w-4xl mx-auto mb-6';
+        pendingState.innerHTML = `
+          <div class="bg-blue-50 border border-blue-200 rounded-[20px] p-6">
+            <div class="flex items-start gap-4">
+              <div class="flex-shrink-0">
+                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                </svg>
+              </div>
+              <div class="flex-1">
+                <h3 class="text-heading-6 text-blue-800 mb-2">Your personalized content is being generated</h3>
+                <p class="text-tagline-1 text-blue-700 mb-3">
+                  We're creating your custom response letters, action plan, and case analysis. This process can take a few minutes.
+                </p>
+                <p class="text-tagline-2 text-blue-600 mb-4">
+                  You'll receive an email at <strong>${this.escapeHtml(this.caseData?.email || 'your email')}</strong> when everything is ready.
+                  Then simply refresh this page to see your personalized content.
+                </p>
+                <div class="flex gap-3">
+                  <button onclick="window.location.reload()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-tagline-1">
+                    Refresh Now
+                  </button>
+                  <span class="text-tagline-2 text-blue-500 self-center">or check back in a few minutes</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        // Insert at the top of the workspace
+        const workspace = document.getElementById('main-workspace');
+        workspace.insertBefore(pendingState, workspace.firstChild.nextSibling);
+      }
+      pendingState.classList.remove('hidden');
+    }
+
+    hideOutputsPendingNotification() {
+      const pendingState = document.getElementById('outputs-pending-notification');
+      if (pendingState) pendingState.classList.add('hidden');
+    }
+
     showError() {
       document.getElementById('error-state').classList.remove('hidden');
       document.getElementById('main-workspace').classList.add('hidden');
@@ -818,6 +1040,11 @@
       } else {
         statusBadge.textContent = 'Locked';
         statusBadge.className = 'inline-block px-2 py-1 rounded text-tagline-2 bg-yellow-100 text-yellow-800';
+      }
+
+      // Hide pending notification if outputs are now ready
+      if (this.outputs) {
+        this.hideOutputsPendingNotification();
       }
 
       this.populateSummary();
