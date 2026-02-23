@@ -29,3 +29,8 @@ import './js/utils/force-theme-switcher';
 import './js/utils/img-before-after-slider';
 import './js/utils/leaflet';
 import './js/utils/theme-switcher';
+
+// Blog functionality
+import './js/services/blog-api';
+import './js/pages/blog-list';
+import './js/pages/blog-detail';

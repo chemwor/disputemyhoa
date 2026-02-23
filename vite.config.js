@@ -8,12 +8,25 @@ import injectHTML from 'vite-plugin-html-inject';
 const getHtmlEntries = () => {
   const pagesDir = path.resolve(__dirname, '');
   const entries = {};
+
+  // Get root HTML files
   const files = fs.readdirSync(pagesDir);
   const htmlFiles = files.filter((file) => file.endsWith('.html'));
   htmlFiles.forEach((file) => {
     const name = path.basename(file, '.html');
     entries[name] = path.resolve(pagesDir, file);
   });
+
+  // Get blog subdirectory HTML files
+  const blogDir = path.resolve(__dirname, 'blog');
+  if (fs.existsSync(blogDir)) {
+    const blogFiles = fs.readdirSync(blogDir);
+    const blogHtmlFiles = blogFiles.filter((file) => file.endsWith('.html'));
+    blogHtmlFiles.forEach((file) => {
+      const name = `blog/${path.basename(file, '.html')}`;
+      entries[name] = path.resolve(blogDir, file);
+    });
+  }
 
   return entries;
 };
@@ -151,6 +164,13 @@ export default defineConfig({
   },
   server: {
     open: true,
+    proxy: {
+      '/api': {
+        target: 'https://dmhoa-246713e0bd92.herokuapp.com',
+        changeOrigin: true,
+        secure: true,
+      },
+    },
   },
   base: './',
 });
