@@ -193,8 +193,6 @@ Dynamic Blog List - Fetches from API
       })
       .then(function(data) {
         console.log('Blog API response:', data);
-        console.log('Total from API:', data.total);
-        console.log('Posts count:', data.posts ? data.posts.length : 0);
 
         if (!data.posts || data.posts.length === 0) {
           container.innerHTML = '<p class="col-span-full text-center py-12 text-secondary/60 dark:text-primary-50/60">No blog posts found.</p>';
@@ -202,9 +200,8 @@ Dynamic Blog List - Fetches from API
           return;
         }
 
-        // Calculate total pages from total count
-        // API should return: { posts: [...], total: number }
-        var total = data.total || data.count || data.total_count || data.posts.length;
+        // Get total from pagination object (API returns: { posts: [...], pagination: { total: N } })
+        var total = (data.pagination && data.pagination.total) || data.total || data.posts.length;
         totalPages = Math.ceil(total / POSTS_PER_PAGE);
         console.log('Total records:', total, 'Total pages:', totalPages);
 
