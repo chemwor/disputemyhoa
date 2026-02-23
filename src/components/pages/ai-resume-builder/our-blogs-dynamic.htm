@@ -70,7 +70,7 @@ Dynamic Blog List - Fetches from API
     </div>
 
     <!-- Pagination Container -->
-    <div id="blog-pagination"></div>
+    <div id="blog-pagination" class="mt-12 flex justify-center items-center gap-2"></div>
   </div>
 </section>
 
@@ -80,13 +80,16 @@ Dynamic Blog List - Fetches from API
   // Use relative path for Vite proxy during development, or full URL in production
   var isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
   var API_BASE_URL = isLocalhost ? '' : 'https://dmhoa-246713e0bd92.herokuapp.com';
-  const DEFAULT_IMAGE = './images/ns-img-443.png';
+  var DEFAULT_IMAGE = '/images/ns-img-443.png';
+  var POSTS_PER_PAGE = 6;
+  var currentPage = 1;
+  var totalPages = 1;
 
   function formatDate(dateString) {
-    const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
+    var date = new Date(dateString);
+    var day = String(date.getDate()).padStart(2, '0');
+    var month = String(date.getMonth() + 1).padStart(2, '0');
+    var year = date.getFullYear();
     return day + '.' + month + '.' + year;
   }
 
@@ -101,13 +104,13 @@ Dynamic Blog List - Fetches from API
           '<img src="' + imageUrl + '" alt="' + (post.title || '') + '" class="size-full object-cover group-hover:scale-105 ease-linear duration-300" onerror="this.src=\'' + DEFAULT_IMAGE + '\'" />' +
         '</figure>' +
         '<div class="p-4 md:p-6 lg:p-8 space-y-3">' +
-          '<span class="inline-block px-4 py-1.5 bg-emerald-500/20 text-emerald-400 rounded-full text-tagline-2 font-medium">' + categoryDisplay + '</span>' +
+          '<span class="inline-block px-4 py-1.5 bg-emerald-100 text-emerald-700 rounded-full text-tagline-2 font-medium">' + categoryDisplay + '</span>' +
           '<p class="text-tagline-2 text-secondary/60 dark:text-primary-50/60">' + formatDate(post.published_at) + '</p>' +
           '<h3 class="text-heading-5 font-semibold">' +
-            '<a href="./blog/post.html?slug=' + post.slug + '" class="text-secondary dark:text-primary-50 hover:text-emerald-500 transition-colors">' + post.title + '</a>' +
+            '<a href="/blog/post.html?slug=' + post.slug + '" class="text-secondary dark:text-primary-50 hover:text-emerald-500 transition-colors">' + post.title + '</a>' +
           '</h3>' +
           '<p class="text-body-2 text-secondary/60 dark:text-primary-50/60 line-clamp-2">' + (post.excerpt || '') + '</p>' +
-          '<a href="./blog/post.html?slug=' + post.slug + '" class="group/btn inline-flex items-center gap-2 px-6 py-2.5 bg-emerald-500 text-white rounded-full font-medium hover:bg-emerald-600 transition-colors mt-4">' +
+          '<a href="/blog/post.html?slug=' + post.slug + '" class="group/btn inline-flex items-center gap-2 px-6 py-2.5 bg-emerald-500 text-white rounded-full font-medium hover:bg-emerald-600 transition-colors mt-4">' +
             'Read More' +
             '<svg class="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>' +
           '</a>' +
@@ -116,16 +119,74 @@ Dynamic Blog List - Fetches from API
     '</article>';
   }
 
-  function loadBlogPosts() {
+  function createPagination(current, total) {
+    if (total <= 1) return '';
+
+    var html = '';
+
+    // Previous button
+    html += '<button onclick="window.goToPage(' + (current - 1) + ')" ' +
+      'class="flex items-center justify-center w-10 h-10 rounded-full border border-secondary/20 text-secondary/60 hover:bg-emerald-500 hover:text-white hover:border-emerald-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" ' +
+      (current === 1 ? 'disabled' : '') + '>' +
+      '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>' +
+    '</button>';
+
+    // Page numbers
+    var startPage = Math.max(1, current - 2);
+    var endPage = Math.min(total, current + 2);
+
+    // Show first page if not in range
+    if (startPage > 1) {
+      html += '<button onclick="window.goToPage(1)" class="flex items-center justify-center w-10 h-10 rounded-full border border-secondary/20 text-secondary hover:bg-emerald-500 hover:text-white hover:border-emerald-500 transition-colors">1</button>';
+      if (startPage > 2) {
+        html += '<span class="px-2 text-secondary/40">...</span>';
+      }
+    }
+
+    for (var i = startPage; i <= endPage; i++) {
+      var isActive = i === current;
+      html += '<button onclick="window.goToPage(' + i + ')" class="flex items-center justify-center w-10 h-10 rounded-full border transition-colors ' +
+        (isActive ? 'bg-emerald-500 text-white border-emerald-500' : 'border-secondary/20 text-secondary hover:bg-emerald-500 hover:text-white hover:border-emerald-500') +
+        '">' + i + '</button>';
+    }
+
+    // Show last page if not in range
+    if (endPage < total) {
+      if (endPage < total - 1) {
+        html += '<span class="px-2 text-secondary/40">...</span>';
+      }
+      html += '<button onclick="window.goToPage(' + total + ')" class="flex items-center justify-center w-10 h-10 rounded-full border border-secondary/20 text-secondary hover:bg-emerald-500 hover:text-white hover:border-emerald-500 transition-colors">' + total + '</button>';
+    }
+
+    // Next button
+    html += '<button onclick="window.goToPage(' + (current + 1) + ')" ' +
+      'class="flex items-center justify-center w-10 h-10 rounded-full border border-secondary/20 text-secondary/60 hover:bg-emerald-500 hover:text-white hover:border-emerald-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" ' +
+      (current === total ? 'disabled' : '') + '>' +
+      '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>' +
+    '</button>';
+
+    return html;
+  }
+
+  function loadBlogPosts(page) {
+    page = page || 1;
+    currentPage = page;
+    var offset = (page - 1) * POSTS_PER_PAGE;
+
     var container = document.getElementById('blog-posts-container');
+    var paginationContainer = document.getElementById('blog-pagination');
+
     if (!container) {
       console.error('Blog container not found');
       return;
     }
 
-    console.log('Loading blog posts...');
+    // Show loading skeleton
+    container.innerHTML = '<article class="group animate-pulse"><div class="bg-background-1 dark:bg-background-5 rounded-[20px] overflow-hidden"><div class="xl:min-h-[310px] xl:max-h-[310px] bg-gray-200 dark:bg-gray-700"></div><div class="p-4 md:p-6 lg:p-8 space-y-4"><div class="h-6 w-24 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-6 w-full bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-4 w-full bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-10 w-28 bg-gray-200 dark:bg-gray-700 rounded-full mt-8"></div></div></div></article><article class="group animate-pulse"><div class="bg-background-1 dark:bg-background-5 rounded-[20px] overflow-hidden"><div class="xl:min-h-[310px] xl:max-h-[310px] bg-gray-200 dark:bg-gray-700"></div><div class="p-4 md:p-6 lg:p-8 space-y-4"><div class="h-6 w-24 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-6 w-full bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-4 w-full bg-gray-200 dark:bg-gray-700 rounded"></div><div class="h-10 w-28 bg-gray-200 dark:bg-gray-700 rounded-full mt-8"></div></div></div></article>';
 
-    fetch(API_BASE_URL + '/api/blog-posts?limit=10&offset=0')
+    console.log('Loading blog posts page:', page);
+
+    fetch(API_BASE_URL + '/api/blog-posts?limit=' + POSTS_PER_PAGE + '&offset=' + offset)
       .then(function(response) {
         if (!response.ok) throw new Error('HTTP ' + response.status);
         return response.json();
@@ -135,8 +196,13 @@ Dynamic Blog List - Fetches from API
 
         if (!data.posts || data.posts.length === 0) {
           container.innerHTML = '<p class="col-span-full text-center py-12 text-secondary/60 dark:text-primary-50/60">No blog posts found.</p>';
+          paginationContainer.innerHTML = '';
           return;
         }
+
+        // Calculate total pages from total count
+        var total = data.total || data.posts.length;
+        totalPages = Math.ceil(total / POSTS_PER_PAGE);
 
         var html = '';
         for (var i = 0; i < data.posts.length; i++) {
@@ -144,22 +210,38 @@ Dynamic Blog List - Fetches from API
         }
 
         container.innerHTML = html;
-        console.log('Blog posts rendered:', data.posts.length);
+        paginationContainer.innerHTML = createPagination(currentPage, totalPages);
+
+        // Scroll to top of blog section when changing pages
+        if (page > 1) {
+          var section = container.closest('section');
+          if (section) {
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }
+
+        console.log('Blog posts rendered:', data.posts.length, 'Page:', currentPage, 'of', totalPages);
       })
       .catch(function(error) {
         console.error('Error loading blog posts:', error);
-        container.innerHTML = '<p class="col-span-full text-center py-12 text-secondary/60">Failed to load blog posts. <button onclick="loadBlogPosts()" class="underline">Try again</button></p>';
+        container.innerHTML = '<p class="col-span-full text-center py-12 text-secondary/60">Failed to load blog posts. <button onclick="window.loadBlogPosts(' + currentPage + ')" class="underline">Try again</button></p>';
+        paginationContainer.innerHTML = '';
       });
   }
 
-  // Make loadBlogPosts available globally
+  // Global functions for pagination
   window.loadBlogPosts = loadBlogPosts;
+  window.goToPage = function(page) {
+    if (page >= 1 && page <= totalPages) {
+      loadBlogPosts(page);
+    }
+  };
 
   // Initialize when DOM is ready
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', loadBlogPosts);
+    document.addEventListener('DOMContentLoaded', function() { loadBlogPosts(1); });
   } else {
-    loadBlogPosts();
+    loadBlogPosts(1);
   }
 })();
 </script>
