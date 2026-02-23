@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-force-theme="light" class="light">
+<html lang="en" class="dark">
   <head>
     <Component src="../src/components/shared/head-links.htm" />
     <title>Loading... — Dispute My HOA</title>
@@ -178,10 +178,13 @@
           return;
         }
 
+        var apiUrl = API_BASE_URL + '/api/blog-post/' + encodeURIComponent(slug);
         console.log('Loading blog post:', slug);
+        console.log('API URL:', apiUrl);
 
-        fetch(API_BASE_URL + '/api/blog-post/' + slug)
+        fetch(apiUrl)
           .then(function(response) {
+            console.log('Response status:', response.status);
             if (response.status === 404) {
               throw new Error('not_found');
             }
@@ -192,19 +195,28 @@
           })
           .then(function(post) {
             console.log('Blog post loaded:', post.title);
+            if (!post || !post.title) {
+              throw new Error('invalid_data');
+            }
             renderPost(post);
           })
           .catch(function(error) {
             console.error('Error loading blog post:', error);
+            var message = 'Failed to load article. Please try again later.';
             if (error.message === 'not_found') {
-              container.innerHTML = createError('The article you are looking for does not exist or has been removed.');
-            } else {
-              container.innerHTML = createError('Failed to load article. Please try again later.');
+              message = 'The article you are looking for does not exist or has been removed.';
+            } else if (error.message === 'invalid_data') {
+              message = 'Article data is incomplete.';
             }
+            container.innerHTML = createError(message);
           });
       }
 
       // Initialize when DOM is ready
+      console.log('Blog post script starting...');
+      console.log('Current URL:', window.location.href);
+      console.log('Slug from URL:', getSlugFromUrl());
+
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', loadBlogPost);
       } else {
@@ -212,10 +224,8 @@
       }
     })();
     </script>
-  </body>
-</html>
 
-<style>
+    <style>
   .blog-content h2 { font-size: 1.5rem; font-weight: 600; color: white; margin-top: 2.5rem; margin-bottom: 1rem; }
   .blog-content h3 { font-size: 1.25rem; font-weight: 600; color: white; margin-top: 2rem; margin-bottom: 0.75rem; }
   .blog-content h4 { font-size: 1.125rem; font-weight: 600; color: white; margin-top: 1.5rem; margin-bottom: 0.5rem; }

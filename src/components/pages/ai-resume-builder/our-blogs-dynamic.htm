@@ -91,34 +91,26 @@ Dynamic Blog List - Fetches from API
   }
 
   function createBlogCard(post, index) {
-    const delay = 0.2 + (index % 2) * 0.2;
-    const imageUrl = post.image_url || DEFAULT_IMAGE;
-    const category = post.category || 'HOA News';
-    const categoryDisplay = category.replace(/-/g, ' ').replace(/\b\w/g, function(l) { return l.toUpperCase(); });
-    const datetime = new Date(post.published_at).toISOString().split('T')[0];
+    var imageUrl = post.image_url || DEFAULT_IMAGE;
+    var category = post.category || 'HOA News';
+    var categoryDisplay = category.replace(/-/g, ' ').replace(/\b\w/g, function(l) { return l.toUpperCase(); });
 
-    return '<article data-ns-animate data-delay="' + delay + '" class="group">' +
-      '<div class="bg-background-1 dark:bg-background-5 rounded-[20px] overflow-hidden relative scale-100 hover:scale-[102%] transition-transform duration-500">' +
-        '<figure class="xl:min-h-[310px] xl:max-h-[310px] rounded-b-[20px] overflow-hidden max-w-full">' +
-          '<img src="' + imageUrl + '" alt="' + (post.image_alt || post.title) + '" loading="lazy" class="w-full h-full object-cover object-center" />' +
+    return '<article class="group">' +
+      '<div class="bg-background-1 dark:bg-background-5 rounded-[20px] overflow-hidden">' +
+        '<figure class="xl:min-h-[310px] xl:max-h-[310px] overflow-hidden">' +
+          '<img src="' + imageUrl + '" alt="' + (post.title || '') + '" class="size-full object-cover group-hover:scale-105 ease-linear duration-300" onerror="this.src=\'' + DEFAULT_IMAGE + '\'" />' +
         '</figure>' +
-        '<div class="p-4 md:p-6 lg:p-8 space-y-4 rounded-b-[20px]">' +
-          '<span class="badge badge-cyan">' + categoryDisplay + '</span>' +
-          '<div class="flex items-center gap-4">' +
-            '<time class="text-tagline-2 font-medium text-secondary/60 dark:text-accent/60" datetime="' + datetime + '">' + formatDate(post.published_at) + '</time>' +
-            '<div class="w-px inline-block h-3 bg-stroke-2 dark:bg-stroke-6"></div>' +
-            '<time class="text-tagline-2 font-medium text-secondary/60 dark:text-accent/60">' + (post.read_time_minutes || 5) + ' min</time>' +
-          '</div>' +
-          '<h3 class="font-normal sm:text-heading-5 text-tagline-1 line-clamp-2">' +
-            '<a href="./blog/post.html?slug=' + post.slug + '">' + post.title + '</a>' +
+        '<div class="p-4 md:p-6 lg:p-8 space-y-3">' +
+          '<span class="inline-block px-4 py-1.5 bg-emerald-500/20 text-emerald-400 rounded-full text-tagline-2 font-medium">' + categoryDisplay + '</span>' +
+          '<p class="text-tagline-2 text-secondary/60 dark:text-primary-50/60">' + formatDate(post.published_at) + '</p>' +
+          '<h3 class="text-heading-5 font-semibold">' +
+            '<a href="./blog/post.html?slug=' + post.slug + '" class="text-secondary dark:text-primary-50 hover:text-emerald-500 transition-colors">' + post.title + '</a>' +
           '</h3>' +
-          '<p class="text-tagline-2 font-normal text-secondary/60 dark:text-accent/60 line-clamp-2">' + (post.excerpt || '') + '</p>' +
-          '<div class="mt-8">' +
-            '<a href="./blog/post.html?slug=' + post.slug + '" class="group/btn-v2 flex items-center gap-x-2 transition-colors duration-500 btn-md-v2 btn-v2-white hover:btn-primary-v2 text-tagline-1">' +
-              '<span>Read now</span>' +
-              '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M7.3125 4.5L11.8125 9L7.3125 13.5" class="stroke-secondary dark:stroke-accent group-hover/btn-v2:stroke-accent" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>' +
-            '</a>' +
-          '</div>' +
+          '<p class="text-body-2 text-secondary/60 dark:text-primary-50/60 line-clamp-2">' + (post.excerpt || '') + '</p>' +
+          '<a href="./blog/post.html?slug=' + post.slug + '" class="group/btn inline-flex items-center gap-2 px-6 py-2.5 bg-emerald-500 text-white rounded-full font-medium hover:bg-emerald-600 transition-colors mt-4">' +
+            'Read More' +
+            '<svg class="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>' +
+          '</a>' +
         '</div>' +
       '</div>' +
     '</article>';
@@ -140,17 +132,19 @@ Dynamic Blog List - Fetches from API
       })
       .then(function(data) {
         console.log('Blog API response:', data);
+
         if (!data.posts || data.posts.length === 0) {
-          container.innerHTML = '<p class="col-span-full text-center py-12 text-secondary/60">No blog posts found.</p>';
+          container.innerHTML = '<p class="col-span-full text-center py-12 text-secondary/60 dark:text-primary-50/60">No blog posts found.</p>';
           return;
         }
 
-        var html = data.posts.map(function(post, index) {
-          return createBlogCard(post, index);
-        }).join('');
+        var html = '';
+        for (var i = 0; i < data.posts.length; i++) {
+          html += createBlogCard(data.posts[i], i);
+        }
 
         container.innerHTML = html;
-        console.log('Blog posts rendered: ' + data.posts.length);
+        console.log('Blog posts rendered:', data.posts.length);
       })
       .catch(function(error) {
         console.error('Error loading blog posts:', error);
