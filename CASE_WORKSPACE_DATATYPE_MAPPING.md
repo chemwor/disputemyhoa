@@ -121,10 +121,16 @@ interface OutputsAPIResponse {
   status: "ready" | "processing" | "waiting"
   result?: OutputsData           // Generated content
   outputs?: OutputsData          // Alternative field name
+  fine_per_day?: number | string // Daily fine amount (from dmhoa_case_outputs)
+  fine_start_date?: string       // Fine start date YYYY-MM-DD (from dmhoa_case_outputs)
   created_at?: string           // ISO timestamp
   updated_at?: string           // ISO timestamp
 }
 ```
+
+**Note:** The `fine_per_day` and `fine_start_date` fields are stored as columns in the
+`dmhoa_case_outputs` table and MUST be returned by the `/api/read-outputs` endpoint
+for the Fine Accrual Calculator widget to display.
 
 #### **Messages API Response:**
 ```typescript

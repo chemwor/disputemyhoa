@@ -250,7 +250,7 @@ Sincerely,
 
 **Get Templates Customized to Your Situation**
 
-These samples are a good starting point, but every situation is different. Get three response templates specifically tailored to your violation for just $29.
+These samples are a good starting point, but every situation is different. Get three response templates specifically tailored to your violation for just $49.
 
 ✓ Addresses your exact circumstances
 ✓ References your specific HOA rules
@@ -481,7 +481,7 @@ Why spend hours crafting the perfect response when you can get professionally-wr
 ✓ Three response options for your situation
 ✓ Written by HOA dispute experts
 ✓ Cites your specific governing documents
-✓ Just $29 — less than one hour of attorney time
+✓ Just $49 — less than one hour of attorney time
 
 [Get Your Custom Templates →](https://disputemyhoa.com/start-case)
 
@@ -622,7 +622,7 @@ These samples are helpful, but every HOA and violation is different. Get three p
 ✓ Request Extension Letter
 ✓ Confirm Compliance Letter
 ✓ Plus evidence checklist and deadline tracker
-✓ Just $29 with money-back guarantee
+✓ Just $49 with money-back guarantee
 
 [Get Your Custom Templates Now →](https://disputemyhoa.com/start-case)
 

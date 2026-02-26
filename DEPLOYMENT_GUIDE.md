@@ -47,8 +47,8 @@ Go to Settings > Edge Functions and add:
 ### 2. Stripe Setup
 
 #### A. Create Product and Price
-1. In Stripe Dashboard, create a product for "Case Pass - $29"
-2. Create a price for $29.00 USD
+1. In Stripe Dashboard, create a product for "Case Pass - $49"
+2. Create a price for $49.00 USD
 3. Copy the price ID (starts with `price_`)
 
 #### B. Set up Webhook

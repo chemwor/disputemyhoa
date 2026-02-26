@@ -1,5 +1,82 @@
 <!-- Case Workspace -->
-<section class="xl:pt-[180px] lg:pt-[140px] md:pt-[120px] pt-[140px] pb-16 lg:pb-24">
+<style>
+  /* Mobile Tab Navigation - Fixed at bottom */
+  .mobile-tab-nav {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: auto !important;
+    background: white;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+    z-index: 9999 !important;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    transform: none !important;
+    -webkit-transform: none !important;
+    will-change: auto;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    contain: layout style;
+  }
+
+  /* Ensure nav is outside any transform context */
+  html.lenis, html.lenis body {
+    height: auto;
+  }
+
+  @media (min-width: 1024px) {
+    .mobile-tab-nav {
+      display: none !important;
+    }
+  }
+
+  .mobile-tab-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    color: #6b7280;
+    transition: color 0.2s;
+    background: none;
+    border: none;
+    cursor: pointer;
+    min-width: 64px;
+  }
+
+  .mobile-tab-btn.active {
+    color: #16a34a;
+  }
+
+  .mobile-tab-btn svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .mobile-tab-btn span {
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  /* Mobile content visibility */
+  @media (max-width: 1023px) {
+    .mobile-tab-content {
+      display: none;
+    }
+    .mobile-tab-content.mobile-active {
+      display: block;
+    }
+    /* Add padding for fixed bottom nav */
+    .mobile-bottom-padding {
+      padding-bottom: 80px;
+    }
+  }
+</style>
+
+<section class="xl:pt-[180px] lg:pt-[140px] md:pt-[120px] pt-[140px] pb-16 lg:pb-24 mobile-bottom-padding">
   <div class="main-container">
     <!-- Error State -->
     <div id="error-state" class="hidden max-w-2xl mx-auto">
@@ -13,24 +90,125 @@
     <!-- Main Workspace -->
     <div id="main-workspace" class="max-w-7xl mx-auto">
       <!-- Workspace Header -->
-      <div class="mb-8 lg:mb-12">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h1 id="workspace-title" class="text-heading-3 lg:text-heading-2 mb-2">Case Workspace</h1>
-            <p id="workspace-subtitle" class="text-tagline-2 text-secondary/60 hidden"></p>
-            <div class="flex items-center gap-3">
-              <p class="text-tagline-2 text-secondary/60">Case ID: <span id="case-id" class="font-mono"></span></p>
-              <span id="status-badge" class="inline-block px-2 py-1 rounded text-tagline-2 bg-green-100 text-green-800">Unlocked</span>
+      <div class="mb-6 lg:mb-8">
+        <h1 id="workspace-title" class="text-heading-3 lg:text-heading-2 mb-2">Case Workspace</h1>
+        <p id="workspace-subtitle" class="text-tagline-2 text-secondary/60 hidden"></p>
+        <div class="flex items-center gap-3">
+          <p class="text-tagline-2 text-secondary/60">Case ID: <span id="case-id" class="font-mono"></span></p>
+          <span id="status-badge" class="inline-block px-2 py-1 rounded text-tagline-2 bg-green-100 text-green-800">Unlocked</span>
+        </div>
+      </div>
+
+      <!-- Fine Accrual Calculator Widget (Minimizable) -->
+      <div id="fine-accrual-widget" class="hidden mb-6">
+        <!-- Expanded State -->
+        <div id="fine-widget-expanded" class="rounded-[20px] p-4 lg:p-6 shadow-lg">
+          <div class="flex items-start gap-3 lg:gap-4">
+            <div class="flex-shrink-0 text-2xl lg:text-4xl">⚠️</div>
+            <div class="flex-1 min-w-0">
+              <div id="fine-accrual-primary" class="text-white text-lg lg:text-2xl font-bold mb-1 lg:mb-2">
+                <!-- Populated by JS -->
+              </div>
+              <div id="fine-accrual-secondary" class="text-white/80 text-xs lg:text-base">
+                <!-- Populated by JS -->
+              </div>
             </div>
-          </div>
-          <div class="flex gap-3">
-            <button id="back-to-preview" class="px-4 py-2 border border-stroke-1 text-secondary rounded-lg hover:bg-background-3 transition-colors text-tagline-1">
-              Back to Preview
+            <button id="minimize-fine-widget" class="flex-shrink-0 p-1 text-white/80 hover:text-white transition-colors" title="Minimize">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+              </svg>
             </button>
-            <a href="start-case.html" class="px-4 py-2 border border-stroke-1 text-secondary rounded-lg hover:bg-background-3 transition-colors text-tagline-1">
-              Start New Case
-            </a>
           </div>
+        </div>
+        <!-- Minimized State -->
+        <div id="fine-widget-minimized" class="hidden">
+          <button id="expand-fine-widget" class="w-full rounded-full py-2 px-4 shadow-lg flex items-center justify-center gap-2 transition-colors">
+            <span class="text-2xl">⚠️</span>
+            <span id="fine-minimized-text" class="text-white text-sm font-medium truncate"></span>
+            <svg class="w-4 h-4 text-white/80 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mobile Home Overview (visible only on mobile) -->
+      <div id="mobile-home-section" class="mobile-tab-content mobile-active lg:!hidden" data-mobile-tab="home">
+        <div class="space-y-4">
+          <!-- Welcome Message -->
+          <div class="bg-white rounded-[20px] border border-stroke-1 p-5">
+            <h2 class="text-heading-5 mb-2">Welcome to Your Case</h2>
+            <p class="text-tagline-2 text-secondary/70">Everything you need to respond to your HOA notice is organized below. Tap any section to get started.</p>
+          </div>
+
+          <!-- Navigation Cards -->
+          <button class="mobile-nav-card w-full bg-white rounded-[20px] border border-stroke-1 p-4 text-left hover:border-ns-green hover:bg-green-50/30 transition-colors" data-goto-tab="summary">
+            <div class="flex items-start gap-4">
+              <div class="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                </svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h3 class="text-tagline-1 font-semibold text-secondary mb-1">Case Summary</h3>
+                <p class="text-tagline-2 text-secondary/60">Quick overview of your notice, key dates, and what's at stake.</p>
+              </div>
+              <svg class="w-5 h-5 text-secondary/40 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </div>
+          </button>
+
+          <button class="mobile-nav-card w-full bg-white rounded-[20px] border border-stroke-1 p-4 text-left hover:border-ns-green hover:bg-green-50/30 transition-colors" data-goto-tab="drafts">
+            <div class="flex items-start gap-4">
+              <div class="flex-shrink-0 w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h3 class="text-tagline-1 font-semibold text-secondary mb-1">Draft Letters</h3>
+                <p class="text-tagline-2 text-secondary/60">Ready-to-send response letters. Copy or email directly to your HOA.</p>
+              </div>
+              <svg class="w-5 h-5 text-secondary/40 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </div>
+          </button>
+
+          <button class="mobile-nav-card w-full bg-white rounded-[20px] border border-stroke-1 p-4 text-left hover:border-ns-green hover:bg-green-50/30 transition-colors" data-goto-tab="chat">
+            <div class="flex items-start gap-4">
+              <div class="flex-shrink-0 w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                </svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h3 class="text-tagline-1 font-semibold text-secondary mb-1">Chat & Email Thread</h3>
+                <p class="text-tagline-2 text-secondary/60">Ask questions, get guidance, and manage your HOA correspondence.</p>
+              </div>
+              <svg class="w-5 h-5 text-secondary/40 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </div>
+          </button>
+
+          <button class="mobile-nav-card w-full bg-white rounded-[20px] border border-stroke-1 p-4 text-left hover:border-ns-green hover:bg-green-50/30 transition-colors" data-goto-tab="actions">
+            <div class="flex items-start gap-4">
+              <div class="flex-shrink-0 w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                </svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h3 class="text-tagline-1 font-semibold text-secondary mb-1">Action Plan & Documents</h3>
+                <p class="text-tagline-2 text-secondary/60">Step-by-step checklist and your uploaded documents.</p>
+              </div>
+              <svg class="w-5 h-5 text-secondary/40 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </div>
+          </button>
         </div>
       </div>
 
@@ -39,7 +217,7 @@
         <!-- Left Column (Chat + Drafts) -->
         <div class="lg:col-span-2 space-y-6">
           <!-- Chat Card -->
-          <div class="bg-white rounded-[20px] border border-stroke-1 p-6">
+          <div class="bg-white rounded-[20px] border border-stroke-1 p-6 mobile-tab-content" data-mobile-tab="chat">
             <h2 class="text-heading-5 mb-4">Chat</h2>
 
             <!-- Messages Area -->
@@ -64,8 +242,185 @@
             </div>
           </div>
 
+          <!-- Email Recipients Card -->
+          <div id="recipients-card" class="bg-white rounded-[20px] border border-stroke-1 p-6 hidden mobile-tab-content" data-mobile-tab="chat">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+                <h2 class="text-heading-5">Email Recipients</h2>
+              </div>
+              <button id="edit-recipients-btn" class="px-3 py-1 text-tagline-2 border border-stroke-1 rounded hover:bg-background-3 transition-colors">
+                Edit
+              </button>
+            </div>
+
+            <!-- Prompt Banner (shown when all fields are null) -->
+            <div id="recipients-prompt-banner" class="hidden bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+              <p class="text-tagline-2 text-yellow-800">
+                Recipient emails not found in your documents. Add them manually to enable one-click email sending.
+              </p>
+            </div>
+
+            <!-- Read State -->
+            <div id="recipients-read-state" class="space-y-3">
+              <div class="flex items-start gap-3">
+                <span class="text-tagline-2 font-medium text-secondary/60 w-8">To:</span>
+                <div id="recipient-to-display" class="flex-1">
+                  <span class="text-tagline-2 text-secondary/60 italic">Not detected — click Edit to add</span>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <span class="text-tagline-2 font-medium text-secondary/60 w-8">CC:</span>
+                <div id="recipient-cc-display" class="flex-1">
+                  <span class="text-tagline-2 text-secondary/60 italic">Not detected — click Edit to add</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Edit State -->
+            <div id="recipients-edit-state" class="hidden space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-tagline-2 font-medium text-secondary mb-1">To Email</label>
+                  <input type="email" id="edit-to-email" class="w-full px-3 py-2 border border-stroke-1 rounded-lg focus:outline-none focus:border-ns-green text-tagline-2" placeholder="hoa@example.com">
+                  <span id="to-email-error" class="hidden text-tagline-3 text-red-600 mt-1">Invalid email format</span>
+                </div>
+                <div>
+                  <label class="block text-tagline-2 font-medium text-secondary mb-1">To Name</label>
+                  <input type="text" id="edit-to-name" class="w-full px-3 py-2 border border-stroke-1 rounded-lg focus:outline-none focus:border-ns-green text-tagline-2" placeholder="HOA Manager">
+                </div>
+              </div>
+              <div id="to-role-display" class="hidden">
+                <span class="text-tagline-3 text-secondary/60">Role: <span id="to-role-label"></span></span>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-tagline-2 font-medium text-secondary mb-1">CC Email</label>
+                  <input type="email" id="edit-cc-email" class="w-full px-3 py-2 border border-stroke-1 rounded-lg focus:outline-none focus:border-ns-green text-tagline-2" placeholder="board@example.com">
+                  <span id="cc-email-error" class="hidden text-tagline-3 text-red-600 mt-1">Invalid email format</span>
+                </div>
+                <div>
+                  <label class="block text-tagline-2 font-medium text-secondary mb-1">CC Name</label>
+                  <input type="text" id="edit-cc-name" class="w-full px-3 py-2 border border-stroke-1 rounded-lg focus:outline-none focus:border-ns-green text-tagline-2" placeholder="HOA Board">
+                </div>
+              </div>
+              <div id="cc-role-display" class="hidden">
+                <span class="text-tagline-3 text-secondary/60">Role: <span id="cc-role-label"></span></span>
+              </div>
+              <div class="flex gap-3 pt-2">
+                <button id="save-recipients-btn" class="px-4 py-2 bg-ns-green text-white rounded-lg hover:bg-ns-green/90 transition-colors text-tagline-2">
+                  Save
+                </button>
+                <button id="cancel-recipients-btn" class="px-4 py-2 border border-stroke-1 text-secondary rounded-lg hover:bg-background-3 transition-colors text-tagline-2">
+                  Cancel
+                </button>
+              </div>
+              <div id="recipients-save-error" class="hidden text-tagline-2 text-red-600">
+                Could not save — please try again
+              </div>
+            </div>
+          </div>
+
+          <!-- HOA Email Thread Card -->
+          <div id="email-thread-section" class="bg-white rounded-[20px] border border-stroke-1 p-6 hidden mobile-tab-content" data-mobile-tab="chat">
+            <div class="flex items-center gap-2 mb-4">
+              <svg class="w-5 h-5 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+              </svg>
+              <h2 class="text-heading-5">HOA Email Thread</h2>
+            </div>
+
+            <!-- Input Area -->
+            <div id="email-input-area" class="mb-6">
+              <button id="toggle-email-input" class="w-full flex items-center justify-between px-4 py-3 bg-background-3 rounded-lg hover:bg-gray-100 transition-colors text-left">
+                <span class="text-tagline-1 font-medium text-secondary">Paste HOA's Latest Response</span>
+                <svg id="email-input-chevron" class="w-5 h-5 text-secondary/60 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </button>
+
+              <!-- Expandable Input -->
+              <div id="email-input-expanded" class="hidden mt-4">
+                <textarea
+                  id="hoa-message-input"
+                  placeholder="Paste the HOA's email or letter here..."
+                  class="w-full h-32 px-4 py-3 border border-stroke-1 rounded-lg focus:outline-none focus:border-ns-green resize-none text-tagline-2"
+                ></textarea>
+                <div class="flex items-center justify-between mt-2">
+                  <span id="email-char-count" class="text-tagline-2 text-secondary/60">0 characters</span>
+                  <button id="generate-response-btn" class="px-4 py-2 bg-ns-green text-white rounded-lg hover:bg-ns-green/90 transition-colors text-tagline-1 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    Generate Response
+                  </button>
+                </div>
+
+                <!-- Loading State -->
+                <div id="email-generating-state" class="hidden mt-4 p-4 bg-blue-50 rounded-lg">
+                  <div class="flex items-center">
+                    <div class="animate-spin w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full mr-3"></div>
+                    <span class="text-tagline-2 text-blue-700">Drafting your response...</span>
+                  </div>
+                </div>
+
+                <!-- Error State -->
+                <div id="email-error-state" class="hidden mt-4 p-4 bg-red-50 rounded-lg">
+                  <span class="text-tagline-2 text-red-700">Something went wrong. Please try again.</span>
+                </div>
+
+                <!-- Generated Response Preview -->
+                <div id="email-response-preview" class="hidden mt-4">
+                  <div class="p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <h4 class="text-tagline-1 font-medium text-green-800 mb-2">Generated Response:</h4>
+                    <div id="generated-response-text" class="text-tagline-2 text-green-900 whitespace-pre-wrap mb-4"></div>
+                    <div class="flex flex-wrap gap-3">
+                      <button id="copy-response-btn" class="px-4 py-2 border border-green-600 text-green-700 rounded-lg hover:bg-green-100 transition-colors text-tagline-2">
+                        Copy to Clipboard
+                      </button>
+                      <div id="email-send-preview-container" class="email-send-btn-container relative">
+                        <button class="email-send-btn px-4 py-2 border border-green-600 text-green-700 rounded-lg hover:bg-green-100 transition-colors text-tagline-2 flex items-center gap-1">
+                          <span>Open in Email</span>
+                          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                          </svg>
+                        </button>
+                        <div class="email-dropdown hidden absolute left-0 top-full mt-1 bg-white border border-stroke-1 rounded-lg shadow-lg z-10 min-w-[140px]">
+                          <button class="email-option-gmail w-full px-3 py-2 text-left text-tagline-2 hover:bg-background-3 transition-colors rounded-t-lg">Gmail</button>
+                          <button class="email-option-mailto w-full px-3 py-2 text-left text-tagline-2 hover:bg-background-3 transition-colors">Mail App</button>
+                          <button class="email-option-copy w-full px-3 py-2 text-left text-tagline-2 hover:bg-background-3 transition-colors rounded-b-lg">Copy to Clipboard</button>
+                        </div>
+                      </div>
+                      <button id="save-to-thread-btn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-tagline-2">
+                        Save to Thread
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Loading State for Thread -->
+            <div id="email-thread-loading" class="text-center py-6">
+              <div class="animate-spin w-6 h-6 border-2 border-ns-green border-t-transparent rounded-full mx-auto mb-2"></div>
+              <span class="text-tagline-2 text-secondary/60">Loading email thread...</span>
+            </div>
+
+            <!-- Empty State -->
+            <div id="email-thread-empty" class="hidden text-center py-6">
+              <svg class="w-12 h-12 text-secondary/30 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+              </svg>
+              <p class="text-tagline-2 text-secondary/60">No HOA replies recorded yet. Paste your first HOA response above to generate a counter-letter.</p>
+            </div>
+
+            <!-- Accordion List -->
+            <div id="email-thread-list" class="hidden space-y-3">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
           <!-- Draft Replies Card -->
-          <div class="bg-white rounded-[20px] border border-stroke-1 p-6">
+          <div class="bg-white rounded-[20px] border border-stroke-1 p-6 mobile-tab-content" data-mobile-tab="drafts">
             <h2 class="text-heading-5 mb-4">Draft Replies</h2>
 
             <!-- Locked State -->
@@ -95,9 +450,24 @@
               <div class="bg-background-3 rounded-lg p-4">
                 <div class="flex justify-between items-start mb-2">
                   <h3 id="draft-title-clarification" class="text-tagline-1 font-medium">Request Clarification</h3>
-                  <button class="copy-btn px-3 py-1 text-tagline-2 border border-stroke-1 rounded hover:bg-background-3 transition-colors" data-draft="clarification">
-                    Copy
-                  </button>
+                  <div class="flex gap-2">
+                    <button class="copy-btn px-3 py-1 text-tagline-2 border border-stroke-1 rounded hover:bg-background-3 transition-colors" data-draft="clarification">
+                      Copy
+                    </button>
+                    <div class="email-send-btn-container relative" data-draft="clarification">
+                      <button class="email-send-btn px-3 py-1 text-tagline-2 border border-stroke-1 rounded hover:bg-background-3 transition-colors flex items-center gap-1">
+                        <span>Open in Email</span>
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                      </button>
+                      <div class="email-dropdown hidden absolute right-0 top-full mt-1 bg-white border border-stroke-1 rounded-lg shadow-lg z-10 min-w-[140px]">
+                        <button class="email-option-gmail w-full px-3 py-2 text-left text-tagline-2 hover:bg-background-3 transition-colors rounded-t-lg">Gmail</button>
+                        <button class="email-option-mailto w-full px-3 py-2 text-left text-tagline-2 hover:bg-background-3 transition-colors">Mail App</button>
+                        <button class="email-option-copy w-full px-3 py-2 text-left text-tagline-2 hover:bg-background-3 transition-colors rounded-b-lg">Copy to Clipboard</button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <div id="draft-clarification" class="text-tagline-2 text-secondary/80">
                   <!-- Will be populated by JS -->
@@ -107,9 +477,24 @@
               <div class="bg-background-3 rounded-lg p-4">
                 <div class="flex justify-between items-start mb-2">
                   <h3 id="draft-title-extension" class="text-tagline-1 font-medium">Request Extension</h3>
-                  <button class="copy-btn px-3 py-1 text-tagline-2 border border-stroke-1 rounded hover:bg-background-3 transition-colors" data-draft="extension">
-                    Copy
-                  </button>
+                  <div class="flex gap-2">
+                    <button class="copy-btn px-3 py-1 text-tagline-2 border border-stroke-1 rounded hover:bg-background-3 transition-colors" data-draft="extension">
+                      Copy
+                    </button>
+                    <div class="email-send-btn-container relative" data-draft="extension">
+                      <button class="email-send-btn px-3 py-1 text-tagline-2 border border-stroke-1 rounded hover:bg-background-3 transition-colors flex items-center gap-1">
+                        <span>Open in Email</span>
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                      </button>
+                      <div class="email-dropdown hidden absolute right-0 top-full mt-1 bg-white border border-stroke-1 rounded-lg shadow-lg z-10 min-w-[140px]">
+                        <button class="email-option-gmail w-full px-3 py-2 text-left text-tagline-2 hover:bg-background-3 transition-colors rounded-t-lg">Gmail</button>
+                        <button class="email-option-mailto w-full px-3 py-2 text-left text-tagline-2 hover:bg-background-3 transition-colors">Mail App</button>
+                        <button class="email-option-copy w-full px-3 py-2 text-left text-tagline-2 hover:bg-background-3 transition-colors rounded-b-lg">Copy to Clipboard</button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <div id="draft-extension" class="text-tagline-2 text-secondary/80">
                   <!-- Will be populated by JS -->
@@ -119,9 +504,24 @@
               <div class="bg-background-3 rounded-lg p-4">
                 <div class="flex justify-between items-start mb-2">
                   <h3 id="draft-title-compliance" class="text-tagline-1 font-medium">Confirm Compliance</h3>
-                  <button class="copy-btn px-3 py-1 text-tagline-2 border border-stroke-1 rounded hover:bg-background-3 transition-colors" data-draft="compliance">
-                    Copy
-                  </button>
+                  <div class="flex gap-2">
+                    <button class="copy-btn px-3 py-1 text-tagline-2 border border-stroke-1 rounded hover:bg-background-3 transition-colors" data-draft="compliance">
+                      Copy
+                    </button>
+                    <div class="email-send-btn-container relative" data-draft="compliance">
+                      <button class="email-send-btn px-3 py-1 text-tagline-2 border border-stroke-1 rounded hover:bg-background-3 transition-colors flex items-center gap-1">
+                        <span>Open in Email</span>
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                      </button>
+                      <div class="email-dropdown hidden absolute right-0 top-full mt-1 bg-white border border-stroke-1 rounded-lg shadow-lg z-10 min-w-[140px]">
+                        <button class="email-option-gmail w-full px-3 py-2 text-left text-tagline-2 hover:bg-background-3 transition-colors rounded-t-lg">Gmail</button>
+                        <button class="email-option-mailto w-full px-3 py-2 text-left text-tagline-2 hover:bg-background-3 transition-colors">Mail App</button>
+                        <button class="email-option-copy w-full px-3 py-2 text-left text-tagline-2 hover:bg-background-3 transition-colors rounded-b-lg">Copy to Clipboard</button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <div id="draft-compliance" class="text-tagline-2 text-secondary/80">
                   <!-- Will be populated by JS -->
@@ -134,7 +534,7 @@
         <!-- Right Column (Summary + Action Plan + Documents) -->
         <div class="space-y-6">
           <!-- Summary Card -->
-          <div class="bg-white rounded-[20px] border border-stroke-1 p-6">
+          <div class="bg-white rounded-[20px] border border-stroke-1 p-6 mobile-tab-content" data-mobile-tab="summary">
             <h2 class="text-heading-5 mb-4">Summary</h2>
             <div id="summary-content" class="space-y-2 text-tagline-2">
               <!-- Will be populated by JS -->
@@ -145,7 +545,7 @@
           </div>
 
           <!-- Action Plan Card -->
-          <div class="bg-white rounded-[20px] border border-stroke-1 p-6">
+          <div class="bg-white rounded-[20px] border border-stroke-1 p-6 mobile-tab-content" data-mobile-tab="actions">
             <h2 class="text-heading-5 mb-4">Action Plan</h2>
 
             <!-- Locked State -->
@@ -225,7 +625,7 @@
           </div>
 
           <!-- Documents Card -->
-          <div class="bg-white rounded-[20px] border border-stroke-1 p-6">
+          <div class="bg-white rounded-[20px] border border-stroke-1 p-6 mobile-tab-content" data-mobile-tab="actions">
             <h2 class="text-heading-5 mb-4">Documents</h2>
 
             <div class="space-y-3">
@@ -270,6 +670,40 @@
   </div>
 </section>
 
+<!-- Mobile Tab Navigation - Outside section to avoid scroll transform issues -->
+<nav class="mobile-tab-nav" id="mobile-tab-nav">
+  <button class="mobile-tab-btn active" data-tab="home">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+    </svg>
+    <span>Home</span>
+  </button>
+  <button class="mobile-tab-btn" data-tab="summary">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+    </svg>
+    <span>Summary</span>
+  </button>
+  <button class="mobile-tab-btn" data-tab="drafts">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+    </svg>
+    <span>Drafts</span>
+  </button>
+  <button class="mobile-tab-btn" data-tab="chat">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+    </svg>
+    <span>Chat</span>
+  </button>
+  <button class="mobile-tab-btn" data-tab="actions">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+    </svg>
+    <span>Actions</span>
+  </button>
+</nav>
+
 <script>
   class CaseWorkspace {
     constructor() {
@@ -280,9 +714,33 @@
       // DB-generated outputs (summary/drafts/action plan/etc.)
       this.outputs = null;
 
+      // Fine tracking data (from dmhoa_case_outputs table)
+      this.finePerDay = null;
+      this.fineStartDate = null;
+
+      // Debug mode for testing fine widget
+      this.debugFineWidget = false;
+
       // Chat/docs (local for now)
       this.messages = [];
       this.documents = [];
+
+      // Email exchanges
+      this.emailExchanges = [];
+      this.pendingGeneratedResponse = null;
+      this.pendingHoaMessage = null;
+      this.expandedExchangeId = null;
+
+      // Shared recipients state - used by all EmailSendButtons
+      this.recipients = {
+        to_email: null,
+        to_name: null,
+        to_role: null,
+        cc_email: null,
+        cc_name: null,
+        cc_role: null
+      };
+      this.recipientsEditMode = false;
 
       // Progress animation interval
       this.progressInterval = null;
@@ -371,6 +829,12 @@
       this.caseToken = urlParams.get('case');
       const sessionId = urlParams.get('session_id');
 
+      // Debug mode: add ?debug_fine=1 to URL to test fine widget with sample data
+      this.debugFineWidget = urlParams.get('debug_fine') === '1';
+      if (this.debugFineWidget) {
+        // Debug mode active
+      }
+
       if (!this.caseToken) {
         this.showError();
         return;
@@ -398,7 +862,14 @@
           // If outputs are embedded in the case data, use them directly
           if (caseRow.outputs && caseRow.outputs_status === 'ready') {
             this.outputs = caseRow.outputs;
-            console.log('Loaded outputs from case data:', this.outputs);
+          }
+
+          // Extract fine tracking data from API response (from dmhoa_case_outputs table)
+          if (caseRow.fine_per_day != null) {
+            this.finePerDay = caseRow.fine_per_day;
+          }
+          if (caseRow.fine_start_date != null) {
+            this.fineStartDate = caseRow.fine_start_date;
           }
         }
 
@@ -462,6 +933,7 @@
 
         if (res.status === 404) return null;
         if (!res.ok) throw new Error('Failed to fetch case');
+
         return await res.json();
       } catch (err) {
         console.error('fetchCaseFromSupabase error:', err);
@@ -486,7 +958,6 @@
               // Load outputs if available
               if (caseRow.outputs && caseRow.outputs_status === 'ready') {
                 this.outputs = caseRow.outputs;
-                console.log('Loaded outputs after payment confirmation:', this.outputs);
               }
 
               this.hidePaymentConfirmation();
@@ -544,13 +1015,13 @@
         // If outputs are ready, use them immediately
         if (result && (!status || status === 'ready' || status === 'completed')) {
           this.outputs = result;
+          // Also extract fine tracking data from the response
+          if (out.fine_per_day != null) this.finePerDay = out.fine_per_day;
+          if (out.fine_start_date != null) this.fineStartDate = out.fine_start_date;
           return;
         }
 
         // No outputs ready - trigger generation and run animation
-        console.log('Outputs not ready, triggering generation and running animation...');
-
-        // Trigger generation (server should be idempotent)
         await this.triggerGenerateOutputs();
 
         // Wait for animation to complete (~50 seconds)
@@ -558,13 +1029,15 @@
         await new Promise(resolve => setTimeout(resolve, 52000));
 
         // Final check after animation completes
-        console.log('Animation complete, checking for outputs...');
         out = await this.fetchOutputsFromSupabase();
         status = out?.status || out?.state || null;
         result = out?.result || out?.outputs || null;
 
         if (result && (!status || status === 'ready' || status === 'completed')) {
           this.outputs = result;
+          // Also extract fine tracking data from the response
+          if (out.fine_per_day != null) this.finePerDay = out.fine_per_day;
+          if (out.fine_start_date != null) this.fineStartDate = out.fine_start_date;
         }
       } catch (err) {
         console.error('loadOrGenerateOutputs error:', err);
@@ -1051,11 +1524,18 @@
         this.hideOutputsPendingNotification();
       }
 
+      this.populateFineAccrualWidget();
       this.populateSummary();
       this.toggleDraftsVisibility();
       this.toggleActionPlanVisibility();
       this.populateDocuments();
       this.renderMessages();
+
+      // Load email thread and recipients for unlocked cases
+      if (this.isUnlocked) {
+        this.loadRecipients();
+        this.loadEmailThread();
+      }
     }
 
     populateSummary() {
@@ -1107,6 +1587,125 @@
       } else {
         summaryContent.innerHTML = basicInfo.slice(0, 2).join('');
         lockedNote.classList.remove('hidden');
+      }
+    }
+
+    populateFineAccrualWidget() {
+      const widget = document.getElementById('fine-accrual-widget');
+      const expandedEl = document.getElementById('fine-widget-expanded');
+      const minimizedEl = document.getElementById('fine-widget-minimized');
+      const primaryEl = document.getElementById('fine-accrual-primary');
+      const secondaryEl = document.getElementById('fine-accrual-secondary');
+      const minimizedTextEl = document.getElementById('fine-minimized-text');
+
+      // Check multiple possible locations for fine data
+      let finePerDayRaw = null;
+      let fineStartDateRaw = null;
+
+      // Debug mode: use test data ($100/day starting 30 days ago)
+      if (this.debugFineWidget) {
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        finePerDayRaw = 100;
+        fineStartDateRaw = thirtyDaysAgo.toISOString().split('T')[0];
+      }
+      // Check instance properties (set from API response)
+      else if (this.finePerDay != null && this.fineStartDate != null) {
+        finePerDayRaw = this.finePerDay;
+        fineStartDateRaw = this.fineStartDate;
+      }
+      // Check outputs object
+      else if (this.outputs && this.outputs.fine_per_day != null && this.outputs.fine_start_date != null) {
+        finePerDayRaw = this.outputs.fine_per_day;
+        fineStartDateRaw = this.outputs.fine_start_date;
+      }
+      // Check caseData (payload)
+      else if (this.caseData && this.caseData.fine_per_day != null && this.caseData.fine_start_date != null) {
+        finePerDayRaw = this.caseData.fine_per_day;
+        fineStartDateRaw = this.caseData.fine_start_date;
+      }
+
+      // If no fine data found, hide widget and return
+      if (finePerDayRaw == null || fineStartDateRaw == null) {
+        widget.classList.add('hidden');
+        return;
+      }
+
+      const finePerDay = Number(finePerDayRaw);
+      const fineStartDate = new Date(fineStartDateRaw);
+
+      // Validate the values
+      if (isNaN(finePerDay) || finePerDay <= 0 || isNaN(fineStartDate.getTime())) {
+        widget.classList.add('hidden');
+        return;
+      }
+
+      // Calculate days elapsed: Math.floor((today - fine_start_date) / 86400000)
+      const today = new Date();
+      const daysElapsed = Math.floor((today - fineStartDate) / 86400000);
+      const dollarSign = '\u0024';
+
+      // Format the start date as "Month D, YYYY"
+      const formattedStartDate = fineStartDate.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+
+      let bgClass = 'bg-red-600';
+      let primaryText = '';
+      let secondaryText = '';
+      let minimizedText = '';
+
+      // Countdown mode: fines haven't started yet
+      if (daysElapsed < 0) {
+        const daysUntilFines = Math.abs(daysElapsed);
+        bgClass = 'bg-yellow-500';
+        primaryText = `Fines start in ${daysUntilFines} day${daysUntilFines === 1 ? '' : 's'} \u2014 ${dollarSign}${finePerDay}/day`;
+        secondaryText = `Daily fines of ${dollarSign}${finePerDay} will begin on ${formattedStartDate}. Act now to avoid accumulating fines.`;
+        minimizedText = `${daysUntilFines}d until fines start`;
+      }
+      // Fines start today
+      else if (daysElapsed === 0) {
+        bgClass = 'bg-red-600';
+        primaryText = `Fines start TODAY \u2014 ${dollarSign}${finePerDay}/day`;
+        secondaryText = `Daily fines of ${dollarSign}${finePerDay} begin today, ${formattedStartDate}. Take action immediately to prevent fines from accumulating.`;
+        minimizedText = `Fines start TODAY!`;
+      }
+      // Fines already accruing
+      else {
+        const totalAccrued = daysElapsed * finePerDay;
+        bgClass = 'bg-red-600';
+        primaryText = `Estimated fines accrued: ${dollarSign}${totalAccrued.toLocaleString()} (${daysElapsed} days \u00D7 ${dollarSign}${finePerDay}/day)`;
+        secondaryText = `Fines estimated from ${formattedStartDate} based on your violation notice. Actual amounts depend on whether your HOA has formally assessed them.`;
+        minimizedText = `${dollarSign}${totalAccrued.toLocaleString()} in fines`;
+      }
+
+      // Apply styles to both expanded and minimized states
+      expandedEl.className = `${bgClass} rounded-[20px] p-4 lg:p-6 shadow-lg`;
+      minimizedEl.querySelector('button').className = `w-full ${bgClass} rounded-full py-2 px-4 shadow-lg flex items-center justify-center gap-2 transition-colors hover:opacity-90`;
+
+      // Set content
+      primaryEl.textContent = primaryText;
+      secondaryEl.textContent = secondaryText;
+      minimizedTextEl.textContent = minimizedText;
+
+      // Show the widget (expanded by default)
+      widget.classList.remove('hidden');
+      expandedEl.classList.remove('hidden');
+      minimizedEl.classList.add('hidden');
+    }
+
+    toggleFineWidget(expand) {
+      const expandedEl = document.getElementById('fine-widget-expanded');
+      const minimizedEl = document.getElementById('fine-widget-minimized');
+
+      if (expand) {
+        expandedEl.classList.remove('hidden');
+        minimizedEl.classList.add('hidden');
+      } else {
+        expandedEl.classList.add('hidden');
+        minimizedEl.classList.remove('hidden');
       }
     }
 
@@ -1523,6 +2122,10 @@ Sincerely,
       this.renderMessages();
 
       try {
+        // Include latest email exchanges for context
+        // Note: The backend should accept exchange_history in the payload
+        const exchangeHistory = this.getLatestExchangesForChat(3);
+
         const res = await fetch(`${this.getSupabaseUrl()}/api/send-message`, {
           method: 'POST',
           headers: {
@@ -1532,7 +2135,8 @@ Sincerely,
           },
           body: JSON.stringify({
             token: this.caseToken,
-            content: text
+            content: text,
+            exchange_history: exchangeHistory.length > 0 ? exchangeHistory : undefined
           })
         });
 
@@ -1645,15 +2249,14 @@ Sincerely,
         if (e.key === 'Enter') this.sendMessage();
       });
 
-      document.getElementById('back-to-preview').addEventListener('click', () => {
-        window.location.href = 'case-preview.html?case=' + encodeURIComponent(this.caseToken);
-      });
-
-      const unlockBtn = document.getElementById('unlock-drafts');
-      if (unlockBtn) {
-        unlockBtn.addEventListener('click', () => {
-          window.location.href = 'case-preview.html?case=' + encodeURIComponent(this.caseToken);
-        });
+      // Fine widget minimize/expand
+      const minimizeBtn = document.getElementById('minimize-fine-widget');
+      const expandBtn = document.getElementById('expand-fine-widget');
+      if (minimizeBtn) {
+        minimizeBtn.addEventListener('click', () => this.toggleFineWidget(false));
+      }
+      if (expandBtn) {
+        expandBtn.addEventListener('click', () => this.toggleFineWidget(true));
       }
 
       document.querySelectorAll('.copy-btn').forEach(btn => {
@@ -1676,6 +2279,61 @@ Sincerely,
           e.target.value = '';
         }
       });
+
+      // Bind email thread events
+      this.bindEmailThreadEvents();
+
+      // Bind mobile tab navigation
+      this.bindMobileTabEvents();
+    }
+
+    // ==========
+    // Mobile Tab Navigation
+    // ==========
+    bindMobileTabEvents() {
+      const tabNav = document.getElementById('mobile-tab-nav');
+      if (!tabNav) return;
+
+      // Bottom nav tabs
+      tabNav.querySelectorAll('.mobile-tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const tabName = btn.dataset.tab;
+          this.switchMobileTab(tabName);
+        });
+      });
+
+      // Home section navigation cards
+      document.querySelectorAll('.mobile-nav-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const tabName = card.dataset.gotoTab;
+          if (tabName) {
+            this.switchMobileTab(tabName);
+          }
+        });
+      });
+    }
+
+    switchMobileTab(tabName) {
+      // Update tab buttons
+      document.querySelectorAll('.mobile-tab-btn').forEach(btn => {
+        if (btn.dataset.tab === tabName) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+
+      // Update content visibility
+      document.querySelectorAll('.mobile-tab-content').forEach(content => {
+        if (content.dataset.mobileTab === tabName) {
+          content.classList.add('mobile-active');
+        } else {
+          content.classList.remove('mobile-active');
+        }
+      });
+
+      // Scroll to top of content
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     // ==========
@@ -1707,6 +2365,927 @@ Sincerely,
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
+    }
+
+    // ==========
+    // Email Thread
+    // ==========
+    async fetchEmailExchanges() {
+      try {
+        const res = await fetch(
+          `${this.getSupabaseUrl()}/api/cases/${encodeURIComponent(this.caseToken)}/email-exchanges`,
+          {
+            method: 'GET',
+            headers: {
+              'apikey': this.getSupabaseAnonKey(),
+              'Authorization': `Bearer ${this.getSupabaseAnonKey()}`
+            }
+          }
+        );
+
+        if (res.status === 404) return [];
+        if (!res.ok) throw new Error('Failed to fetch email exchanges');
+
+        const data = await res.json();
+        return Array.isArray(data) ? data : (data.exchanges || []);
+      } catch (err) {
+        // Endpoint may not exist yet - return empty array
+        return [];
+      }
+    }
+
+    async loadEmailThread() {
+      if (!this.isUnlocked) return;
+
+      const section = document.getElementById('email-thread-section');
+      const loadingEl = document.getElementById('email-thread-loading');
+      const emptyEl = document.getElementById('email-thread-empty');
+      const listEl = document.getElementById('email-thread-list');
+
+      // Show section for unlocked cases
+      section.classList.remove('hidden');
+      loadingEl.classList.remove('hidden');
+      emptyEl.classList.add('hidden');
+      listEl.classList.add('hidden');
+
+      this.emailExchanges = await this.fetchEmailExchanges();
+
+      loadingEl.classList.add('hidden');
+
+      if (this.emailExchanges.length === 0) {
+        emptyEl.classList.remove('hidden');
+      } else {
+        listEl.classList.remove('hidden');
+        this.renderEmailThread();
+      }
+    }
+
+    // ==========
+    // Recipients Card
+    // ==========
+    async loadRecipients() {
+      if (!this.isUnlocked) return;
+
+      // First check if recipients are already in case data
+      const data = this.caseData || {};
+      if (data.to_email || data.cc_email || data.hoaEmail || data.ccEmail) {
+        this.recipients = {
+          to_email: data.to_email || data.hoaEmail || null,
+          to_name: data.to_name || data.hoaName || null,
+          to_role: data.to_role || null,
+          cc_email: data.cc_email || data.ccEmail || null,
+          cc_name: data.cc_name || null,
+          cc_role: data.cc_role || null
+        };
+        this.renderRecipientsCard();
+        return;
+      }
+
+      // Otherwise fetch from API
+      try {
+        const res = await fetch(
+          `${this.getSupabaseUrl()}/api/cases/${encodeURIComponent(this.caseToken)}/recipients`,
+          {
+            method: 'GET',
+            headers: {
+              'apikey': this.getSupabaseAnonKey(),
+              'Authorization': `Bearer ${this.getSupabaseAnonKey()}`
+            }
+          }
+        );
+
+        if (res.ok) {
+          const recipientData = await res.json();
+          this.recipients = {
+            to_email: recipientData.to_email || null,
+            to_name: recipientData.to_name || null,
+            to_role: recipientData.to_role || null,
+            cc_email: recipientData.cc_email || null,
+            cc_name: recipientData.cc_name || null,
+            cc_role: recipientData.cc_role || null
+          };
+        }
+      } catch (err) {
+        console.error('loadRecipients error:', err);
+      }
+
+      this.renderRecipientsCard();
+    }
+
+    renderRecipientsCard() {
+      const card = document.getElementById('recipients-card');
+      const readState = document.getElementById('recipients-read-state');
+      const editState = document.getElementById('recipients-edit-state');
+      const promptBanner = document.getElementById('recipients-prompt-banner');
+      const toDisplay = document.getElementById('recipient-to-display');
+      const ccDisplay = document.getElementById('recipient-cc-display');
+      const editBtn = document.getElementById('edit-recipients-btn');
+
+      // Show card for unlocked cases
+      if (this.isUnlocked) {
+        card.classList.remove('hidden');
+      }
+
+      // Check if all fields are null
+      const allNull = !this.recipients.to_email && !this.recipients.to_name &&
+                      !this.recipients.cc_email && !this.recipients.cc_name;
+
+      if (allNull) {
+        promptBanner.classList.remove('hidden');
+      } else {
+        promptBanner.classList.add('hidden');
+      }
+
+      // Render To display
+      if (this.recipients.to_email || this.recipients.to_name) {
+        let toHtml = '';
+        if (this.recipients.to_email) {
+          toHtml += `<span class="text-tagline-2 text-secondary font-medium">${this.escapeHtml(this.recipients.to_email)}</span>`;
+        }
+        if (this.recipients.to_name) {
+          toHtml += `<span class="text-tagline-2 text-secondary/70 ml-2">${this.escapeHtml(this.recipients.to_name)}</span>`;
+        }
+        if (this.recipients.to_role) {
+          toHtml += `<span class="text-tagline-2 text-secondary/50 ml-1">\u2014 ${this.escapeHtml(this.recipients.to_role)}</span>`;
+        }
+        toDisplay.innerHTML = toHtml;
+      } else {
+        toDisplay.innerHTML = '<span class="text-tagline-2 text-secondary/60 italic">Not detected \u2014 click Edit to add</span>';
+      }
+
+      // Render CC display
+      if (this.recipients.cc_email || this.recipients.cc_name) {
+        let ccHtml = '';
+        if (this.recipients.cc_email) {
+          ccHtml += `<span class="text-tagline-2 text-secondary font-medium">${this.escapeHtml(this.recipients.cc_email)}</span>`;
+        }
+        if (this.recipients.cc_name) {
+          ccHtml += `<span class="text-tagline-2 text-secondary/70 ml-2">${this.escapeHtml(this.recipients.cc_name)}</span>`;
+        }
+        if (this.recipients.cc_role) {
+          ccHtml += `<span class="text-tagline-2 text-secondary/50 ml-1">\u2014 ${this.escapeHtml(this.recipients.cc_role)}</span>`;
+        }
+        ccDisplay.innerHTML = ccHtml;
+      } else {
+        ccDisplay.innerHTML = '<span class="text-tagline-2 text-secondary/60 italic">Not detected \u2014 click Edit to add</span>';
+      }
+
+      // Show/hide states
+      if (this.recipientsEditMode) {
+        readState.classList.add('hidden');
+        editState.classList.remove('hidden');
+        editBtn.classList.add('hidden');
+      } else {
+        readState.classList.remove('hidden');
+        editState.classList.add('hidden');
+        editBtn.classList.remove('hidden');
+      }
+    }
+
+    enterRecipientsEditMode() {
+      this.recipientsEditMode = true;
+
+      // Populate inputs with current values
+      document.getElementById('edit-to-email').value = this.recipients.to_email || '';
+      document.getElementById('edit-to-name').value = this.recipients.to_name || '';
+      document.getElementById('edit-cc-email').value = this.recipients.cc_email || '';
+      document.getElementById('edit-cc-name').value = this.recipients.cc_name || '';
+
+      // Show role labels if available
+      const toRoleDisplay = document.getElementById('to-role-display');
+      const ccRoleDisplay = document.getElementById('cc-role-display');
+
+      if (this.recipients.to_role) {
+        document.getElementById('to-role-label').textContent = this.recipients.to_role;
+        toRoleDisplay.classList.remove('hidden');
+      } else {
+        toRoleDisplay.classList.add('hidden');
+      }
+
+      if (this.recipients.cc_role) {
+        document.getElementById('cc-role-label').textContent = this.recipients.cc_role;
+        ccRoleDisplay.classList.remove('hidden');
+      } else {
+        ccRoleDisplay.classList.add('hidden');
+      }
+
+      // Clear any previous errors
+      document.getElementById('to-email-error').classList.add('hidden');
+      document.getElementById('cc-email-error').classList.add('hidden');
+      document.getElementById('recipients-save-error').classList.add('hidden');
+      document.getElementById('edit-to-email').classList.remove('border-red-500');
+      document.getElementById('edit-cc-email').classList.remove('border-red-500');
+
+      this.renderRecipientsCard();
+    }
+
+    cancelRecipientsEdit() {
+      this.recipientsEditMode = false;
+      this.renderRecipientsCard();
+    }
+
+    validateEmailFormat(email) {
+      if (!email || email.trim() === '') return true; // Empty is allowed
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailRegex.test(email.trim());
+    }
+
+    validateRecipientEmail(inputId, errorId) {
+      const input = document.getElementById(inputId);
+      const error = document.getElementById(errorId);
+      const value = input.value.trim();
+
+      if (!this.validateEmailFormat(value)) {
+        input.classList.add('border-red-500');
+        error.classList.remove('hidden');
+        return false;
+      } else {
+        input.classList.remove('border-red-500');
+        error.classList.add('hidden');
+        return true;
+      }
+    }
+
+    async saveRecipients() {
+      // Validate emails
+      const toValid = this.validateRecipientEmail('edit-to-email', 'to-email-error');
+      const ccValid = this.validateRecipientEmail('edit-cc-email', 'cc-email-error');
+
+      // Don't block save for empty fields, only for invalid format
+      const toEmail = document.getElementById('edit-to-email').value.trim();
+      const ccEmail = document.getElementById('edit-cc-email').value.trim();
+
+      if ((toEmail && !toValid) || (ccEmail && !ccValid)) {
+        return; // Don't save if there are format errors
+      }
+
+      const saveError = document.getElementById('recipients-save-error');
+      const saveBtn = document.getElementById('save-recipients-btn');
+
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving...';
+      saveError.classList.add('hidden');
+
+      const newRecipients = {
+        to_email: toEmail || null,
+        to_name: document.getElementById('edit-to-name').value.trim() || null,
+        cc_email: ccEmail || null,
+        cc_name: document.getElementById('edit-cc-name').value.trim() || null
+      };
+
+      try {
+        const res = await fetch(
+          `${this.getSupabaseUrl()}/api/cases/${encodeURIComponent(this.caseToken)}/recipients`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': this.getSupabaseAnonKey(),
+              'Authorization': `Bearer ${this.getSupabaseAnonKey()}`
+            },
+            body: JSON.stringify(newRecipients)
+          }
+        );
+
+        if (!res.ok) {
+          throw new Error('Save failed');
+        }
+
+        // Update shared state
+        this.recipients.to_email = newRecipients.to_email;
+        this.recipients.to_name = newRecipients.to_name;
+        this.recipients.cc_email = newRecipients.cc_email;
+        this.recipients.cc_name = newRecipients.cc_name;
+
+        // Exit edit mode
+        this.recipientsEditMode = false;
+        this.renderRecipientsCard();
+
+        // Show success toast
+        this.showToast('Saved');
+      } catch (err) {
+        console.error('saveRecipients error:', err);
+        saveError.classList.remove('hidden');
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save';
+      }
+    }
+
+    showToast(message) {
+      const toast = document.createElement('div');
+      toast.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50 text-tagline-2';
+      toast.textContent = message;
+      document.body.appendChild(toast);
+
+      setTimeout(() => {
+        toast.remove();
+      }, 2000);
+    }
+
+    bindRecipientsEvents() {
+      const editBtn = document.getElementById('edit-recipients-btn');
+      const saveBtn = document.getElementById('save-recipients-btn');
+      const cancelBtn = document.getElementById('cancel-recipients-btn');
+      const toEmailInput = document.getElementById('edit-to-email');
+      const ccEmailInput = document.getElementById('edit-cc-email');
+
+      if (editBtn) {
+        editBtn.addEventListener('click', () => this.enterRecipientsEditMode());
+      }
+
+      if (saveBtn) {
+        saveBtn.addEventListener('click', () => this.saveRecipients());
+      }
+
+      if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => this.cancelRecipientsEdit());
+      }
+
+      // Validate on blur
+      if (toEmailInput) {
+        toEmailInput.addEventListener('blur', () => {
+          this.validateRecipientEmail('edit-to-email', 'to-email-error');
+        });
+      }
+
+      if (ccEmailInput) {
+        ccEmailInput.addEventListener('blur', () => {
+          this.validateRecipientEmail('edit-cc-email', 'cc-email-error');
+        });
+      }
+    }
+
+    renderEmailThread() {
+      const listEl = document.getElementById('email-thread-list');
+      listEl.innerHTML = '';
+
+      // Sort by date descending (most recent first)
+      const sorted = [...this.emailExchanges].sort((a, b) => {
+        return new Date(b.exchange_date || b.created_at) - new Date(a.exchange_date || a.created_at);
+      });
+
+      sorted.forEach((exchange, index) => {
+        const exchangeId = exchange.id || index;
+        const isExpanded = index === 0 || this.expandedExchangeId === exchangeId;
+        const date = new Date(exchange.exchange_date || exchange.created_at);
+        const formattedDate = date.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        });
+        const preview = this.truncateText(exchange.hoa_message, 80);
+
+        const accordionHtml = `
+          <div class="border border-stroke-1 rounded-lg overflow-hidden" data-exchange-id="${exchangeId}">
+            <button class="exchange-accordion-btn w-full flex items-center justify-between px-4 py-3 ${index % 2 === 0 ? 'bg-background-3' : 'bg-white'} hover:bg-gray-100 transition-colors text-left">
+              <div class="flex-1 min-w-0">
+                <span class="text-tagline-2 text-secondary/60 block">${formattedDate}</span>
+                <span class="text-tagline-1 text-secondary truncate block">${this.escapeHtml(preview)}</span>
+              </div>
+              <svg class="exchange-chevron w-5 h-5 text-secondary/60 flex-shrink-0 ml-3 transition-transform ${isExpanded ? 'rotate-90' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </button>
+            <div class="exchange-content ${isExpanded ? '' : 'hidden'} p-4 border-t border-stroke-1">
+              <div class="mb-4">
+                <h4 class="text-tagline-2 font-medium text-secondary mb-2">HOA's Message:</h4>
+                <div class="p-3 bg-gray-100 rounded-lg text-tagline-2 text-secondary/80 whitespace-pre-wrap">${this.escapeHtml(exchange.hoa_message)}</div>
+              </div>
+              <div class="mb-4">
+                <h4 class="text-tagline-2 font-medium text-secondary mb-2">Your Response:</h4>
+                <div class="p-3 bg-white border border-stroke-1 rounded-lg text-tagline-2 text-secondary whitespace-pre-wrap">${this.escapeHtml(exchange.generated_response)}</div>
+              </div>
+              <div class="flex gap-2">
+                <button class="copy-exchange-response-btn px-3 py-2 border border-stroke-1 rounded-lg text-tagline-2 text-secondary hover:bg-background-3 transition-colors" data-response="${this.escapeHtml(exchange.generated_response).replace(/"/g, '&quot;')}">
+                  Copy Response
+                </button>
+                <div class="email-send-btn-container relative" data-exchange-id="${exchangeId}">
+                  <button class="email-send-btn px-3 py-2 border border-stroke-1 rounded-lg text-tagline-2 text-secondary hover:bg-background-3 transition-colors flex items-center gap-1">
+                    <span>Open in Email</span>
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                  </button>
+                  <div class="email-dropdown hidden absolute left-0 bottom-full mb-1 bg-white border border-stroke-1 rounded-lg shadow-lg z-10 min-w-[140px]">
+                    <button class="email-option-gmail w-full px-3 py-2 text-left text-tagline-2 hover:bg-background-3 transition-colors rounded-t-lg">Gmail</button>
+                    <button class="email-option-mailto w-full px-3 py-2 text-left text-tagline-2 hover:bg-background-3 transition-colors">Mail App</button>
+                    <button class="email-option-copy w-full px-3 py-2 text-left text-tagline-2 hover:bg-background-3 transition-colors rounded-b-lg">Copy to Clipboard</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        listEl.insertAdjacentHTML('beforeend', accordionHtml);
+      });
+
+      // Bind accordion events
+      listEl.querySelectorAll('.exchange-accordion-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const container = e.currentTarget.closest('[data-exchange-id]');
+          const exchangeId = container.dataset.exchangeId;
+          this.toggleExchangeAccordion(exchangeId);
+        });
+      });
+
+      // Bind copy buttons
+      listEl.querySelectorAll('.copy-exchange-response-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const response = e.currentTarget.dataset.response
+            .replace(/&lt;/g, String.fromCharCode(60))
+            .replace(/&gt;/g, String.fromCharCode(62))
+            .replace(/&amp;/g, '&')
+            .replace(/&quot;/g, '"')
+            .replace(/&#039;/g, "'");
+          this.copyToClipboard(response);
+          this.showCopyFeedback(e.currentTarget);
+        });
+      });
+
+      // Bind email send buttons in accordion
+      this.bindEmailThreadSendButtons(listEl);
+    }
+
+    bindEmailThreadSendButtons(listEl) {
+      listEl.querySelectorAll('.email-send-btn-container').forEach(container => {
+        const btn = container.querySelector('.email-send-btn');
+        const exchangeId = container.dataset.exchangeId;
+
+        // Find the corresponding response text
+        const getResponseText = () => {
+          const accordionContainer = container.closest('[data-exchange-id]');
+          const responseDiv = accordionContainer.querySelector('.exchange-content .bg-white.border');
+          return responseDiv ? responseDiv.textContent.trim() : '';
+        };
+
+        // Toggle dropdown
+        if (btn) {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.toggleEmailDropdown(container);
+          });
+        }
+
+        // Gmail option
+        const gmailBtn = container.querySelector('.email-option-gmail');
+        if (gmailBtn) {
+          gmailBtn.addEventListener('click', () => {
+            this.openInGmail(getResponseText());
+            container.querySelector('.email-dropdown').classList.add('hidden');
+          });
+        }
+
+        // Mail App option
+        const mailtoBtn = container.querySelector('.email-option-mailto');
+        if (mailtoBtn) {
+          mailtoBtn.addEventListener('click', () => {
+            this.openInMailApp(getResponseText());
+            container.querySelector('.email-dropdown').classList.add('hidden');
+          });
+        }
+
+        // Copy option
+        const copyBtn = container.querySelector('.email-option-copy');
+        if (copyBtn) {
+          copyBtn.addEventListener('click', () => {
+            this.copyEmailContent(getResponseText());
+            container.querySelector('.email-dropdown').classList.add('hidden');
+          });
+        }
+      });
+    }
+
+    toggleExchangeAccordion(exchangeId) {
+      const listEl = document.getElementById('email-thread-list');
+      const allContainers = listEl.querySelectorAll('[data-exchange-id]');
+
+      allContainers.forEach(container => {
+        const content = container.querySelector('.exchange-content');
+        const chevron = container.querySelector('.exchange-chevron');
+        const isTarget = container.dataset.exchangeId === String(exchangeId);
+
+        if (isTarget) {
+          const isCurrentlyHidden = content.classList.contains('hidden');
+          if (isCurrentlyHidden) {
+            content.classList.remove('hidden');
+            chevron.classList.add('rotate-90');
+            this.expandedExchangeId = exchangeId;
+          } else {
+            content.classList.add('hidden');
+            chevron.classList.remove('rotate-90');
+            this.expandedExchangeId = null;
+          }
+        } else {
+          // Collapse other accordions
+          content.classList.add('hidden');
+          chevron.classList.remove('rotate-90');
+        }
+      });
+    }
+
+    toggleEmailInput() {
+      const expanded = document.getElementById('email-input-expanded');
+      const chevron = document.getElementById('email-input-chevron');
+
+      if (expanded.classList.contains('hidden')) {
+        expanded.classList.remove('hidden');
+        chevron.classList.add('rotate-90');
+      } else {
+        expanded.classList.add('hidden');
+        chevron.classList.remove('rotate-90');
+      }
+    }
+
+    updateEmailCharCount() {
+      const textarea = document.getElementById('hoa-message-input');
+      const countEl = document.getElementById('email-char-count');
+      const generateBtn = document.getElementById('generate-response-btn');
+
+      const len = (textarea.value || '').length;
+      countEl.textContent = `${len} character${len === 1 ? '' : 's'}`;
+      generateBtn.disabled = len === 0;
+    }
+
+    async generateEmailResponse() {
+      const textarea = document.getElementById('hoa-message-input');
+      const hoaMessage = textarea.value.trim();
+      if (!hoaMessage) return;
+
+      const generateBtn = document.getElementById('generate-response-btn');
+      const loadingEl = document.getElementById('email-generating-state');
+      const errorEl = document.getElementById('email-error-state');
+      const previewEl = document.getElementById('email-response-preview');
+      const responseTextEl = document.getElementById('generated-response-text');
+
+      // Reset states
+      errorEl.classList.add('hidden');
+      previewEl.classList.add('hidden');
+      loadingEl.classList.remove('hidden');
+      generateBtn.disabled = true;
+
+      try {
+        const res = await fetch(
+          `${this.getSupabaseUrl()}/api/cases/${encodeURIComponent(this.caseToken)}/email-exchange`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': this.getSupabaseAnonKey(),
+              'Authorization': `Bearer ${this.getSupabaseAnonKey()}`
+            },
+            body: JSON.stringify({ hoa_message: hoaMessage })
+          }
+        );
+
+        if (!res.ok) {
+          throw new Error('Failed to generate response');
+        }
+
+        const data = await res.json();
+        const generatedResponse = data.generated_response || data.response || '';
+
+        if (!generatedResponse) {
+          throw new Error('No response generated');
+        }
+
+        // Store pending data for save
+        this.pendingGeneratedResponse = generatedResponse;
+        this.pendingHoaMessage = hoaMessage;
+
+        // Show preview
+        loadingEl.classList.add('hidden');
+        responseTextEl.textContent = generatedResponse;
+        previewEl.classList.remove('hidden');
+
+      } catch (err) {
+        loadingEl.classList.add('hidden');
+        errorEl.classList.remove('hidden');
+        generateBtn.disabled = false;
+      }
+    }
+
+    async saveExchangeToThread() {
+      if (!this.pendingGeneratedResponse || !this.pendingHoaMessage) return;
+
+      const saveBtn = document.getElementById('save-to-thread-btn');
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving...';
+
+      try {
+        // Note: The POST endpoint should have already saved it.
+        // If not, we would need a separate save endpoint.
+        // For now, just refresh the list and reset UI.
+
+        // Re-fetch exchanges to get updated list
+        this.emailExchanges = await this.fetchEmailExchanges();
+
+        // Reset input area
+        const textarea = document.getElementById('hoa-message-input');
+        const expanded = document.getElementById('email-input-expanded');
+        const chevron = document.getElementById('email-input-chevron');
+        const previewEl = document.getElementById('email-response-preview');
+        const emptyEl = document.getElementById('email-thread-empty');
+        const listEl = document.getElementById('email-thread-list');
+
+        textarea.value = '';
+        this.updateEmailCharCount();
+        expanded.classList.add('hidden');
+        chevron.classList.remove('rotate-90');
+        previewEl.classList.add('hidden');
+
+        this.pendingGeneratedResponse = null;
+        this.pendingHoaMessage = null;
+
+        // Update thread display
+        if (this.emailExchanges.length === 0) {
+          emptyEl.classList.remove('hidden');
+          listEl.classList.add('hidden');
+        } else {
+          emptyEl.classList.add('hidden');
+          listEl.classList.remove('hidden');
+          this.expandedExchangeId = null; // Reset to expand most recent
+          this.renderEmailThread();
+        }
+
+      } catch (err) {
+        // Silent fail - just close the UI
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save to Thread';
+      }
+    }
+
+    copyGeneratedResponse() {
+      const responseTextEl = document.getElementById('generated-response-text');
+      const copyBtn = document.getElementById('copy-response-btn');
+      this.copyToClipboard(responseTextEl.textContent);
+      this.showCopyFeedback(copyBtn);
+    }
+
+    getLatestExchangesForChat(limit = 3) {
+      // Return latest N exchanges for chat context
+      const sorted = [...this.emailExchanges].sort((a, b) => {
+        return new Date(b.exchange_date || b.created_at) - new Date(a.exchange_date || a.created_at);
+      });
+
+      return sorted.slice(0, limit).map(ex => ({
+        hoa_message: ex.hoa_message,
+        generated_response: ex.generated_response,
+        exchange_date: ex.exchange_date || ex.created_at
+      }));
+    }
+
+    // ==========
+    // Email Send Button Methods
+    // ==========
+    generateEmailSubject() {
+      const data = this.caseData || {};
+      const violationType = data.violationType || data.violation_type || 'HOA Notice';
+      const propertyAddress = data.propertyAddress || data.address || '';
+      const associationName = data.hoaName || data.association_name || 'HOA';
+
+      let subject = 'Re: ' + violationType;
+      if (propertyAddress) {
+        subject += ' \u2014 ' + propertyAddress;
+      }
+      if (associationName) {
+        subject += ' \u2014 ' + associationName;
+      }
+      return subject;
+    }
+
+    getEmailRecipients() {
+      // Read from shared recipients state
+      return {
+        to: this.recipients.to_email || '',
+        cc: this.recipients.cc_email || ''
+      };
+    }
+
+    hasRecipientEmail() {
+      return !!(this.recipients.to_email);
+    }
+
+    getDraftContent(draftType) {
+      const draftEl = document.getElementById('draft-' + draftType);
+      if (draftEl) {
+        return draftEl.textContent.trim();
+      }
+      return '';
+    }
+
+    toggleEmailDropdown(container) {
+      const dropdown = container.querySelector('.email-dropdown');
+      if (!dropdown) return;
+
+      const isHidden = dropdown.classList.contains('hidden');
+
+      // Close all other dropdowns first
+      document.querySelectorAll('.email-dropdown').forEach(d => {
+        d.classList.add('hidden');
+      });
+
+      if (isHidden) {
+        dropdown.classList.remove('hidden');
+
+        // Add click outside listener
+        const closeHandler = (e) => {
+          if (!container.contains(e.target)) {
+            dropdown.classList.add('hidden');
+            document.removeEventListener('click', closeHandler);
+          }
+        };
+        // Delay to avoid immediate close
+        setTimeout(() => {
+          document.addEventListener('click', closeHandler);
+        }, 0);
+      }
+    }
+
+    openInGmail(body, customSubject = null) {
+      const recipients = this.getEmailRecipients();
+      const subject = customSubject || this.generateEmailSubject();
+
+      let gmailUrl = 'https://mail.google.com/mail/?view=cm';
+      if (recipients.to) {
+        gmailUrl += '&to=' + encodeURIComponent(recipients.to);
+      }
+      gmailUrl += '&su=' + encodeURIComponent(subject);
+      if (recipients.cc) {
+        gmailUrl += '&cc=' + encodeURIComponent(recipients.cc);
+      }
+      gmailUrl += '&body=' + encodeURIComponent(body);
+
+      // Show tooltip if no recipient email
+      if (!recipients.to) {
+        this.showRecipientMissingTooltip();
+      }
+
+      window.open(gmailUrl, '_blank');
+    }
+
+    openInMailApp(body, customSubject = null) {
+      const recipients = this.getEmailRecipients();
+      const subject = customSubject || this.generateEmailSubject();
+
+      let mailtoUrl = 'mailto:';
+      mailtoUrl += encodeURIComponent(recipients.to || '');
+      mailtoUrl += '?subject=' + encodeURIComponent(subject);
+      if (recipients.cc) {
+        mailtoUrl += '&cc=' + encodeURIComponent(recipients.cc);
+      }
+      mailtoUrl += '&body=' + encodeURIComponent(body);
+
+      // Show tooltip if no recipient email
+      if (!recipients.to) {
+        this.showRecipientMissingTooltip();
+      }
+
+      window.location.href = mailtoUrl;
+    }
+
+    showRecipientMissingTooltip() {
+      // Remove any existing tooltip
+      const existing = document.getElementById('recipient-missing-tooltip');
+      if (existing) existing.remove();
+
+      const tooltip = document.createElement('div');
+      tooltip.id = 'recipient-missing-tooltip';
+      tooltip.className = 'fixed top-4 right-4 bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-3 rounded-lg shadow-lg z-50 text-tagline-2 max-w-xs';
+      tooltip.innerHTML = `
+        <div class="flex items-start gap-2">
+          <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+          </svg>
+          <span>Add recipient email above to pre-fill the To field</span>
+        </div>
+      `;
+      document.body.appendChild(tooltip);
+
+      setTimeout(() => {
+        tooltip.remove();
+      }, 4000);
+    }
+
+    copyEmailContent(body) {
+      navigator.clipboard.writeText(body).then(() => {
+        this.showCopySuccess();
+      }).catch(err => {
+        console.error('Copy failed:', err);
+      });
+    }
+
+    showCopySuccess() {
+      // Create a temporary toast notification
+      const toast = document.createElement('div');
+      toast.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50 text-tagline-2';
+      toast.textContent = 'Copied to clipboard!';
+      document.body.appendChild(toast);
+
+      setTimeout(() => {
+        toast.remove();
+      }, 2000);
+    }
+
+    bindEmailSendButtons() {
+      // Bind all email send button containers
+      document.querySelectorAll('.email-send-btn-container').forEach(container => {
+        const btn = container.querySelector('.email-send-btn');
+        const draftType = container.dataset.draft;
+        const isPreviewContainer = container.id === 'email-send-preview-container';
+
+        // Toggle dropdown on button click
+        if (btn) {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.toggleEmailDropdown(container);
+          });
+        }
+
+        // Gmail option
+        const gmailBtn = container.querySelector('.email-option-gmail');
+        if (gmailBtn) {
+          gmailBtn.addEventListener('click', () => {
+            let body = '';
+            if (isPreviewContainer) {
+              const responseText = document.getElementById('generated-response-text');
+              body = responseText ? responseText.textContent.trim() : '';
+            } else if (draftType) {
+              body = this.getDraftContent(draftType);
+            }
+            this.openInGmail(body);
+            container.querySelector('.email-dropdown').classList.add('hidden');
+          });
+        }
+
+        // Mail App option
+        const mailtoBtn = container.querySelector('.email-option-mailto');
+        if (mailtoBtn) {
+          mailtoBtn.addEventListener('click', () => {
+            let body = '';
+            if (isPreviewContainer) {
+              const responseText = document.getElementById('generated-response-text');
+              body = responseText ? responseText.textContent.trim() : '';
+            } else if (draftType) {
+              body = this.getDraftContent(draftType);
+            }
+            this.openInMailApp(body);
+            container.querySelector('.email-dropdown').classList.add('hidden');
+          });
+        }
+
+        // Copy option
+        const copyBtn = container.querySelector('.email-option-copy');
+        if (copyBtn) {
+          copyBtn.addEventListener('click', () => {
+            let body = '';
+            if (isPreviewContainer) {
+              const responseText = document.getElementById('generated-response-text');
+              body = responseText ? responseText.textContent.trim() : '';
+            } else if (draftType) {
+              body = this.getDraftContent(draftType);
+            }
+            this.copyEmailContent(body);
+            container.querySelector('.email-dropdown').classList.add('hidden');
+          });
+        }
+      });
+    }
+
+    bindEmailThreadEvents() {
+      const toggleBtn = document.getElementById('toggle-email-input');
+      const textarea = document.getElementById('hoa-message-input');
+      const generateBtn = document.getElementById('generate-response-btn');
+      const copyBtn = document.getElementById('copy-response-btn');
+      const saveBtn = document.getElementById('save-to-thread-btn');
+
+      if (toggleBtn) {
+        toggleBtn.addEventListener('click', () => this.toggleEmailInput());
+      }
+
+      if (textarea) {
+        textarea.addEventListener('input', () => this.updateEmailCharCount());
+      }
+
+      if (generateBtn) {
+        generateBtn.addEventListener('click', () => this.generateEmailResponse());
+      }
+
+      if (copyBtn) {
+        copyBtn.addEventListener('click', () => this.copyGeneratedResponse());
+      }
+
+      if (saveBtn) {
+        saveBtn.addEventListener('click', () => this.saveExchangeToThread());
+      }
+
+      // Bind email send buttons
+      this.bindEmailSendButtons();
+
+      // Bind recipients card events
+      this.bindRecipientsEvents();
     }
 
     // ==========

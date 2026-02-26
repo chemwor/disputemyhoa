@@ -477,7 +477,7 @@ What feels like standing on principle or avoiding hassle today turns into thousa
 
 The math simply doesn't work:
 
-- **Responding costs:** $29 for professional templates + time to write a letter
+- **Responding costs:** $49 for professional templates + time to write a letter
 - **Ignoring costs:** $5,000-25,000+ in fines, legal fees, and consequences
 
 Whatever you're feeling about your violation—frustrated, confused, angry, overwhelmed—the answer is the same: respond in writing, document everything, and address it before the escalation machine kicks into gear.

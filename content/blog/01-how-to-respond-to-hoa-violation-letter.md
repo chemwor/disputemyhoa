@@ -173,7 +173,7 @@ We'll cover exactly what to say—and what to avoid—in the next section.
 
 **Get Your Custom Response**
 
-Tired of guessing what to say? Get 3 professionally-written response templates customized to your specific violation for just $29.
+Tired of guessing what to say? Get 3 professionally-written response templates customized to your specific violation for just $49.
 
 ✓ Addresses your exact situation
 ✓ Uses the right legal language
@@ -246,7 +246,7 @@ Not sure how to phrase your response? Our templates are written by experts who k
 ✓ Three different response options
 ✓ Money-back guarantee
 
-[Get Your Templates for $29 →](https://disputemyhoa.com/start-case)
+[Get Your Templates for $49 →](https://disputemyhoa.com/start-case)
 
 ---
 
@@ -516,7 +516,7 @@ Don't let an HOA violation letter ruin your week. Take action today, and get thi
 
 **Ready to Respond?**
 
-Skip the stress and guesswork. Get three professionally-written response templates customized to your specific violation for just $29.
+Skip the stress and guesswork. Get three professionally-written response templates customized to your specific violation for just $49.
 
 ✓ Request Clarification Letter
 ✓ Request Extension Letter

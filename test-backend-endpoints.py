@@ -32,7 +32,7 @@ def test_endpoints():
 
     print()
 
-    # Test 2: Check if read-outputs endpoint exists
+    # Test 2: Check if read-outputs endpoint exists and returns fine data
     print("2. Testing /api/read-outputs endpoint...")
     try:
         response = requests.get(f"{BASE_URL}/api/read-outputs", params={"token": CASE_TOKEN})
@@ -41,6 +41,12 @@ def test_endpoints():
             data = response.json()
             print(f"   Status: {data.get('status', 'N/A')}")
             print(f"   Has outputs: {'outputs' in data or 'result' in data}")
+            # Check for fine data - IMPORTANT for fine widget
+            print(f"   fine_per_day: {data.get('fine_per_day', 'NOT PRESENT')}")
+            print(f"   fine_start_date: {data.get('fine_start_date', 'NOT PRESENT')}")
+            if not data.get('fine_per_day') or not data.get('fine_start_date'):
+                print("   ⚠️  WARNING: fine_per_day and/or fine_start_date missing from response!")
+                print("      The Heroku backend needs to SELECT these columns from dmhoa_case_outputs")
         elif response.status_code == 404:
             print("   No outputs found (expected for new cases)")
         else:
