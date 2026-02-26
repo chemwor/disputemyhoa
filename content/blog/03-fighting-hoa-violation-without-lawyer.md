@@ -117,7 +117,7 @@ Let's look at the real costs of each approach.
 | Your time (4-10 hours) | $0 (but valuable) |
 | Certified mail | $10-20 |
 | Document copies | $10-20 |
-| Professional templates/guidance | $29-100 |
+| Professional templates/guidance | $49-100 |
 
 **Total cost: $50-150**
 
@@ -132,7 +132,7 @@ Fight your violation with professionally-written response templates—without th
 ✓ Three customized response letters
 ✓ Evidence checklist for your violation type
 ✓ Step-by-step dispute guidance
-✓ Just $29 with money-back guarantee
+✓ Just $49 with money-back guarantee
 
 [Get Your Dispute Templates →](https://disputemyhoa.com/start-case)
 
@@ -331,7 +331,7 @@ Get professionally-written dispute templates that cite the right rules and prese
 ✓ Compliance confirmation template
 ✓ Evidence checklist included
 
-[Get Your Templates for $29 →](https://disputemyhoa.com/start-case)
+[Get Your Templates for $49 →](https://disputemyhoa.com/start-case)
 
 ---
 
@@ -628,7 +628,7 @@ Get everything you need to dispute your HOA violation effectively:
 ✓ Evidence organization checklist
 ✓ Step-by-step guidance
 
-All for just $29 — less than one hour of attorney time.
+All for just $49 — less than one hour of attorney time.
 
 [Get Your Dispute Templates Now →](https://disputemyhoa.com/start-case)
 

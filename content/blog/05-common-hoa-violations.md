@@ -616,7 +616,7 @@ Get a professionally-written response template customized to your specific viola
 ✓ All 15 violation types covered
 ✓ Three response options included
 ✓ Evidence checklist for your situation
-✓ Just $29 with money-back guarantee
+✓ Just $49 with money-back guarantee
 
 [Get Your Response Template Now →](https://disputemyhoa.com/start-case)
 

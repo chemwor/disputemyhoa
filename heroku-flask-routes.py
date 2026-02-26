@@ -1,5 +1,16 @@
 # Flask routes to add to your Heroku backend for case outputs
 # Add these routes to your main Flask application file
+#
+# IMPORTANT: The /api/read-outputs endpoint MUST return fine_per_day and fine_start_date
+# from the dmhoa_case_outputs table for the fine accrual widget to work.
+#
+# The frontend expects this response format from /api/read-outputs:
+# {
+#     "status": "ready",
+#     "outputs": {...},
+#     "fine_per_day": 100,        <-- REQUIRED for fine widget
+#     "fine_start_date": "2025-12-27"  <-- REQUIRED for fine widget
+# }
 
 from flask import Flask, request, jsonify
 import json
@@ -20,11 +31,11 @@ def read_outputs():
         if not token:
             return jsonify({'error': 'Token is required'}), 400
 
-        # Query the dmhoa_outputs table for this token
+        # Query the dmhoa_case_outputs table for this token
         # This is pseudocode - replace with your actual database query
         cursor = get_db_cursor()  # Replace with your DB connection method
         cursor.execute(
-            "SELECT * FROM dmhoa_outputs WHERE case_token = %s",
+            "SELECT outputs, status, fine_per_day, fine_start_date, created_at, updated_at FROM dmhoa_case_outputs WHERE case_token = %s",
             (token,)
         )
         result = cursor.fetchone()
@@ -32,11 +43,13 @@ def read_outputs():
         if not result:
             return jsonify({'error': 'Outputs not found'}), 404
 
-        # Return the outputs in the expected format
+        # Return the outputs in the expected format, including fine tracking data
         response_data = {
             'status': result['status'],
             'result': json.loads(result['outputs']) if result['outputs'] else None,
             'outputs': json.loads(result['outputs']) if result['outputs'] else None,
+            'fine_per_day': float(result['fine_per_day']) if result['fine_per_day'] is not None else None,
+            'fine_start_date': str(result['fine_start_date']) if result['fine_start_date'] is not None else None,
             'created_at': result['created_at'],
             'updated_at': result['updated_at']
         }
@@ -152,6 +165,27 @@ def get_case_data():
         if not result:
             return jsonify({'error': 'Case not found'}), 404
 
+        # Also fetch outputs with fine tracking data from dmhoa_case_outputs
+        outputs_data = None
+        outputs_status = None
+        fine_per_day = None
+        fine_start_date = None
+
+        try:
+            cursor.execute(
+                "SELECT outputs, status, fine_per_day, fine_start_date FROM dmhoa_case_outputs WHERE case_token = %s",
+                (token,)
+            )
+            outputs_result = cursor.fetchone()
+            if outputs_result:
+                outputs_data = json.loads(outputs_result['outputs']) if outputs_result['outputs'] else None
+                outputs_status = outputs_result['status']
+                fine_per_day = float(outputs_result['fine_per_day']) if outputs_result['fine_per_day'] is not None else None
+                fine_start_date = str(outputs_result['fine_start_date']) if outputs_result['fine_start_date'] is not None else None
+        except Exception as outputs_err:
+            print(f'Error fetching outputs: {outputs_err}')
+            # Continue without outputs - table may not exist yet
+
         # Return the case data in the expected format
         response_data = {
             'id': result['id'],
@@ -160,7 +194,12 @@ def get_case_data():
             'status': result['status'],
             'payload': json.loads(result['payload']) if result['payload'] else {},
             'created_at': result['created_at'],
-            'updated_at': result['updated_at']
+            'updated_at': result['updated_at'],
+            # Include outputs and fine tracking data
+            'outputs': outputs_data,
+            'outputs_status': outputs_status,
+            'fine_per_day': fine_per_day,
+            'fine_start_date': fine_start_date
         }
 
         response = jsonify(response_data)
