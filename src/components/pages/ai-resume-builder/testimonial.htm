@@ -1,482 +1,65 @@
-<!-- testimonial section  -->
-<section class="py-12 md:py-16 lg:py-22 xl:py-28" aria-labelledby="testimonials-heading">
+<!-- Real Cases section  -->
+<section class="py-12 md:py-16 lg:py-22 xl:py-28" aria-labelledby="cases-heading">
   <div class="main-container">
     <div class="space-y-10 md:space-y-12 lg:space-y-14 xl:space-y-19">
-      <h2 id="testimonials-heading" class="text-center" data-ns-animate data-delay="0.1">
-        Homeowner feedback
+      <h2 id="cases-heading" class="text-center" data-ns-animate data-delay="0.1">
+        Real Cases We've Helped With
       </h2>
 
-      <!-- testimonial cards Large Screen -->
+      <!-- Case cards -->
       <div
-        class="relative h-[462px] hidden lg:block"
+        class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-[1100px] mx-auto"
         data-ns-animate
         data-delay="0.2"
         role="region"
-        aria-label="Customer testimonials"
+        aria-label="Real case summaries"
       >
-        <!-- testimonial card one  -->
+        <!-- Case card one - Georgia -->
         <div
-          class="absolute rotate-[-14deg] top-[27px] hover:rotate-0 hover:z-8 hover:scale-105 transition-all origin-center duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]"
+          class="p-6 border border-stroke-1 bg-white shadow-[0_6px_8px_0_rgba(4,10,51,0.03)] rounded-[20px] flex flex-col items-start justify-start gap-y-4"
           role="article"
-          aria-label="Testimonial from Sarah M., Homeowner"
         >
-          <div
-            class="p-6 border border-stroke-1 bg-white shadow-[0_6px_8px_0_rgba(4,10,51,0.03)] rounded-[20px] w-[362px] flex-col flex items-start justify-center gap-y-6"
-          >
-            <div class="flex items-center justify-center gap-x-3">
-              <figure class="size-12 rounded-full overflow-hidden">
-                <img
-                  src="images/download (1).jpeg"
-                  alt="Profile photo of Sarah M., Homeowner"
-                  class="w-full h-full object-cover"
-                  width="48"
-                  height="48"
-                  loading="lazy"
-                />
-              </figure>
-              <div>
-                <h3 class="text-secondary font-semibold text-tagline-1">Sarah M.</h3>
-                <p class="text-tagline-2">Homeowner</p>
-              </div>
-            </div>
-
-            <div class="space-y-5">
-              <div class="flex items-center justify-start">
-                <Component src="src/components/pages/ai-resume-builder/testimonial-star.htm" />
-              </div>
-              <blockquote
-                class="font-inter-tight text-tagline-1 text-secondary font-normal"
-                cite="https://x.com/"
-              >
-                "The free preview showed me exactly what my notice meant. I could see the quality before paying anything. Worth every penny of the $29 unlock."
-              </blockquote>
-            </div>
+          <div class="flex items-center gap-2">
+            <span class="inline-block px-3 py-1 bg-ns-green/10 text-ns-green text-xs font-semibold rounded-full">Georgia</span>
           </div>
+          <blockquote class="font-inter-tight text-tagline-1 text-secondary font-normal leading-relaxed">
+            "A condo owner in Georgia received a violation notice citing a dryer vent fire hazard. They had already replaced the dryer with a ventless unit — eliminating the risk entirely. Our analysis helped them draft a response explaining the compliance solution and requesting the notice be formally closed."
+          </blockquote>
+          <p class="text-sm text-secondary/60 italic">
+            — the updated response gave them documented grounds to show the violation had been proactively resolved.
+          </p>
         </div>
 
-        <!-- testimonial card two  -->
+        <!-- Case card two - Alabama -->
         <div
-          class="absolute rotate-[5deg] left-[320px] top-0 hover:rotate-0 hover:z-8 hover:scale-105 transition-all origin-center duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]"
+          class="p-6 border border-stroke-1 bg-white shadow-[0_6px_8px_0_rgba(4,10,51,0.03)] rounded-[20px] flex flex-col items-start justify-start gap-y-4"
           role="article"
-          aria-label="Testimonial from Michael R., Condo Owner"
         >
-          <div
-            class="p-6 border border-stroke-1 bg-white shadow-[0_6px_8px_0_rgba(4,10,51,0.03)] rounded-[20px] w-[362px] flex-col flex items-start justify-center gap-y-6"
-          >
-            <div class="flex items-center justify-center gap-x-3">
-              <figure class="size-12 rounded-full overflow-hidden">
-                <img
-                  src="images/download.jpeg"
-                  alt="Profile photo of Michael R., Condo Owner"
-                  class="w-full h-full object-cover"
-                  width="48"
-                  height="48"
-                  loading="lazy"
-                />
-              </figure>
-              <div>
-                <h3 class="text-secondary font-semibold text-tagline-1">Michael R.</h3>
-                <p class="text-tagline-2">Condo Owner</p>
-              </div>
-            </div>
-
-            <div class="space-y-5">
-              <div class="flex items-center justify-start">
-                <Component src="src/components/pages/ai-resume-builder/testimonial-star.htm" />
-              </div>
-              <blockquote
-                class="font-inter-tight text-tagline-1 text-secondary font-normal"
-                cite="https://x.com/"
-              >
-                "Tried the free preview just to understand my letter. The analysis was so good I immediately unlocked the full templates. No regrets."
-              </blockquote>
-            </div>
+          <div class="flex items-center gap-2">
+            <span class="inline-block px-3 py-1 bg-ns-green/10 text-ns-green text-xs font-semibold rounded-full">Alabama</span>
           </div>
+          <blockquote class="font-inter-tight text-tagline-1 text-secondary font-normal leading-relaxed">
+            "A homeowner in Alabama was fined for weeds from 2024 — nearly a year after the fact. Our analysis identified the HOA's failure to provide timely notice as grounds for dispute."
+          </blockquote>
+          <p class="text-sm text-secondary/60 italic">
+            — the fine was disputed on procedural grounds before any payment was made.
+          </p>
         </div>
 
-        <!-- testimonial card three  -->
+        <!-- Case card three - Florida -->
         <div
-          class="absolute rotate-[-5deg] right-[275px] top-0 hover:rotate-0 hover:z-8 hover:scale-105 transition-all origin-center duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]"
+          class="p-6 border border-stroke-1 bg-white shadow-[0_6px_8px_0_rgba(4,10,51,0.03)] rounded-[20px] flex flex-col items-start justify-start gap-y-4"
           role="article"
-          aria-label="Testimonial from Jennifer L., Townhome Owner"
         >
-          <div
-            class="p-6 border border-stroke-1 bg-white shadow-[0_6px_8px_0_rgba(4,10,51,0.03)] rounded-[20px] w-[362px] flex-col flex items-start justify-center gap-y-6"
-          >
-            <div class="flex items-center justify-center gap-x-3">
-              <figure class="size-12 rounded-full overflow-hidden">
-                <img
-                  src="images/download (5).jpeg"
-                  alt="Profile photo of Jennifer L., Townhome Owner"
-                  width="48"
-                  height="48"
-                  loading="lazy"
-                  class="w-full h-full object-cover"
-                />
-              </figure>
-              <div>
-                <h3 class="text-secondary font-semibold text-tagline-1">Jennifer L.</h3>
-                <p class="text-tagline-2">Townhome Owner</p>
-              </div>
-            </div>
-
-            <div class="space-y-5">
-              <div class="flex items-center justify-start">
-                <Component src="src/components/pages/ai-resume-builder/testimonial-star.htm" />
-              </div>
-              <blockquote
-                class="font-inter-tight text-tagline-1 text-secondary font-normal"
-                cite="https://x.com/"
-              >
-                "No risk to try the free preview. Once I saw how personalized it was to MY violation, the $29 unlock was a no-brainer."
-              </blockquote>
-            </div>
+          <div class="flex items-center gap-2">
+            <span class="inline-block px-3 py-1 bg-ns-green/10 text-ns-green text-xs font-semibold rounded-full">Florida</span>
           </div>
-        </div>
-
-        <!-- testimonial card four  -->
-        <div
-          class="absolute rotate-[7deg] right-0 top-[50px] hover:rotate-0 hover:z-8 hover:scale-105 transition-all origin-center duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]"
-          role="article"
-          aria-label="Testimonial from David K., Property Owner"
-        >
-          <div
-            class="p-6 border border-stroke-1 bg-white shadow-[0_6px_8px_0_rgba(4,10,51,0.03)] rounded-[20px] w-[362px] flex-col flex items-start justify-center gap-y-6"
-          >
-            <div class="flex items-center justify-center gap-x-3">
-              <figure class="size-12 rounded-full overflow-hidden">
-                <img
-                  src="images/download (2).jpeg"
-                  alt="Profile photo of David K., Property Owner"
-                  width="48"
-                  height="48"
-                  loading="lazy"
-                  class="w-full h-full object-cover"
-                />
-              </figure>
-              <div>
-                <h3 class="text-secondary font-semibold text-tagline-1">David K.</h3>
-                <p class="text-tagline-2">Property Owner</p>
-              </div>
-            </div>
-
-            <div class="space-y-5">
-              <div class="flex items-center justify-start">
-                <Component src="src/components/pages/ai-resume-builder/testimonial-star.htm" />
-              </div>
-              <blockquote
-                class="font-inter-tight text-tagline-1 text-secondary font-normal"
-                cite="https://x.com/"
-              >
-                "The response preview helped me communicate professionally. Clear, organized, and exactly what I needed."
-              </blockquote>
-            </div>
-          </div>
-        </div>
-
-        <!-- testimonial card five  -->
-        <div
-          class="absolute rotate-[-7deg] right-[195px] bottom-[27px] hover:rotate-0 hover:z-8 hover:scale-105 transition-all origin-center duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]"
-          role="article"
-          aria-label="Testimonial from Lisa P., Homeowner"
-        >
-          <div
-            class="p-6 border border-stroke-1 bg-white shadow-[0_6px_8px_0_rgba(4,10,51,0.03)] rounded-[20px] w-[362px] flex-col flex items-start justify-center gap-y-6"
-          >
-            <div class="flex items-center justify-center gap-x-3">
-              <figure class="size-12 rounded-full overflow-hidden">
-                <img
-                  src="images/s.jpeg"
-                  alt="Profile photo of Lisa P., Homeowner"
-                  width="48"
-                  height="48"
-                  loading="lazy"
-                  class="w-full h-full object-cover"
-                />
-              </figure>
-              <div>
-                <h3 class="text-secondary font-semibold text-tagline-1">Lisa P.</h3>
-                <p class="text-tagline-2">Homeowner</p>
-              </div>
-            </div>
-
-            <div class="space-y-5">
-              <div class="flex items-center justify-start">
-                <Component src="src/components/pages/ai-resume-builder/testimonial-star.htm" />
-              </div>
-              <blockquote
-                class="font-inter-tight text-tagline-1 text-secondary font-normal"
-                cite="https://x.com/"
-              >
-                "The document analysis broke everything down in plain English. I finally understood what they wanted."
-              </blockquote>
-            </div>
-          </div>
-        </div>
-
-        <!-- testimonial card six  -->
-        <div
-          class="absolute rotate-[3deg] left-[320px] bottom-[30px] hover:rotate-0 hover:!z-8 hover:scale-105 transition-all origin-center duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]"
-          role="article"
-          aria-label="Testimonial from Robert T., Homeowner"
-        >
-          <div
-            class="p-6 border border-stroke-1 bg-white shadow-[0_6px_8px_0_rgba(4,10,51,0.03)] rounded-[20px] w-[362px] flex-col flex items-start justify-center gap-y-6"
-          >
-            <div class="flex items-center justify-center gap-x-3">
-              <figure class="size-12 rounded-full overflow-hidden">
-                <img
-                  src="images/m.jpeg"
-                  alt="Profile photo of Robert T., Homeowner"
-                  width="48"
-                  height="48"
-                  loading="lazy"
-                  class="w-full h-full object-cover"
-                />
-              </figure>
-              <div>
-                <h3 class="text-secondary font-semibold text-tagline-1">Robert T.</h3>
-                <p class="text-tagline-2">Homeowner</p>
-              </div>
-            </div>
-
-            <div class="space-y-5">
-              <div class="flex items-center justify-start">
-                <Component src="src/components/pages/ai-resume-builder/testimonial-star.htm" />
-              </div>
-              <blockquote
-                class="font-inter-tight text-tagline-1 text-secondary font-normal"
-                cite="https://x.com/"
-              >
-                "From HOA stress to resolution in one day. The free preview gave me confidence I never had before."
-              </blockquote>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- testimonial cards Small Screen -->
-      <div class="block lg:hidden" role="region" aria-label="Customer testimonials">
-        <div class="grid grid-cols-1 justify-items-center md:grid-cols-2 gap-6">
-          <!-- testimonial card one  -->
-          <div class="" role="article" aria-label="Testimonial from Sarah M., Homeowner">
-            <div
-              class="p-6 border border-stroke-1 bg-white shadow-[0_6px_8px_0_rgba(4,10,51,0.03)] rounded-[20px] sm:w-[362px] flex-col flex items-start justify-center gap-y-6"
-            >
-              <div class="flex items-center justify-center gap-x-3">
-                <figure class="size-12 rounded-full overflow-hidden">
-                  <img
-                    src="images/download (1).jpeg"
-                    alt="Profile photo of Sarah M., Homeowner"
-                    class="w-full h-full object-cover"
-                    width="48"
-                    height="48"
-                    loading="lazy"
-                  />
-                </figure>
-                <div>
-                  <h3 class="text-secondary font-semibold text-tagline-1">Sarah M.</h3>
-                  <p class="text-tagline-2">Homeowner</p>
-                </div>
-              </div>
-
-              <div class="space-y-5">
-                <div class="flex items-center justify-start">
-                  <Component src="src/components/pages/ai-resume-builder/testimonial-star.htm" />
-                </div>
-                <blockquote
-                  class="font-inter-tight text-tagline-1 text-secondary font-normal"
-                  cite="https://x.com/"
-                >
-                  "The free preview showed me exactly what my notice meant. I could see the quality before paying anything. Worth every penny of the $29 unlock."
-                </blockquote>
-              </div>
-            </div>
-          </div>
-
-          <!-- testimonial card two  -->
-          <div class="" role="article" aria-label="Testimonial from Michael R., Condo Owner">
-            <div
-              class="p-6 border border-stroke-1 bg-white shadow-[0_6px_8px_0_rgba(4,10,51,0.03)] rounded-[20px] sm:w-[362px] flex-col flex items-start justify-center gap-y-6"
-            >
-              <div class="flex items-center justify-center gap-x-3">
-                <figure class="size-12 rounded-full overflow-hidden">
-                  <img
-                    src="images/download.jpeg"
-                    alt="Profile photo of Michael R., Condo Owner"
-                    class="w-full h-full object-cover"
-                    width="48"
-                    height="48"
-                    loading="lazy"
-                  />
-                </figure>
-                <div>
-                  <h3 class="text-secondary font-semibold text-tagline-1">Michael R.</h3>
-                  <p class="text-tagline-2">Condo Owner</p>
-                </div>
-              </div>
-
-              <div class="space-y-5">
-                <div class="flex items-center justify-start">
-                  <Component src="src/components/pages/ai-resume-builder/testimonial-star.htm" />
-                </div>
-                <blockquote
-                  class="font-inter-tight text-tagline-1 text-secondary font-normal"
-                  cite="https://x.com/"
-                >
-                  "Tried the free preview just to understand my letter. The analysis was so good I immediately unlocked the full templates. No regrets."
-                </blockquote>
-              </div>
-            </div>
-          </div>
-
-          <!-- testimonial card three  -->
-          <div
-            role="article"
-            aria-label="Testimonial from Jennifer L., Townhome Owner"
-            class="max-sm:w-full"
-          >
-            <div
-              class="p-6 border border-stroke-1 bg-white shadow-[0_6px_8px_0_rgba(4,10,51,0.03)] rounded-[20px] w-full sm:w-[362px] flex-col flex items-start justify-center gap-y-6"
-            >
-              <div class="flex items-center justify-center gap-x-3">
-                <figure class="size-12 rounded-full overflow-hidden">
-                  <img
-                    src="images/download (5).jpeg"
-                    alt="Profile photo of Jennifer L., Townhome Owner"
-                    width="48"
-                    height="48"
-                    loading="lazy"
-                    class="w-full h-full object-cover"
-                  />
-                </figure>
-                <div>
-                  <h3 class="text-secondary font-semibold text-tagline-1">Jennifer L.</h3>
-                  <p class="text-tagline-2">Townhome Owner</p>
-                </div>
-              </div>
-
-              <div class="space-y-5">
-                <div class="flex items-center justify-start">
-                  <Component src="src/components/pages/ai-resume-builder/testimonial-star.htm" />
-                </div>
-                <blockquote
-                  class="font-inter-tight text-tagline-1 text-secondary font-normal"
-                  cite="https://x.com/"
-                >
-                  "No risk to try the free preview. Once I saw how personalized it was to MY violation, the $29 unlock was a no-brainer."
-                </blockquote>
-              </div>
-            </div>
-          </div>
-
-          <!-- testimonial card four  -->
-          <div class="" role="article" aria-label="Testimonial from David K., Property Owner">
-            <div
-              class="p-6 border border-stroke-1 bg-white shadow-[0_6px_8px_0_rgba(4,10,51,0.03)] rounded-[20px] sm:w-[362px] flex-col flex items-start justify-center gap-y-6"
-            >
-              <div class="flex items-center justify-center gap-x-3">
-                <figure class="size-12 rounded-full overflow-hidden">
-                  <img
-                    src="images/download (2).jpeg"
-                    alt="Profile photo of David K., Property Owner"
-                    width="48"
-                    height="48"
-                    loading="lazy"
-                    class="w-full h-full object-cover"
-                  />
-                </figure>
-                <div>
-                  <h3 class="text-secondary font-semibold text-tagline-1">David K.</h3>
-                  <p class="text-tagline-2">Property Owner</p>
-                </div>
-              </div>
-
-              <div class="space-y-5">
-                <div class="flex items-center justify-start">
-                  <Component src="src/components/pages/ai-resume-builder/testimonial-star.htm" />
-                </div>
-                <blockquote
-                  class="font-inter-tight text-tagline-1 text-secondary font-normal"
-                  cite="https://x.com/"
-                >
-                  "The templates helped me communicate professionally. The response was clear and well-organized."
-                </blockquote>
-              </div>
-            </div>
-          </div>
-
-          <!-- testimonial card five  -->
-          <div class="" role="article" aria-label="Testimonial from Lisa P., Homeowner">
-            <div
-              class="p-6 border border-stroke-1 bg-white shadow-[0_6px_8px_0_rgba(4,10,51,0.03)] rounded-[20px] sm:w-[362px] flex-col flex items-start justify-center gap-y-6"
-            >
-              <div class="flex items-center justify-center gap-x-3">
-                <figure class="size-12 rounded-full overflow-hidden">
-                  <img
-                    src="images/s.jpeg"
-                    alt="Profile photo of Lisa P., Homeowner"
-                    width="48"
-                    height="48"
-                    loading="lazy"
-                    class="w-full h-full object-cover"
-                  />
-                </figure>
-                <div>
-                  <h3 class="text-secondary font-semibold text-tagline-1">Lisa P.</h3>
-                  <p class="text-tagline-2">Homeowner</p>
-                </div>
-              </div>
-
-              <div class="space-y-5">
-                <div class="flex items-center justify-start">
-                  <Component src="src/components/pages/ai-resume-builder/testimonial-star.htm" />
-                </div>
-                <blockquote
-                  class="font-inter-tight text-tagline-1 text-secondary font-normal"
-                  cite="https://x.com/"
-                >
-                  "The document analysis broke everything down in plain English. I finally understood what they wanted."
-                </blockquote>
-              </div>
-            </div>
-          </div>
-
-          <!-- testimonial card six  -->
-          <div class="" role="article" aria-label="Testimonial from Robert T., Homeowner">
-            <div
-              class="p-6 border border-stroke-1 bg-white shadow-[0_6px_8px_0_rgba(4,10,51,0.03)] rounded-[20px] sm:w-[362px] flex-col flex items-start justify-center gap-y-6"
-            >
-              <div class="flex items-center justify-center gap-x-3">
-                <figure class="size-12 rounded-full overflow-hidden">
-                  <img
-                    src="images/m.jpeg"
-                    alt="Profile photo of Robert T., Homeowner"
-                    width="48"
-                    height="48"
-                    loading="lazy"
-                    class="w-full h-full object-cover"
-                  />
-                </figure>
-                <div>
-                  <h3 class="text-secondary font-semibold text-tagline-1">Robert T.</h3>
-                  <p class="text-tagline-2">Homeowner</p>
-                </div>
-              </div>
-
-              <div class="space-y-5">
-                <div class="flex items-center justify-start">
-                  <Component src="src/components/pages/ai-resume-builder/testimonial-star.htm" />
-                </div>
-                <blockquote
-                  class="font-inter-tight text-tagline-1 text-secondary font-normal"
-                  cite="https://x.com/"
-                >
-                  "From HOA stress to resolution in one day. The free preview gave me confidence I never had before."
-                </blockquote>
-              </div>
-            </div>
-          </div>
+          <blockquote class="font-inter-tight text-tagline-1 text-secondary font-normal leading-relaxed">
+            "A homeowner in Florida received a violation notice for a trash bin left visible from the street — but the photo attached to the notice showed a neighbor's property, not theirs. Our analysis helped them draft a response formally disputing the identification and requesting the HOA provide evidence the violation was correctly attributed to their property."
+          </blockquote>
+          <p class="text-sm text-secondary/60 italic">
+            — the dispute letter put the burden of proof back on the HOA before any fine was assessed.
+          </p>
         </div>
       </div>
     </div>
