@@ -326,6 +326,13 @@
             </div>
           </div>
 
+          <!-- UPL Disclaimer Banner (applies to Email Thread & Draft Replies) -->
+          <div class="p-3 bg-amber-50 border border-amber-200 rounded-lg mobile-tab-content" data-mobile-tab="chat drafts">
+            <p class="text-tagline-2 text-amber-800">
+              All generated responses — including draft replies and email thread responses — are personalized to your situation based on the documents you provided. They are not legal advice. Review and edit before sending — you are responsible for all communications with your HOA.
+            </p>
+          </div>
+
           <!-- HOA Email Thread Card -->
           <div id="email-thread-section" class="bg-white rounded-[20px] border border-stroke-1 p-6 hidden mobile-tab-content" data-mobile-tab="chat">
             <div class="flex items-center gap-2 mb-4">
@@ -339,13 +346,13 @@
             <div id="email-input-area" class="mb-6">
               <button id="toggle-email-input" class="w-full flex items-center justify-between px-4 py-3 bg-background-3 rounded-lg hover:bg-gray-100 transition-colors text-left">
                 <span class="text-tagline-1 font-medium text-secondary">Paste HOA's Latest Response</span>
-                <svg id="email-input-chevron" class="w-5 h-5 text-secondary/60 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg id="email-input-chevron" class="w-5 h-5 text-secondary/60 transition-transform rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                 </svg>
               </button>
 
               <!-- Expandable Input -->
-              <div id="email-input-expanded" class="hidden mt-4">
+              <div id="email-input-expanded" class="mt-4">
                 <textarea
                   id="hoa-message-input"
                   placeholder="Paste the HOA's email or letter here..."
@@ -547,6 +554,24 @@
             </div>
           </div>
 
+          <!-- Know Your Rights Card -->
+          <div id="know-your-rights-card" class="hidden bg-white rounded-[20px] border border-stroke-1 p-6 mobile-tab-content" data-mobile-tab="actions">
+            <div class="flex items-center gap-2 mb-4">
+              <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+              </svg>
+              <h2 class="text-heading-5">Know Your Rights</h2>
+            </div>
+            <div id="know-your-rights-container" class="space-y-3">
+              <!-- Populated by JS -->
+            </div>
+            <div class="mt-4 pt-3 border-t border-stroke-1">
+              <p class="text-tagline-2 text-secondary/60">
+                This information is for educational purposes only. For advice specific to your situation, consult a licensed attorney in your state.
+              </p>
+            </div>
+          </div>
+
           <!-- Action Plan Card -->
           <div class="bg-white rounded-[20px] border border-stroke-1 p-6 mobile-tab-content" data-mobile-tab="actions">
             <h2 class="text-heading-5 mb-4">Action Plan</h2>
@@ -610,7 +635,7 @@
                   <input type="checkbox" class="mt-1 mr-3 w-4 h-4">
                   <div>
                     <span class="text-tagline-2 block">Follow up before deadline</span>
-                    <span class="text-tagline-3 text-secondary/60">Confirm acceptance and next steps</span>
+                    <span class="text-tagline-3 text-secondary/60">Confirm status and review next steps</span>
                   </div>
                 </div>
               </div>
@@ -620,8 +645,8 @@
                 <h3 class="text-tagline-1 font-medium mb-3">Timeline</h3>
                 <div class="space-y-2 text-tagline-2">
                   <div><strong>Today:</strong> Review and document current situation</div>
-                  <div><strong>Next 48 hours:</strong> Send initial response or clarification request</div>
-                  <div><strong>Before deadline:</strong> <span id="timeline-deadline">Confirm compliance and next steps</span></div>
+                  <div><strong>Next 48 hours:</strong> Consider sending an initial response or clarification request</div>
+                  <div><strong>Before deadline:</strong> <span id="timeline-deadline">Confirm status and determine next steps</span></div>
                 </div>
               </div>
             </div>
@@ -666,7 +691,7 @@
       <!-- Disclaimer -->
       <div class="mt-12 pt-6 border-t border-stroke-1">
         <p class="text-center text-tagline-2 text-secondary/60">
-          Drafting and educational assistance only. Not legal advice.
+          Dispute My HOA provides document drafting assistance and general legal information for educational purposes only. This is not legal advice. Dispute My HOA is not a law firm and does not represent you in any legal proceeding. For advice specific to your situation, consulting with a licensed attorney in your state is recommended.
         </p>
       </div>
     </div>
@@ -1531,6 +1556,7 @@
       this.populateSummary();
       this.toggleDraftsVisibility();
       this.toggleActionPlanVisibility();
+      this.populateKnowYourRights();
       this.populateDocuments();
       this.renderMessages();
 
@@ -1665,14 +1691,14 @@
         const daysUntilFines = Math.abs(daysElapsed);
         bgClass = 'bg-yellow-500';
         primaryText = `Fines start in ${daysUntilFines} day${daysUntilFines === 1 ? '' : 's'} \u2014 ${dollarSign}${finePerDay}/day`;
-        secondaryText = `Daily fines of ${dollarSign}${finePerDay} will begin on ${formattedStartDate}. Act now to avoid accumulating fines.`;
+        secondaryText = `Daily fines of ${dollarSign}${finePerDay} will begin on ${formattedStartDate}. Homeowners typically address the issue before this date to avoid accumulating fines.`;
         minimizedText = `${daysUntilFines}d until fines start`;
       }
       // Fines start today
       else if (daysElapsed === 0) {
         bgClass = 'bg-red-600';
         primaryText = `Fines start TODAY \u2014 ${dollarSign}${finePerDay}/day`;
-        secondaryText = `Daily fines of ${dollarSign}${finePerDay} begin today, ${formattedStartDate}. Take action immediately to prevent fines from accumulating.`;
+        secondaryText = `Daily fines of ${dollarSign}${finePerDay} begin today, ${formattedStartDate}. Addressing the issue promptly is one way to limit accumulating fines.`;
         minimizedText = `Fines start TODAY!`;
       }
       // Fines already accruing
@@ -1715,7 +1741,6 @@
     toggleDraftsVisibility() {
       const lockedDiv = document.getElementById('drafts-locked');
       const unlockedDiv = document.getElementById('drafts-unlocked');
-
       if (this.isUnlocked) {
         lockedDiv.classList.add('hidden');
         unlockedDiv.classList.remove('hidden');
@@ -1723,6 +1748,7 @@
       } else {
         lockedDiv.classList.remove('hidden');
         unlockedDiv.classList.add('hidden');
+        if (disclaimerDiv) disclaimerDiv.classList.add('hidden');
       }
     }
 
@@ -1867,16 +1893,16 @@ Sincerely,
       // fallback behavior
       const data = this.caseData || {};
       const outcomeActions = {
-        'clarification': 'Request specific clarification from HOA',
-        'extension': 'Request reasonable extension timeline',
-        'alternative': 'Propose alternative compliance solutions',
-        'comply': 'Implement lowest-cost compliance approach',
-        'dispute': 'Gather evidence to support your position',
-        'not-sure': 'Assess all options before responding'
+        'clarification': 'A common first step is requesting specific clarification from the HOA',
+        'extension': 'Homeowners often begin by requesting a reasonable extension',
+        'alternative': 'Some homeowners propose alternative compliance solutions',
+        'comply': 'A lowest-cost compliance approach is one option to consider',
+        'dispute': 'Homeowners who wish to dispute typically begin by gathering evidence',
+        'not-sure': 'Reviewing all available options before responding is a common approach'
       };
 
       document.getElementById('outcome-specific-action').textContent =
-        outcomeActions[data.outcome] || 'Take appropriate action based on your situation';
+        outcomeActions[data.outcome] || 'Review the options below based on your situation';
 
       if (data.deadline) {
         const deadlineDate = new Date(data.deadline);
@@ -1889,6 +1915,33 @@ Sincerely,
       const originalStatus = document.getElementById('original-doc-status');
       originalStatus.textContent = this.caseData?.hasUpload ? 'Original notice: Uploaded' : 'Original notice: Pasted text';
       this.renderDocumentList();
+    }
+
+    populateKnowYourRights() {
+      const card = document.getElementById('know-your-rights-card');
+      const container = document.getElementById('know-your-rights-container');
+      if (!card || !container) return;
+
+      const rights = this.outputs?.know_your_rights;
+      if (!rights || !Array.isArray(rights) || rights.length === 0) {
+        card.classList.add('hidden');
+        return;
+      }
+
+      card.classList.remove('hidden');
+      container.innerHTML = '';
+
+      rights.forEach(item => {
+        const el = document.createElement('div');
+        el.className = 'p-3 bg-blue-50 border border-blue-100 rounded-lg';
+        el.innerHTML = `
+          <h4 class="text-tagline-1 font-medium text-blue-900 mb-1">${this.escapeHtml(item.title)}</h4>
+          <p class="text-tagline-2 text-blue-800 mb-2">${this.escapeHtml(item.content)}</p>
+          <p class="text-tagline-2 text-blue-700 italic mb-1">${this.escapeHtml(item.relevance)}</p>
+          <p class="text-tagline-2 text-blue-600 font-mono">${this.escapeHtml(item.source)}</p>
+        `;
+        container.appendChild(el);
+      });
     }
 
     renderDocumentList() {
@@ -1983,17 +2036,17 @@ Sincerely,
 
       if (nextSteps.length) {
         lines.push(``);
-        lines.push(`Suggested next steps:`);
+        lines.push(`Based on the deadlines in your notice, here are options homeowners typically consider:`);
         nextSteps.forEach(s => lines.push(`- ${s}`));
       }
 
       lines.push(``);
-      lines.push(`Use this chat to:`);
-      lines.push(`- Ask questions about deadlines, fines, hearings, or next steps`);
-      lines.push(`- Paste the HOA’s reply so I can draft a response back`);
+      lines.push(`You can use this chat to:`);
+      lines.push(`- Ask questions about deadlines, fines, hearings, or your options`);
+      lines.push(`- Paste the HOA’s reply so I can help you draft a response`);
       lines.push(`- Add missing info (dates, photos, vendor notes, prior emails, etc.)`);
       lines.push(``);
-      lines.push(`If you paste the HOA’s latest message here, I can write a calm, professional reply that requests the exact rule/covenant citation and confirms what “compliant” looks like.`);
+      lines.push(`If you paste the HOA’s latest message here, I can help you draft a professional reply. You’ll review and edit it before sending.`);
 
       return lines.join('\n');
     }
@@ -2183,18 +2236,18 @@ Sincerely,
 
       const lower = (userText || '').toLowerCase();
 
-      if (lower.includes('draft') || lower.includes('letter') || lower.includes('response')) {
-        return "Your draft replies are ready in the Draft Replies section. Tell me which one you want to send and I’ll help customize it.";
+      if (lower.includes(‘draft’) || lower.includes(‘letter’) || lower.includes(‘response’)) {
+        return "Your draft replies are ready in the Draft Replies section. Would you like to review one? I can help you customize it before sending.";
       }
 
-      if (lower.includes('next step') || lower.includes('what should')) {
+      if (lower.includes(‘next step’) || lower.includes(‘what should’)) {
         if (this.outputs && Array.isArray(this.outputs.action_plan) && this.outputs.action_plan.length) {
-          return `Here are your next steps:\n- ${this.outputs.action_plan.slice(0, 3).join('\n- ')}\n\nIf you want, tell me whether you want to comply, dispute, or request clarification and I’ll tailor the plan.`;
+          return `Here are options homeowners in similar situations typically consider:\n- ${this.outputs.action_plan.slice(0, 3).join(‘\n- ‘)}\n\nWould you like to explore any of these? Let me know whether you’re leaning toward compliance, dispute, or requesting clarification.`;
         }
-        return "Start with the Action Plan on the right. If you paste the HOA notice details, I can tailor a response.";
+        return "The Action Plan on the right outlines common approaches. If you paste the HOA notice details, I can help you draft a response for your review.";
       }
 
-      return "Got it — tell me what part you want help with (drafting the reply, disputing the fine, or clarifying requirements).";
+      return "Sure — what area would you like to explore? Options include drafting a reply, understanding the fine, or clarifying requirements.";
     }
 
     // ==========
@@ -2326,9 +2379,10 @@ Sincerely,
         }
       });
 
-      // Update content visibility
+      // Update content visibility (supports space-separated tab names)
       document.querySelectorAll('.mobile-tab-content').forEach(content => {
-        if (content.dataset.mobileTab === tabName) {
+        const tabs = content.dataset.mobileTab.split(' ');
+        if (tabs.includes(tabName)) {
           content.classList.add('mobile-active');
         } else {
           content.classList.remove('mobile-active');
@@ -2414,6 +2468,12 @@ Sincerely,
       this.emailExchanges = await this.fetchEmailExchanges();
 
       loadingEl.classList.add('hidden');
+
+      // Always keep the paste input open by default
+      const expanded = document.getElementById('email-input-expanded');
+      const chevron = document.getElementById('email-input-chevron');
+      expanded.classList.remove('hidden');
+      chevron.classList.add('rotate-90');
 
       if (this.emailExchanges.length === 0) {
         emptyEl.classList.remove('hidden');
