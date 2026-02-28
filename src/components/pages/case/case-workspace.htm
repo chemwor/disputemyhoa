@@ -539,23 +539,9 @@
               </div>
             </div>
           </div>
-        </div>
-
-        <!-- Right Column (Summary + Action Plan + Documents) -->
-        <div class="space-y-6">
-          <!-- Summary Card -->
-          <div class="bg-white rounded-[20px] border border-stroke-1 p-6 mobile-tab-content" data-mobile-tab="summary">
-            <h2 class="text-heading-5 mb-4">Summary</h2>
-            <div id="summary-content" class="space-y-2 text-tagline-2">
-              <!-- Will be populated by JS -->
-            </div>
-            <div id="summary-locked-note" class="mt-3 text-tagline-2 text-secondary/60 italic">
-              Unlock for complete analysis
-            </div>
-          </div>
 
           <!-- Know Your Rights Card -->
-          <div id="know-your-rights-card" class="hidden bg-white rounded-[20px] border border-stroke-1 p-6 mobile-tab-content" data-mobile-tab="actions">
+          <div id="know-your-rights-card" class="hidden bg-white rounded-[20px] border border-stroke-1 p-6 mobile-tab-content" data-mobile-tab="drafts summary">
             <div class="flex items-center gap-2 mb-4">
               <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
@@ -569,6 +555,20 @@
               <p class="text-tagline-2 text-secondary/60">
                 This information is for educational purposes only. For advice specific to your situation, consult a licensed attorney in your state.
               </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column (Summary + Action Plan + Documents) -->
+        <div class="space-y-6">
+          <!-- Summary Card -->
+          <div class="bg-white rounded-[20px] border border-stroke-1 p-6 mobile-tab-content" data-mobile-tab="summary">
+            <h2 class="text-heading-5 mb-4">Summary</h2>
+            <div id="summary-content" class="space-y-2 text-tagline-2">
+              <!-- Will be populated by JS -->
+            </div>
+            <div id="summary-locked-note" class="mt-3 text-tagline-2 text-secondary/60 italic">
+              Unlock for complete analysis
             </div>
           </div>
 
@@ -1741,9 +1741,12 @@
     toggleDraftsVisibility() {
       const lockedDiv = document.getElementById('drafts-locked');
       const unlockedDiv = document.getElementById('drafts-unlocked');
+      const disclaimerDiv = document.getElementById('drafts-disclaimer');
+
       if (this.isUnlocked) {
         lockedDiv.classList.add('hidden');
         unlockedDiv.classList.remove('hidden');
+        if (disclaimerDiv) disclaimerDiv.classList.remove('hidden');
         this.populateDrafts();
       } else {
         lockedDiv.classList.remove('hidden');
@@ -2011,7 +2014,7 @@ Sincerely,
 
       // Prefer AI summary if available
       const summary = (out.letter_summary || '').trim() ||
-        `You’re dealing with an HOA ${noticeLabel.toLowerCase()} and your desired outcome is: ${outcomeLabel}.`;
+        `You're dealing with an HOA ${noticeLabel.toLowerCase()} and your desired outcome is: ${outcomeLabel}.`;
 
       const topRisks = Array.isArray(out?.risks_and_deadlines?.risks)
         ? out.risks_and_deadlines.risks.slice(0, 3)
@@ -2043,10 +2046,10 @@ Sincerely,
       lines.push(``);
       lines.push(`You can use this chat to:`);
       lines.push(`- Ask questions about deadlines, fines, hearings, or your options`);
-      lines.push(`- Paste the HOA’s reply so I can help you draft a response`);
+      lines.push(`- Paste the HOA's reply so I can help you draft a response`);
       lines.push(`- Add missing info (dates, photos, vendor notes, prior emails, etc.)`);
       lines.push(``);
-      lines.push(`If you paste the HOA’s latest message here, I can help you draft a professional reply. You’ll review and edit it before sending.`);
+      lines.push(`If you paste the HOA's latest message here, I can help you draft a professional reply. You'll review and edit it before sending.`);
 
       return lines.join('\n');
     }
@@ -2236,13 +2239,13 @@ Sincerely,
 
       const lower = (userText || '').toLowerCase();
 
-      if (lower.includes(‘draft’) || lower.includes(‘letter’) || lower.includes(‘response’)) {
+      if (lower.includes('draft') || lower.includes('letter') || lower.includes('response')) {
         return "Your draft replies are ready in the Draft Replies section. Would you like to review one? I can help you customize it before sending.";
       }
 
-      if (lower.includes(‘next step’) || lower.includes(‘what should’)) {
+      if (lower.includes('next step') || lower.includes('what should')) {
         if (this.outputs && Array.isArray(this.outputs.action_plan) && this.outputs.action_plan.length) {
-          return `Here are options homeowners in similar situations typically consider:\n- ${this.outputs.action_plan.slice(0, 3).join(‘\n- ‘)}\n\nWould you like to explore any of these? Let me know whether you’re leaning toward compliance, dispute, or requesting clarification.`;
+          return `Here are options homeowners in similar situations typically consider:\n- ${this.outputs.action_plan.slice(0, 3).join('\n- ')}\n\nWould you like to explore any of these? Let me know whether you're leaning toward compliance, dispute, or requesting clarification.`;
         }
         return "The Action Plan on the right outlines common approaches. If you paste the HOA notice details, I can help you draft a response for your review.";
       }
