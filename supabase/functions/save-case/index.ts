@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -7,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -46,13 +45,20 @@ serve(async (req) => {
     // Check if case already exists
     const { data: existingCase, error: checkError } = await supabase
       .from('dmhoa_cases')
-      .select('id, payload, created_at')
+      .select('id, payload, created_at, status')
       .eq('token', token)
       .maybeSingle()
 
     if (checkError) {
       console.error('Error checking existing case:', checkError)
       // Continue anyway, might be a new case
+    }
+
+    // Determine case status from payload
+    // @ts-ignore
+    function deriveCaseStatus(p: any): string {
+      if (p?.completionPhase === 'simple') return 'quick_preview'
+      return 'full_preview'
     }
 
     let result;
@@ -66,11 +72,18 @@ serve(async (req) => {
       }
       finalPayload = mergedPayload
 
-      console.log('Updating existing case:', token)
+      // Don't overwrite 'paid' or 'pending_payment' status
+      const currentStatus = (existingCase as any).status || ''
+      const newStatus = ['paid', 'pending_payment'].includes(currentStatus)
+        ? currentStatus
+        : deriveCaseStatus(mergedPayload)
+
+      console.log('Updating existing case:', token, 'status:', newStatus)
       const { data, error } = await supabase
         .from('dmhoa_cases')
         .update({
           payload: mergedPayload,
+          status: newStatus,
           updated_at: new Date().toISOString()
         })
         .eq('token', token)
@@ -98,7 +111,7 @@ serve(async (req) => {
         .insert({
           token: token,
           payload: payload,
-          status: 'new',
+          status: deriveCaseStatus(payload),
           unlocked: false,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
@@ -152,12 +165,11 @@ serve(async (req) => {
       console.warn('Failed to log event (non-critical):', eventError)
     }
 
-    // CRITICAL FIX: Add delay before triggering document extraction to ensure database commit is propagated
-    setTimeout(() => {
-      triggerDocumentExtractionAsync(token, finalPayload, supabase).catch(error => {
-        console.warn('Document extraction trigger failed (non-critical):', error)
-      })
-    }, 2000) // Wait 2 seconds to ensure database commit is fully propagated
+    // Trigger document extraction without blocking the response
+    // Note: Using waitUntil pattern - fire and don't await so the response returns immediately
+    triggerDocumentExtractionAsync(token, finalPayload, supabase).catch(error => {
+      console.warn('Document extraction trigger failed (non-critical):', error)
+    })
 
     return new Response(
       JSON.stringify({ success: true, case_id: result[0]?.id }),
@@ -169,8 +181,9 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Save case error:', error)
+    const message = error instanceof Error ? error.message : 'Internal server error'
     return new Response(
-      JSON.stringify({ error: error.message || 'Internal server error' }),
+      JSON.stringify({ error: message }),
       {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -294,8 +307,8 @@ async function triggerDocumentExtractionAsync(token: string, payload: any, supab
         })
         .eq('token', token)
     } else if (extractResponse.status === 401) {
-      console.error('Unauthorized - check DOC_EXTRACT_WEBHOOK_SECRET configuration')
       const errorText = await extractResponse.text()
+      console.error('Unauthorized - check DOC_EXTRACT_WEBHOOK_SECRET configuration:', errorText)
       await supabase
         .from('dmhoa_cases')
         .update({
