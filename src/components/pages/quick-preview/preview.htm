@@ -1340,6 +1340,11 @@ class QuickPreviewManager {
 
       // Track Quick Preview conversion
       if (typeof gtag !== 'undefined') {
+        // Enhanced conversions — send email for better Google Ads matching
+        const email = this.caseData?.email;
+        if (email) {
+          gtag('set', 'user_data', { 'email': email });
+        }
         gtag('event', 'conversion', {
           'send_to': 'AW-17007905582/PZVoCLjy3PobEK6WgK4_',
           'value': 1.0,

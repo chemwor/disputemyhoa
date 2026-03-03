@@ -974,15 +974,7 @@
     }
 
     async proceedToCheckout() {
-      // Track conversion event - Direct checkout
-      if (typeof gtag !== 'undefined') {
-        gtag('event', 'conversion', {
-          'send_to': 'AW-17007905582/-HfLCKPCvdsbEK6WgK4_',
-          'value': 1.0,
-          'currency': 'USD'
-        });
-        console.log('Direct checkout conversion tracked for case:', this.caseToken);
-      }
+      console.log('Proceeding to checkout for case:', this.caseToken);
 
       // Show loading state
       const checkoutBtn = document.getElementById('unlock-btn');
@@ -1079,18 +1071,21 @@
     }
 
     trackPreviewPageView() {
-      // Track conversion for preview page view (only once per case)
+      // Track Full Preview conversion (only once per case)
       if (!this.hasTrackedPreviewView()) {
         if (typeof gtag !== 'undefined') {
+          // Enhanced conversions — send email for better Google Ads matching
+          const email = this.caseData?.email;
+          if (email) {
+            gtag('set', 'user_data', { 'email': email });
+          }
           gtag('event', 'conversion', {
             'send_to': 'AW-17007905582/-HfLCKPCvdsbEK6WgK4_',
             'value': 1.0,
             'currency': 'USD',
-            'transaction_id': this.caseToken // Use case token as transaction ID for tracking
+            'transaction_id': 'full_preview_' + this.caseToken
           });
-          console.log('Preview page view conversion tracked for case:', this.caseToken);
-
-          // Mark that we've tracked this to avoid duplicate tracking
+          console.log('Full Preview conversion tracked for case:', this.caseToken);
           this.markPreviewViewTracked();
         }
       }
@@ -1114,15 +1109,18 @@
       if (isPaid && !this.hasTrackedPaidAccess()) {
         // Track the paid case access conversion
         if (typeof gtag !== 'undefined') {
+          // Enhanced conversions — send email for better Google Ads matching
+          const email = this.caseData?.email;
+          if (email) {
+            gtag('set', 'user_data', { 'email': email });
+          }
           gtag('event', 'conversion', {
             'send_to': 'AW-17007905582/EDBXCKbCvdsbEK6WgK4_',
             'value': 29.0,
             'currency': 'USD',
-            'transaction_id': this.caseToken // Use case token as transaction ID for tracking
+            'transaction_id': 'paid_' + this.caseToken
           });
           console.log('Purchase conversion tracked for case:', this.caseToken);
-
-          // Mark that we've tracked this to avoid duplicate tracking
           this.markPaidAccessTracked();
         }
       }
