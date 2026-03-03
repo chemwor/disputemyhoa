@@ -649,6 +649,7 @@ class StartCaseWizard {
         outcome: this.formData.outcome,
         pastedText: this.formData.pastedText || null,
         email: this.formData.email,
+        gclid: localStorage.getItem('dmhoa_gclid') || null,
         extract_status: 'pending',
         additional_docs: []
       };

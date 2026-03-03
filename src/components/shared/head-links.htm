@@ -9,6 +9,16 @@ Head links
   window.gtag = gtag;
   gtag('js', new Date());
   gtag('config', 'AW-17007905582', { 'allow_enhanced_conversions': true });
+
+  // Capture gclid from Google Ads click URL and persist for attribution
+  (function() {
+    var params = new URLSearchParams(window.location.search);
+    var gclid = params.get('gclid');
+    if (gclid) {
+      localStorage.setItem('dmhoa_gclid', gclid);
+      localStorage.setItem('dmhoa_gclid_ts', Date.now().toString());
+    }
+  })();
 </script>
 
 <!-- Deferred Analytics - script downloads after page render for better LCP -->
