@@ -1354,6 +1354,14 @@ class QuickPreviewManager {
         console.log('Quick Preview conversion tracked for case:', this.caseToken);
       }
 
+      // PostHog event for our own funnel tracking
+      if (typeof posthog !== 'undefined') {
+        posthog.capture('quick_preview_submitted', {
+          case_token: this.caseToken,
+          email: this.caseData?.email,
+        });
+      }
+
       // Handle file upload if present
       const fileInput = document.getElementById('file-upload');
       if (fileInput.files.length > 0) {

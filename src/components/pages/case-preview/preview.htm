@@ -1087,6 +1087,14 @@
           });
           console.log('Full Preview conversion tracked for case:', this.caseToken);
           this.markPreviewViewTracked();
+
+          // PostHog event for our own funnel tracking
+          if (typeof posthog !== 'undefined') {
+            posthog.capture('full_preview_viewed', {
+              case_token: this.caseToken,
+              email: this.caseData?.email,
+            });
+          }
         }
       }
     }
@@ -1116,10 +1124,19 @@
           }
           gtag('event', 'conversion', {
             'send_to': 'AW-17007905582/EDBXCKbCvdsbEK6WgK4_',
-            'value': 29.0,
+            'value': 49.0,
             'currency': 'USD',
             'transaction_id': 'paid_' + this.caseToken
           });
+          // PostHog event for our own funnel tracking
+          if (typeof posthog !== 'undefined') {
+            posthog.capture('purchase_completed', {
+              case_token: this.caseToken,
+              email: this.caseData?.email,
+              value: 49,
+              currency: 'USD',
+            });
+          }
           console.log('Purchase conversion tracked for case:', this.caseToken);
           this.markPaidAccessTracked();
         }

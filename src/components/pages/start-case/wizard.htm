@@ -1225,10 +1225,26 @@ class StartCaseWizard {
   }
 
   trackEmailCapture() {
-    // Set enhanced conversion data for Google Ads matching
+    // Set enhanced conversion data for Google Ads matching on the next conversion
     if (typeof gtag !== 'undefined' && this.formData.email) {
       gtag('set', 'user_data', { 'email': this.formData.email });
     }
+
+    // PostHog: track the moment a user provides their email in the full form.
+    // This is the most important top-of-funnel "lead captured" event because
+    // many users drop off between providing their email and reaching the
+    // case-preview page.
+    if (typeof posthog !== 'undefined') {
+      posthog.capture('full_form_email_captured', {
+        email: this.formData.email,
+        notice_type: this.formData.noticeType,
+        state: this.formData.state,
+      });
+      // Also identify the user in PostHog so subsequent events on this
+      // browser are tied to the same person.
+      posthog.identify(this.formData.email, { email: this.formData.email });
+    }
+
     console.log('Email captured:', this.formData.email);
     this.markEmailCaptureTracked();
   }
