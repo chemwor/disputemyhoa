@@ -1225,9 +1225,21 @@ class StartCaseWizard {
   }
 
   trackEmailCapture() {
-    // Set enhanced conversion data for Google Ads matching on the next conversion
+    // Set enhanced conversion data for Google Ads matching
     if (typeof gtag !== 'undefined' && this.formData.email) {
       gtag('set', 'user_data', { 'email': this.formData.email });
+
+      // Fire the "DMHOA Lead Captured" Google Ads conversion. This is a
+      // mid-funnel event that helps Smart Bidding optimize at low conversion
+      // volume. Created via the dashboard's create-lead-captured-conversion
+      // endpoint.
+      gtag('event', 'conversion', {
+        'send_to': 'AW-17007905582/g45MCM_KsJocEK6WgK4_',
+        'value': 5.0,
+        'currency': 'USD',
+        'transaction_id': 'lead_' + (this.formData.email || Date.now()),
+      });
+      console.log('Lead Captured conversion tracked for email:', this.formData.email);
     }
 
     // PostHog: track the moment a user provides their email in the full form.
