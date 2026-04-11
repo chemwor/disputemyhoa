@@ -649,6 +649,7 @@ class StartCaseWizard {
         outcome: this.formData.outcome,
         pastedText: this.formData.pastedText || null,
         email: this.formData.email,
+        gclid: localStorage.getItem('dmhoa_gclid') || null,
         extract_status: 'pending',
         additional_docs: []
       };
@@ -1224,19 +1225,12 @@ class StartCaseWizard {
   }
 
   trackEmailCapture() {
-    // Track conversion for email capture in wizard
-    if (typeof gtag !== 'undefined') {
-      gtag('event', 'conversion', {
-        'send_to': 'AW-17007905582/-HfLCKPCvdsbEK6WgK4_',
-        'value': 1.0,
-        'currency': 'USD',
-        'transaction_id': 'wizard_email_' + Date.now()
-      });
-      console.log('Email capture conversion tracked:', this.formData.email);
-
-      // Mark that we've tracked this to avoid duplicate tracking
-      this.markEmailCaptureTracked();
+    // Set enhanced conversion data for Google Ads matching
+    if (typeof gtag !== 'undefined' && this.formData.email) {
+      gtag('set', 'user_data', { 'email': this.formData.email });
     }
+    console.log('Email captured:', this.formData.email);
+    this.markEmailCaptureTracked();
   }
 
   hasTrackedEmailCapture() {
