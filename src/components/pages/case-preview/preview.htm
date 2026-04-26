@@ -328,12 +328,12 @@
 
         <!-- Right Column - Unlock Card -->
         <div class="lg:col-span-1">
-          <div class="bg-white rounded-[20px] border border-stroke-1 p-6 lg:p-8 sticky top-8">
+          <div id="unlock-card" class="bg-white rounded-[20px] border border-stroke-1 p-6 lg:p-8 sticky top-8">
             <h2 class="text-heading-5 mb-6">Unlock Full Response</h2>
 
             <!-- Pricing -->
             <div class="mb-6">
-              <div class="text-heading-4 text-secondary mb-2">Case Pass — $49</div>
+              <div class="text-heading-4 text-secondary mb-2">Case Pass — $29</div>
               <p class="text-tagline-2 text-secondary/60">One case • Drafts + checklist</p>
             </div>
 
@@ -728,6 +728,114 @@
       } else {
         // Fall back to old structure
         this.populateOldStructure();
+      }
+
+      // If the notice triggered any high-risk flags (opposing counsel, lien,
+      // lawsuit, animal removal, etc.) replace the unlock card with a
+      // legal-referral gate. The free analysis above stays visible.
+      this.renderRiskGate();
+    }
+
+    renderRiskGate() {
+      const flags = (this.caseData && this.caseData.risk_flags) || [];
+      if (!flags.length) return;
+
+      const card = document.getElementById('unlock-card');
+      if (!card) return;
+
+      const reasonsHtml = flags.map(f =>
+        `<li class="flex items-start gap-2"><span class="text-red-500 mt-1">•</span><span>${this.escapeHtml(f.label || f.flag)}</span></li>`
+      ).join('');
+
+      card.innerHTML = `
+        <div class="flex items-center gap-2 mb-4">
+          <svg class="w-6 h-6 text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+          <h2 class="text-heading-5">This case needs an attorney</h2>
+        </div>
+
+        <p class="text-tagline-1 text-secondary/80 mb-4">
+          Based on your notice, this dispute is beyond what a self-help letter can safely address. Sending the wrong response in this situation can make things worse.
+        </p>
+
+        <div class="mb-5">
+          <p class="text-tagline-2 font-medium text-secondary mb-2">What we noticed:</p>
+          <ul class="space-y-2 text-tagline-2 text-secondary/70">${reasonsHtml}</ul>
+        </div>
+
+        <div class="mb-5 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <p class="text-tagline-2 font-medium text-blue-900 mb-1">Free attorney referral</p>
+          <p class="text-tagline-2 text-blue-800">Tell us how to reach you and we'll connect you with an HOA-experienced attorney in your state, usually within one business day.</p>
+        </div>
+
+        <form id="legal-referral-form" class="space-y-3">
+          <input id="lr-name" type="text" required placeholder="Your name" class="w-full px-3 py-2 rounded-lg border border-stroke-1 text-tagline-1 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <input id="lr-phone" type="tel" placeholder="Phone (preferred)" class="w-full px-3 py-2 rounded-lg border border-stroke-1 text-tagline-1 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <input id="lr-email" type="email" placeholder="Email" class="w-full px-3 py-2 rounded-lg border border-stroke-1 text-tagline-1 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <input id="lr-best-time" type="text" placeholder="Best time to reach you" class="w-full px-3 py-2 rounded-lg border border-stroke-1 text-tagline-1 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <textarea id="lr-notes" rows="2" placeholder="Anything else we should know?" class="w-full px-3 py-2 rounded-lg border border-stroke-1 text-tagline-1 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+          <button type="submit" id="lr-submit" class="w-full px-6 py-3 bg-ns-green text-white rounded-lg hover:bg-ns-green/90 transition-colors font-medium">
+            Request a referral
+          </button>
+          <p id="lr-message" class="text-tagline-2 text-secondary/60 text-center"></p>
+        </form>
+
+        <p class="text-tagline-2 text-secondary/60 mt-4 text-center">
+          Not legal advice. We connect you with independent attorneys who handle HOA disputes.
+        </p>
+      `;
+
+      const form = document.getElementById('legal-referral-form');
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        this.submitLegalReferral();
+      });
+    }
+
+    escapeHtml(s) {
+      return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    async submitLegalReferral() {
+      const btn = document.getElementById('lr-submit');
+      const msg = document.getElementById('lr-message');
+      const name = document.getElementById('lr-name').value.trim();
+      const phone = document.getElementById('lr-phone').value.trim();
+      const email = document.getElementById('lr-email').value.trim();
+      const bestTime = document.getElementById('lr-best-time').value.trim();
+      const notes = document.getElementById('lr-notes').value.trim();
+
+      if (!phone && !email) {
+        msg.textContent = 'Please add a phone number or email so we can reach you.';
+        msg.className = 'text-tagline-2 text-red-600 text-center';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Sending...';
+      msg.textContent = '';
+
+      try {
+        const resp = await fetch('https://dmhoa-246713e0bd92.herokuapp.com/api/legal-referral', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            case_token: this.caseToken,
+            name, phone, email, best_time: bestTime, notes,
+          }),
+        });
+        if (!resp.ok) throw new Error('Request failed');
+        document.getElementById('legal-referral-form').innerHTML = `
+          <div class="p-4 bg-green-50 border border-green-200 rounded-lg text-center">
+            <p class="text-tagline-1 font-medium text-green-800 mb-1">Got it.</p>
+            <p class="text-tagline-2 text-green-700">We'll reach out within one business day.</p>
+          </div>`;
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = 'Request a referral';
+        msg.textContent = 'Something went wrong. Try again or email support@disputemyhoa.com.';
+        msg.className = 'text-tagline-2 text-red-600 text-center';
       }
     }
 
