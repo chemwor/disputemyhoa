@@ -12,6 +12,15 @@ command = "npm run build"
 # Node.js version for the build
 NODE_VERSION = "18"
 
+# Email click-tracking redirects: /r/<short_id> proxies to the Heroku
+# backend, which logs the click and 302s to the real destination. Rule
+# order matters — this MUST come before the SPA catch-all below.
+[[redirects]]
+from = "/r/*"
+to = "https://dmhoa-246713e0bd92.herokuapp.com/r/:splat"
+status = 200
+force = true
+
 # Redirect rules for SPA-like behavior (optional)
 [[redirects]]
 from = "/*"
