@@ -975,7 +975,11 @@
       // processed (none)" reads as an error to a normal user.
       const count = this.caseData.doc_count;
       const status = this.caseData.doc_status;
-      if (!count || count <= 0 || !status || status === 'none') {
+      // Hide the doc-status line for cases without uploaded files. Pasted
+      // text doesn't count as a "document" for the purposes of this UI —
+      // showing "Documents: 1 processed (pasted_text)" reads as an error
+      // message to a normal user.
+      if (!count || count <= 0 || !status || status === 'none' || status === 'pasted_text') {
         return;
       }
       const docStatusDiv = document.getElementById('doc-status');
