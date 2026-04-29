@@ -921,23 +921,21 @@
     }
 
     populateDocumentStatus() {
-      if (this.caseData.doc_count !== undefined || this.caseData.doc_status) {
-        const docStatusDiv = document.getElementById('doc-status');
-        const docCountSpan = document.getElementById('doc-count');
-        const docStatusSpan = document.getElementById('doc-status-text');
-
-        if (this.caseData.doc_count !== undefined && docCountSpan) {
-          docCountSpan.textContent = this.caseData.doc_count;
-        }
-
-        if (this.caseData.doc_status && docStatusSpan) {
-          docStatusSpan.textContent = this.caseData.doc_status;
-        }
-
-        if (docStatusDiv) {
-          docStatusDiv.classList.remove('hidden');
-        }
+      // Only show the document-status line when there's actually a document
+      // to report on. After the wizard simplification, most cases land here
+      // with doc_count=0 and doc_status='none' — showing "Documents: 0
+      // processed (none)" reads as an error to a normal user.
+      const count = this.caseData.doc_count;
+      const status = this.caseData.doc_status;
+      if (!count || count <= 0 || !status || status === 'none') {
+        return;
       }
+      const docStatusDiv = document.getElementById('doc-status');
+      const docCountSpan = document.getElementById('doc-count');
+      const docStatusSpan = document.getElementById('doc-status-text');
+      if (docCountSpan) docCountSpan.textContent = count;
+      if (docStatusSpan) docStatusSpan.textContent = status;
+      if (docStatusDiv) docStatusDiv.classList.remove('hidden');
     }
 
     populateOldStructure() {
@@ -969,14 +967,19 @@
           bullets.push(`<div>• <strong>Alleged Violation:</strong> ${situation.alleged_violation}</div>`);
         }
 
+        // Helper: strip trailing period from each item before joining so
+        // we don't end up with "...the fine., Notices like this..."
+        const cleanJoin = (arr) => arr
+          .map(s => String(s || '').trim().replace(/\.$/, ''))
+          .filter(Boolean)
+          .join('. ') + '.';
+
         if (situation.hoa_demands && situation.hoa_demands.length > 0) {
-          const demands = situation.hoa_demands.join(', ');
-          bullets.push(`<div>• <strong>HOA Demands:</strong> ${demands}</div>`);
+          bullets.push(`<div>• <strong>HOA Demands:</strong> ${cleanJoin(situation.hoa_demands)}</div>`);
         }
 
         if (situation.rules_cited && situation.rules_cited.length > 0) {
-          const rules = situation.rules_cited.join(', ');
-          bullets.push(`<div>• <strong>Rules Cited:</strong> ${rules}</div>`);
+          bullets.push(`<div>• <strong>Rules Cited:</strong> ${cleanJoin(situation.rules_cited)}</div>`);
         }
       }
 
@@ -995,15 +998,23 @@
       }
 
       // Set risk level based on risk_if_wrong array
-      const riskCount = this.caseData.risk_if_wrong ? this.caseData.risk_if_wrong.length : 0;
-
-      if (riskCount >= 3) {
-        riskLevel.innerHTML = '<span class="inline-block px-2 py-1 rounded text-tagline-2 bg-red-100 text-red-800">High</span>';
-      } else if (riskCount >= 1) {
-        riskLevel.innerHTML = '<span class="inline-block px-2 py-1 rounded text-tagline-2 bg-yellow-100 text-yellow-800">Medium</span>';
-      } else {
-        riskLevel.innerHTML = '<span class="inline-block px-2 py-1 rounded text-tagline-2 bg-green-100 text-green-800">Low</span>';
+      // Risk level is now driven by case context, not the count of bullets.
+      // - Risk-screening flags fired = High (these are legal-track cases)
+      // - Lien / attorney / hearing notice types = High
+      // - Violation / fine / late-fee = Medium
+      // - Otherwise = Medium (safer default than Low for an HOA dispute)
+      const flags = this.caseData.risk_flags || [];
+      const noticeType = (this.caseData.noticeType || (this.caseData.your_situation && this.caseData.your_situation.alleged_violation) || '').toLowerCase();
+      let level = 'Medium';
+      if (flags.length > 0) {
+        level = 'High';
+      } else if (/lien|attorney|hearing|foreclos/i.test(noticeType)) {
+        level = 'High';
       }
+      const cls = level === 'High'
+        ? 'bg-red-100 text-red-800'
+        : level === 'Low' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800';
+      riskLevel.innerHTML = `<span class="inline-block px-2 py-1 rounded text-tagline-2 ${cls}">${level}</span>`;
     }
 
     populateRiskIfWrong() {
