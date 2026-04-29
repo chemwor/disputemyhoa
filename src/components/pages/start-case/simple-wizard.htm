@@ -1,440 +1,490 @@
-<!-- Simple Start Case Wizard - Phase 1 -->
+<!-- Slide-based Start Case Wizard
+     One question per slide, contextual reactive cards persist as breadcrumbs.
+     Auto-advances after notice-type selection (1s delay), Continue button on
+     slide 2, submit on slide 3. Preserves the existing /api/save-case +
+     sessionStorage handoff to /quick-preview.html. -->
 <section class="xl:pt-[180px] lg:pt-[140px] pt-[100px] pb-16 lg:pb-24">
   <div class="main-container">
     <div class="max-w-2xl mx-auto">
-      <!-- Header -->
-      <div class="text-center mb-8 lg:mb-12">
-        <div class="flex items-center justify-center mb-4">
-          <span class="bg-ns-green text-white px-3 py-1 rounded-full text-tagline-2 font-medium mr-3">Step 1</span>
-          <span class="text-tagline-2 text-secondary/60">Quick Info</span>
+
+      <!-- Top bar: back arrow + progress dots + step label -->
+      <div class="flex items-center justify-between mb-6">
+        <button id="back-btn" type="button"
+                class="text-tagline-2 text-secondary/60 hover:text-secondary px-2 py-1 rounded transition-opacity opacity-0 pointer-events-none"
+                aria-label="Go back">
+          ← Back
+        </button>
+        <div class="flex items-center gap-2">
+          <span data-step-dot="1" class="step-dot w-2.5 h-2.5 rounded-full bg-ns-green transition-colors"></span>
+          <span data-step-dot="2" class="step-dot w-2.5 h-2.5 rounded-full bg-stroke-1 transition-colors"></span>
+          <span data-step-dot="3" class="step-dot w-2.5 h-2.5 rounded-full bg-stroke-1 transition-colors"></span>
         </div>
-        <h1 class="text-heading-3 lg:text-heading-2 mb-4">Start Your HOA Case</h1>
-        <p class="text-tagline-1 text-secondary/80">Get a free preview of your HOA dispute response in just 3 quick steps</p>
+        <span id="step-label" class="text-tagline-2 text-secondary/60">Step 1 of 3</span>
       </div>
 
-      <!-- Simple Form -->
-      <div class="bg-white rounded-[20px] border border-stroke-1 p-6 lg:p-8">
-        <form id="simple-case-form" class="space-y-6">
-          <!-- Notice Type -->
-          <div>
-            <label for="notice-type" class="block text-tagline-1 font-medium mb-2">What type of notice did you receive? <span class="text-red-500">*</span></label>
-            <select
-              id="notice-type"
-              name="noticeType"
-              class="w-full px-4 py-3 border border-stroke-1 rounded-lg focus:outline-none focus:border-ns-green"
-              required
-            >
-              <option value="">Select notice type</option>
+      <!-- Persistent breadcrumb cards (filled as user advances) -->
+      <div id="breadcrumbs" class="space-y-2 mb-6"></div>
 
-              <optgroup label="General Notices">
-                <option value="violation">Violation notice</option>
-                <option value="warning">Warning / courtesy notice</option>
-                <option value="maintenance">Maintenance issue</option>
-                <option value="architectural">Architectural / ARC notice</option>
-              </optgroup>
+      <!-- Slide 1: notice type -->
+      <div data-slide="1" class="slide-panel">
+        <div class="bg-white rounded-[20px] border border-stroke-1 p-6 lg:p-8">
+          <h1 class="text-heading-4 lg:text-heading-3 mb-2">What kind of notice did you get?</h1>
+          <p class="text-tagline-1 text-secondary/70 mb-6">Pick the closest match — we'll dig into specifics next.</p>
 
-              <optgroup label="Financial / Enforcement">
-                <option value="fine">Fine or penalty notice</option>
-                <option value="late-fee">Late fee notice</option>
-                <option value="collections">Collections notice</option>
-                <option value="assessment">Assessment or special assessment</option>
-              </optgroup>
-
-              <optgroup label="Escalation / Legal">
-                <option value="hearing">Hearing notice</option>
-                <option value="final-notice">Final notice before enforcement</option>
-                <option value="attorney">Attorney or legal action notice</option>
-                <option value="lien">Lien or foreclosure warning</option>
-              </optgroup>
-
-              <optgroup label="Informational / Other">
-                <option value="inspection">Inspection notice</option>
-                <option value="rule-change">Rule or covenant change notice</option>
-                <option value="other">Other / unclear</option>
-              </optgroup>
-            </select>
-            <div id="notice-type-error" class="text-red-500 text-tagline-2 mt-1 hidden">Please select a notice type</div>
-          </div>
-
-          <!-- Brief Description -->
-          <div>
-            <label for="issue-text" class="block text-tagline-1 font-medium mb-2">Brief description of the issue <span class="text-red-500">*</span></label>
-            <textarea
-              id="issue-text"
-              name="issueText"
-              rows="4"
-              class="w-full px-4 py-3 border border-stroke-1 rounded-lg focus:outline-none focus:border-ns-green"
-              placeholder="Briefly describe what the HOA is claiming you did wrong or what they're requiring..."
-              required
-              minlength="20"
-            ></textarea>
-            <div class="flex justify-between items-center mt-1">
-              <div id="description-error" class="text-red-500 text-tagline-2 hidden">Please provide at least 20 characters</div>
-              <div id="char-count" class="text-tagline-2 text-secondary/60">0/20 minimum</div>
-            </div>
-          </div>
-
-          <!-- Email -->
-          <div>
-            <label for="email" class="block text-tagline-1 font-medium mb-2">Email address <span class="text-red-500">*</span></label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              class="w-full px-4 py-3 border border-stroke-1 rounded-lg focus:outline-none focus:border-ns-green"
-              placeholder="your.email@example.com"
-              required
-            >
-            <p class="text-tagline-2 text-secondary/60 mt-1">We'll send your case preview here (no spam, ever)</p>
-            <div id="email-error" class="text-red-500 text-tagline-2 mt-1 hidden">Please enter a valid email address</div>
-          </div>
-
-          <!-- Submit Button -->
-          <div class="pt-4">
-            <button
-              type="submit"
-              id="generate-btn"
-              class="w-full px-6 py-4 bg-ns-green/40 text-white rounded-lg transition-colors cursor-not-allowed text-tagline-1 font-medium"
-              disabled
-            >
-              Get Quick Preview →
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <button type="button" data-notice="violation"
+                    class="notice-btn text-left px-4 py-4 border-2 border-stroke-1 rounded-xl hover:border-ns-green hover:bg-ns-green/5 transition-all">
+              <div class="text-tagline-1 font-medium">Violation notice</div>
+              <div class="text-tagline-2 text-secondary/60 mt-0.5">Including warnings & ARC</div>
             </button>
-            <p class="text-tagline-2 text-secondary/60 text-center mt-2">Takes just 30 seconds • Completely free</p>
-          </div>
-        </form>
-      </div>
-
-      <!-- Benefits Section -->
-      <div class="mt-8 bg-blue-50 rounded-lg p-6">
-        <h3 class="text-heading-6 mb-4 text-center">What You'll Get:</h3>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-          <div>
-            <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center mx-auto mb-2">
-              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path>
-              </svg>
-            </div>
-            <p class="text-tagline-2 font-medium">Notice-Specific Rights</p>
-            <p class="text-tagline-3 text-secondary/70">Your exact legal rights for this type of notice</p>
-          </div>
-          <div>
-            <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center mx-auto mb-2">
-              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-              </svg>
-            </div>
-            <p class="text-tagline-2 font-medium">Response Options</p>
-            <p class="text-tagline-3 text-secondary/70">Typical strategies and success rates</p>
-          </div>
-          <div>
-            <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center mx-auto mb-2">
-              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd"></path>
-              </svg>
-            </div>
-            <p class="text-tagline-2 font-medium">Next Steps</p>
-            <p class="text-tagline-3 text-secondary/70">Option to get personalized analysis</p>
+            <button type="button" data-notice="fine"
+                    class="notice-btn text-left px-4 py-4 border-2 border-stroke-1 rounded-xl hover:border-ns-green hover:bg-ns-green/5 transition-all">
+              <div class="text-tagline-1 font-medium">Fine or penalty</div>
+              <div class="text-tagline-2 text-secondary/60 mt-0.5">Charged for an alleged issue</div>
+            </button>
+            <button type="button" data-notice="late-fee"
+                    class="notice-btn text-left px-4 py-4 border-2 border-stroke-1 rounded-xl hover:border-ns-green hover:bg-ns-green/5 transition-all">
+              <div class="text-tagline-1 font-medium">Late fee / collections</div>
+              <div class="text-tagline-2 text-secondary/60 mt-0.5">Past-due assessments</div>
+            </button>
+            <button type="button" data-notice="hearing"
+                    class="notice-btn text-left px-4 py-4 border-2 border-stroke-1 rounded-xl hover:border-ns-green hover:bg-ns-green/5 transition-all">
+              <div class="text-tagline-1 font-medium">Hearing notice</div>
+              <div class="text-tagline-2 text-secondary/60 mt-0.5">Board meeting scheduled</div>
+            </button>
+            <button type="button" data-notice="lien"
+                    class="notice-btn text-left px-4 py-4 border-2 border-stroke-1 rounded-xl hover:border-ns-green hover:bg-ns-green/5 transition-all">
+              <div class="text-tagline-1 font-medium">Lien or attorney letter</div>
+              <div class="text-tagline-2 text-secondary/60 mt-0.5">Foreclosure / legal action</div>
+            </button>
+            <button type="button" data-notice="other"
+                    class="notice-btn text-left px-4 py-4 border-2 border-stroke-1 rounded-xl hover:border-ns-green hover:bg-ns-green/5 transition-all">
+              <div class="text-tagline-1 font-medium">Something else</div>
+              <div class="text-tagline-2 text-secondary/60 mt-0.5">Or you're not sure</div>
+            </button>
           </div>
         </div>
       </div>
 
-      <!-- Trust Indicators -->
-      <div class="mt-8 text-center">
-        <div class="flex items-center justify-center space-x-6 text-tagline-2 text-secondary/60">
-          <div class="flex items-center">
-            <svg class="w-4 h-4 mr-1 text-ns-green" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
-            </svg>
-            100% Secure
+      <!-- Slide 2: what happened -->
+      <div data-slide="2" class="slide-panel hidden">
+        <div class="bg-white rounded-[20px] border border-stroke-1 p-6 lg:p-8">
+          <h1 class="text-heading-4 lg:text-heading-3 mb-2">What happened?</h1>
+          <p class="text-tagline-1 text-secondary/70 mb-4">One sentence is fine. Add detail if you have it.</p>
+
+          <div class="flex flex-wrap gap-2 mb-3">
+            <button type="button" data-chip="yard"
+                    class="chip px-3 py-1.5 text-tagline-2 bg-ns-green/10 text-ns-green border border-ns-green/30 rounded-full hover:bg-ns-green/20 transition-colors">
+              + yard / lawn
+            </button>
+            <button type="button" data-chip="fence"
+                    class="chip px-3 py-1.5 text-tagline-2 bg-ns-green/10 text-ns-green border border-ns-green/30 rounded-full hover:bg-ns-green/20 transition-colors">
+              + fence / shed
+            </button>
+            <button type="button" data-chip="trash"
+                    class="chip px-3 py-1.5 text-tagline-2 bg-ns-green/10 text-ns-green border border-ns-green/30 rounded-full hover:bg-ns-green/20 transition-colors">
+              + trash cans
+            </button>
+            <button type="button" data-chip="parking"
+                    class="chip px-3 py-1.5 text-tagline-2 bg-ns-green/10 text-ns-green border border-ns-green/30 rounded-full hover:bg-ns-green/20 transition-colors">
+              + parking
+            </button>
+            <button type="button" data-chip="latefee"
+                    class="chip px-3 py-1.5 text-tagline-2 bg-ns-green/10 text-ns-green border border-ns-green/30 rounded-full hover:bg-ns-green/20 transition-colors">
+              + late fee
+            </button>
           </div>
-          <div class="flex items-center">
-            <svg class="w-4 h-4 mr-1 text-ns-green" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-            </svg>
-            Always Free Preview
-          </div>
-          <div class="flex items-center">
-            <svg class="w-4 h-4 mr-1 text-ns-green" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-              <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-            </svg>
-            No Spam
+
+          <textarea id="issue-text" rows="4"
+                    class="w-full px-4 py-3 border border-stroke-1 rounded-lg focus:outline-none focus:border-ns-green text-tagline-1"
+                    placeholder="The HOA said... e.g. They fined me for weeds in the front yard"></textarea>
+
+          <div class="flex justify-end mt-4">
+            <button type="button" id="continue-2"
+                    class="px-6 py-3 bg-stroke-1 text-secondary/40 rounded-lg cursor-not-allowed transition-colors text-tagline-1 font-medium"
+                    disabled>
+              Continue →
+            </button>
           </div>
         </div>
       </div>
+
+      <!-- Slide 3: email -->
+      <div data-slide="3" class="slide-panel hidden">
+        <div class="bg-white rounded-[20px] border border-stroke-1 p-6 lg:p-8">
+          <h1 class="text-heading-4 lg:text-heading-3 mb-2">Where should we send your preview?</h1>
+          <p class="text-tagline-1 text-secondary/70 mb-6">Free preview. No spam — just your case + a deadline reminder if you want one.</p>
+
+          <input type="email" id="email"
+                 class="w-full px-4 py-3 border border-stroke-1 rounded-lg focus:outline-none focus:border-ns-green text-tagline-1 mb-2"
+                 placeholder="your.email@example.com" autocomplete="email">
+          <p id="email-error" class="text-tagline-2 text-red-500 hidden mb-4">Please enter a valid email address.</p>
+
+          <button type="button" id="submit-btn"
+                  class="w-full px-6 py-4 bg-stroke-1 text-secondary/40 rounded-lg cursor-not-allowed transition-colors text-tagline-1 font-medium"
+                  disabled>
+            Show me my preview →
+          </button>
+
+          <div class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-tagline-3 text-secondary/60 mt-3">
+            <span class="flex items-center gap-1">
+              <svg class="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+              </svg>
+              Free
+            </span>
+            <span>•</span>
+            <span>No spam</span>
+            <span>•</span>
+            <span>~30 seconds</span>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </section>
 
-<script>
-class SimpleCaseWizard {
-  constructor() {
-    this.formData = {};
-    this.isUploading = false;
+<style>
+  .slide-panel {
+    transition: opacity 300ms ease-out, transform 300ms ease-out;
+  }
+  .slide-panel.entering {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  .breadcrumb-card {
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity 300ms ease-out, transform 300ms ease-out;
+  }
+  .breadcrumb-card.revealed {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .notice-btn.selected {
+    border-color: rgb(34 197 94);
+    background-color: rgba(34, 197, 94, 0.08);
+  }
+</style>
 
-    // Use exact same configuration as working wizard
-    this.supabaseBucketUrl = 'https://yvdwrkhntyutpnklxsvz.supabase.co';
-    this.supabaseUrl = 'https://dmhoa-246713e0bd92.herokuapp.com';
+<script>
+class SlideWizard {
+  constructor() {
+    this.currentSlide = 1;
+    this.formData = {
+      noticeType: '',
+      issueText: '',
+      email: '',
+    };
+
+    // Hardcoded same as the previous wizard — used by /api/save-case body
     this.supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2ZHdya2hudHl1dHBua2x4c3Z6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1MDY3NTQsImV4cCI6MjA4MjA4Mjc1NH0.dFkoPjA60c9MH6C_YWYChehG3nKHHK3VKmKj0w722SU';
+    this.apiBase = 'https://dmhoa-246713e0bd92.herokuapp.com';
+
+    // Reactive card text per notice type. Stored separately so it's easy to
+    // tweak copy without digging through the DOM.
+    this.noticeCards = {
+      violation: {
+        emoji: '📋',
+        title: 'Violation notices give 14–30 days to respond.',
+        body: "The wording you use matters. We'll show you what's enforceable and what's negotiable.",
+      },
+      fine: {
+        emoji: '💰',
+        title: 'Most fines under $500 can be appealed.',
+        body: "We'll show you which arguments tend to work — and which weaken your position.",
+      },
+      'late-fee': {
+        emoji: '📊',
+        title: 'Late-fee disputes succeed when you have receipts.',
+        body: "We'll help you frame your timeline so the board has to engage with the facts.",
+      },
+      hearing: {
+        emoji: '🗓️',
+        title: 'Hearings are usually a one-shot to make your case.',
+        body: "We'll prep what to say, what proof to bring, and how to frame your ask.",
+      },
+      lien: {
+        emoji: '⚠️',
+        title: 'These are serious — and our self-help tool may not be enough.',
+        body: "We'll flag if your situation needs an attorney instead of a letter, at no cost to you.",
+      },
+      other: {
+        emoji: '👋',
+        title: "No problem — describe it on the next step.",
+        body: "We've seen everything from pet rules to architectural denials. We'll figure out the right approach.",
+      },
+    };
+
+    this.issueCard = {
+      emoji: '✅',
+      title: 'Most cases boil down to three response options.',
+      body: 'Dispute the facts, request more time, or comply with conditions. The free preview shows which fits.',
+    };
+
+    this.chipPrefills = {
+      yard: 'The HOA fined me for an issue with my yard / lawn — ',
+      fence: 'The HOA cited a fence or shed issue — ',
+      trash: 'The HOA flagged something about my trash cans — ',
+      parking: 'The HOA gave me a parking violation — ',
+      latefee: 'The HOA hit me with a late fee or interest charge — ',
+    };
 
     this.init();
   }
 
   init() {
-    this.bindEvents();
-    this.updateSubmitButton();
-  }
+    // Notice-type buttons (slide 1)
+    document.querySelectorAll('.notice-btn').forEach(btn => {
+      btn.addEventListener('click', () => this.selectNoticeType(btn.dataset.notice, btn));
+    });
 
-  bindEvents() {
-    const form = document.getElementById('simple-case-form');
-    const noticeType = document.getElementById('notice-type');
+    // Issue chips (slide 2)
+    document.querySelectorAll('.chip').forEach(btn => {
+      btn.addEventListener('click', () => this.applyChip(btn.dataset.chip));
+    });
+
+    // Issue text input (slide 2)
     const issueText = document.getElementById('issue-text');
+    issueText.addEventListener('input', () => this.handleIssueInput());
+
+    // Slide-2 continue
+    document.getElementById('continue-2').addEventListener('click', () => {
+      if (this.formData.issueText.trim().length > 0) this.advanceTo(3);
+    });
+
+    // Email (slide 3)
     const email = document.getElementById('email');
-
-    // Form submission - using same approach as working wizard
-    document.getElementById('generate-btn').addEventListener('click', (e) => {
-      e.preventDefault();
-      this.generatePreview();
+    email.addEventListener('input', () => this.handleEmailInput());
+    email.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !document.getElementById('submit-btn').disabled) {
+        this.submit();
+      }
     });
 
-    // Real-time validation
-    noticeType.addEventListener('change', () => {
-      this.validateForm();
-    });
+    // Submit
+    document.getElementById('submit-btn').addEventListener('click', () => this.submit());
 
-    issueText.addEventListener('input', () => {
-      this.updateCharCount();
-      this.validateForm();
-    });
-
-    email.addEventListener('input', () => {
-      this.validateForm();
+    // Back button
+    document.getElementById('back-btn').addEventListener('click', () => {
+      if (this.currentSlide > 1) this.advanceTo(this.currentSlide - 1);
     });
   }
 
-  updateCharCount() {
-    const issueText = document.getElementById('issue-text');
-    const charCount = document.getElementById('char-count');
-    const length = issueText.value.length;
+  selectNoticeType(value, btn) {
+    this.formData.noticeType = value;
+    document.querySelectorAll('.notice-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
 
-    charCount.textContent = `${length}/20 minimum`;
+    // Show reactive card after a brief pause (feels considered, not robotic)
+    setTimeout(() => this.addBreadcrumb('notice', this.noticeCards[value]), 300);
 
-    if (length >= 20) {
-      charCount.classList.remove('text-secondary/60');
-      charCount.classList.add('text-ns-green');
+    // Auto-advance to slide 2 — total ~1s of card-read time after card appears
+    setTimeout(() => this.advanceTo(2), 1300);
+  }
+
+  applyChip(kind) {
+    const ta = document.getElementById('issue-text');
+    const prefix = this.chipPrefills[kind] || '';
+    if (!ta.value.trim()) {
+      ta.value = prefix;
+    } else if (!ta.value.includes(prefix.split(' — ')[0])) {
+      ta.value = prefix + ta.value;
+    }
+    ta.focus();
+    // Move caret to end so they can keep typing
+    ta.setSelectionRange(ta.value.length, ta.value.length);
+    this.handleIssueInput();
+  }
+
+  handleIssueInput() {
+    const ta = document.getElementById('issue-text');
+    this.formData.issueText = ta.value;
+
+    const cont = document.getElementById('continue-2');
+    const valid = ta.value.trim().length > 0;
+    if (valid) {
+      cont.disabled = false;
+      cont.classList.remove('bg-stroke-1', 'text-secondary/40', 'cursor-not-allowed');
+      cont.classList.add('bg-ns-green', 'text-white', 'hover:bg-ns-green/90', 'cursor-pointer');
     } else {
-      charCount.classList.remove('text-ns-green');
-      charCount.classList.add('text-secondary/60');
+      cont.disabled = true;
+      cont.classList.add('bg-stroke-1', 'text-secondary/40', 'cursor-not-allowed');
+      cont.classList.remove('bg-ns-green', 'text-white', 'hover:bg-ns-green/90', 'cursor-pointer');
+    }
+
+    // Show issue card once they've typed enough to show real engagement
+    if (ta.value.trim().length >= 25 && !this.shownIssueCard) {
+      this.shownIssueCard = true;
+      setTimeout(() => this.addBreadcrumb('issue', this.issueCard), 300);
     }
   }
 
-  validateForm() {
-    const noticeType = document.getElementById('notice-type').value.trim();
-    const issueText = document.getElementById('issue-text').value.trim();
-    const email = document.getElementById('email').value.trim();
-
-    const isNoticeTypeValid = noticeType !== '';
-    const isIssueTextValid = issueText.length >= 20;
-    const isEmailValid = this.isValidEmail(email);
-
-    // Show/hide errors
-    this.toggleFieldError('notice-type-error', !isNoticeTypeValid);
-    this.toggleFieldError('description-error', !isIssueTextValid);
-    this.toggleFieldError('email-error', !isEmailValid);
-
-    const isValid = isNoticeTypeValid && isIssueTextValid && isEmailValid;
-    this.updateSubmitButton(isValid);
-
-    return isValid;
-  }
-
-  toggleFieldError(errorId, show) {
-    const errorElement = document.getElementById(errorId);
-    if (show) {
-      errorElement.classList.remove('hidden');
+  handleEmailInput() {
+    const inp = document.getElementById('email');
+    this.formData.email = inp.value.trim();
+    const valid = this.isValidEmail(this.formData.email);
+    const btn = document.getElementById('submit-btn');
+    if (valid) {
+      btn.disabled = false;
+      btn.classList.remove('bg-stroke-1', 'text-secondary/40', 'cursor-not-allowed');
+      btn.classList.add('bg-ns-green', 'text-white', 'hover:bg-ns-green/90', 'cursor-pointer');
+      document.getElementById('email-error').classList.add('hidden');
     } else {
-      errorElement.classList.add('hidden');
+      btn.disabled = true;
+      btn.classList.add('bg-stroke-1', 'text-secondary/40', 'cursor-not-allowed');
+      btn.classList.remove('bg-ns-green', 'text-white', 'hover:bg-ns-green/90', 'cursor-pointer');
     }
   }
 
-  updateSubmitButton(isValid = false) {
-    const submitBtn = document.getElementById('generate-btn');
+  isValidEmail(s) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+  }
 
-    if (isValid && !this.isUploading) {
-      submitBtn.disabled = false;
-      submitBtn.classList.remove('bg-ns-green/40', 'cursor-not-allowed');
-      submitBtn.classList.add('bg-ns-green', 'hover:bg-ns-green/90');
+  addBreadcrumb(key, card) {
+    if (document.getElementById(`breadcrumb-${key}`)) return;
+    const el = document.createElement('div');
+    el.id = `breadcrumb-${key}`;
+    el.className = 'breadcrumb-card bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3';
+    el.innerHTML = `
+      <span class="text-2xl flex-shrink-0">${card.emoji}</span>
+      <div class="flex-1 min-w-0">
+        <p class="text-tagline-1 font-medium text-blue-900">${card.title}</p>
+        <p class="text-tagline-2 text-blue-800/80 mt-0.5">${card.body}</p>
+      </div>
+    `;
+    document.getElementById('breadcrumbs').appendChild(el);
+    // Trigger CSS reveal on next frame
+    requestAnimationFrame(() => el.classList.add('revealed'));
+  }
+
+  advanceTo(slide) {
+    const current = document.querySelector(`[data-slide="${this.currentSlide}"]`);
+    const next = document.querySelector(`[data-slide="${slide}"]`);
+    if (!next) return;
+
+    current.classList.add('hidden');
+    next.classList.remove('hidden');
+    next.classList.add('entering');
+    requestAnimationFrame(() => next.classList.remove('entering'));
+
+    this.currentSlide = slide;
+    this.updateProgress();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  updateProgress() {
+    document.querySelectorAll('[data-step-dot]').forEach(d => {
+      const n = parseInt(d.dataset.stepDot, 10);
+      if (n <= this.currentSlide) {
+        d.classList.add('bg-ns-green');
+        d.classList.remove('bg-stroke-1');
+      } else {
+        d.classList.remove('bg-ns-green');
+        d.classList.add('bg-stroke-1');
+      }
+    });
+    document.getElementById('step-label').textContent = `Step ${this.currentSlide} of 3`;
+
+    const back = document.getElementById('back-btn');
+    if (this.currentSlide > 1) {
+      back.classList.remove('opacity-0', 'pointer-events-none');
     } else {
-      submitBtn.disabled = true;
-      submitBtn.classList.add('bg-ns-green/40', 'cursor-not-allowed');
-      submitBtn.classList.remove('bg-ns-green', 'hover:bg-ns-green/90');
+      back.classList.add('opacity-0', 'pointer-events-none');
     }
   }
 
-  // Use exact same generatePreview method structure as working wizard
-  async generatePreview() {
-    if (!this.validateForm()) {
-      return;
-    }
+  generateRandomString(n) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let s = '';
+    for (let i = 0; i < n; i++) s += chars.charAt(Math.floor(Math.random() * chars.length));
+    return s;
+  }
 
-    // Collect form data in exact same format as working wizard
-    this.formData = {
-      propertyType: '', // Empty for simple form
+  setSubmitting(on) {
+    const btn = document.getElementById('submit-btn');
+    if (on) {
+      btn.disabled = true;
+      btn.textContent = 'Generating your preview…';
+      btn.classList.add('opacity-70');
+    } else {
+      btn.disabled = false;
+      btn.textContent = 'Show me my preview →';
+      btn.classList.remove('opacity-70');
+    }
+  }
+
+  async submit() {
+    if (!this.isValidEmail(this.formData.email)) return;
+
+    this.setSubmitting(true);
+
+    const token = 'case_' + Date.now() + '_' + this.generateRandomString(6);
+    const linkParams = new URLSearchParams({
+      case: token,
+      noticeType: this.formData.noticeType || '',
+      issueText: this.formData.issueText || '',
+      email: this.formData.email || '',
+    });
+    const casePayload = {
+      token,
+      createdAt: new Date().toISOString(),
+      propertyType: '',
       role: '',
       state: '',
       deadline: null,
-      noticeType: document.getElementById('notice-type').value,
-      issueText: document.getElementById('issue-text').value.trim(),
+      noticeType: this.formData.noticeType,
+      issueText: this.formData.issueText,
       outcome: '',
       pastedText: null,
-      email: document.getElementById('email').value.trim(),
-      hasUpload: false,
-      primaryFile: null,
-      additionalFiles: []
+      email: this.formData.email,
+      gclid: localStorage.getItem('dmhoa_gclid') || null,
+      extract_status: 'pending',
+      additional_docs: [],
+      completionPhase: 'simple',
+      fullCaseFormLink: `${window.location.origin}/start-case-full.html?${linkParams.toString()}`,
     };
 
     try {
-      this.setUploadingState(true);
-
-      // Generate case token - exact same format as working wizard
-      const token = 'case_' + Date.now() + '_' + this.generateRandomString(6);
-
-      // Create case payload - exact same structure as working wizard
-      // Build URL params for the full case form link (encode data in URL to avoid CORS issues)
-      const linkParams = new URLSearchParams({
-        case: token,
-        noticeType: this.formData.noticeType || '',
-        issueText: this.formData.issueText || '',
-        email: this.formData.email || '',
-        propertyType: this.formData.propertyType || '',
-        role: this.formData.role || '',
-        state: this.formData.state || '',
-        deadline: this.formData.deadline || '',
-        outcome: this.formData.outcome || ''
-      });
-
-      const casePayload = {
-        token: token,
-        createdAt: new Date().toISOString(),
-        propertyType: this.formData.propertyType,
-        role: this.formData.role,
-        state: this.formData.state,
-        deadline: this.formData.deadline || null,
-        noticeType: this.formData.noticeType,
-        issueText: this.formData.issueText,
-        outcome: this.formData.outcome,
-        pastedText: this.formData.pastedText || null,
-        email: this.formData.email,
-        gclid: localStorage.getItem('dmhoa_gclid') || null,
-        extract_status: 'pending',
-        additional_docs: [],
-        completionPhase: 'simple', // Mark as coming from simple form
-        fullCaseFormLink: `${window.location.origin}/start-case-full.html?${linkParams.toString()}`
-      };
-
-      // Insert case into database - exact same method as working wizard
-      console.log('Phase 1: Creating case in database...');
-      await this.insertCaseToDatabase(token, casePayload);
-      console.log('Phase 1: Case created successfully:', token);
-
-      // Store for quick preview page
-      console.log('=== DEBUG: Storing data for quick preview ===');
-      console.log('Token:', token);
-      console.log('CasePayload:', casePayload);
-      console.log('NoticeType in payload:', casePayload.noticeType);
-
-      sessionStorage.setItem('currentCaseToken', token);
-      sessionStorage.setItem('caseData', JSON.stringify(casePayload));
-
-      // Verify storage
-      const storedData = sessionStorage.getItem('caseData');
-      const storedToken = sessionStorage.getItem('currentCaseToken');
-      console.log('Stored token:', storedToken);
-      console.log('Stored data:', storedData);
-
-      if (storedData) {
-        const parsedStored = JSON.parse(storedData);
-        console.log('Parsed stored noticeType:', parsedStored.noticeType);
-      }
-
-      // Redirect to quick preview (Phase 2)
-      console.log('Phase 1: Redirecting to quick preview...');
-      window.location.href = 'quick-preview.html';
-
-    } catch (error) {
-      console.error('Phase 1: Generate preview failed:', error);
-      this.setUploadingState(false);
-      alert('Failed to generate quick preview. Please try again.');
-    }
-  }
-
-  // Copy exact insertCaseToDatabase method from working wizard
-  async insertCaseToDatabase(token, payload) {
-    try {
-      const response = await fetch(`https://dmhoa-246713e0bd92.herokuapp.com/api/save-case`, {
+      const resp = await fetch(`${this.apiBase}/api/save-case`, {
         method: 'POST',
         headers: {
           'apikey': this.supabaseKey,
           'Authorization': `Bearer ${this.supabaseKey}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          token: token,
-          payload: payload
-        })
+        body: JSON.stringify({ token, payload: casePayload }),
       });
-
-      console.log('Save case Edge Function response:', {
-        status: response.status,
-        statusText: response.statusText,
-        headers: Object.fromEntries(response.headers.entries())
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Save case Edge Function failed:', errorText);
-        throw new Error(`Save case failed: ${response.status} - ${errorText}`);
+      if (!resp.ok) {
+        const txt = await resp.text();
+        throw new Error(`Save case failed: ${resp.status} ${txt}`);
       }
 
-      const result = await response.json();
-      console.log('Case saved successfully via Edge Function:', result);
-      return result;
-    } catch (error) {
-      console.error('Save case Edge Function error:', error);
-      throw error;
+      // Track conversion (PostHog client-side + Google Ads if available)
+      try {
+        if (window.posthog) {
+          window.posthog.capture('quick_preview_submitted', {
+            case_token: token,
+            notice_type: this.formData.noticeType,
+          });
+        }
+      } catch {}
+
+      sessionStorage.setItem('currentCaseToken', token);
+      sessionStorage.setItem('caseData', JSON.stringify(casePayload));
+      window.location.href = 'quick-preview.html';
+    } catch (err) {
+      console.error('submit failed:', err);
+      this.setSubmitting(false);
+      const errEl = document.getElementById('email-error');
+      errEl.textContent = "Something went wrong. Try again or email support@disputemyhoa.com.";
+      errEl.classList.remove('hidden');
     }
-  }
-
-  setUploadingState(isUploading) {
-    this.isUploading = isUploading;
-    const submitBtn = document.getElementById('generate-btn');
-
-    if (isUploading) {
-      submitBtn.textContent = 'Saving...';
-      submitBtn.disabled = true;
-    } else {
-      submitBtn.textContent = 'Get Free Preview →';
-      this.updateSubmitButton();
-    }
-  }
-
-  generateRandomString(length) {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let result = '';
-    for (let i = 0; i < length; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return result;
-  }
-
-  isValidEmail(email) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
   }
 }
 
-// Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-  new SimpleCaseWizard();
+  new SlideWizard();
 });
 </script>
