@@ -105,6 +105,30 @@
                  placeholder="your.email@example.com" autocomplete="email">
           <p id="email-error" class="text-tagline-2 text-red-500 hidden mb-4">Please enter a valid email address.</p>
 
+          <label for="state-select" class="block text-tagline-2 text-secondary/70 mb-1">Your state <span id="state-detected-hint" class="hidden text-tagline-3 text-secondary/50">(auto-detected, change if wrong)</span></label>
+          <select id="state-select"
+                  class="w-full px-4 py-3 border border-stroke-1 rounded-lg focus:outline-none focus:border-ns-green text-tagline-1 mb-4">
+            <option value="">Select your state</option>
+            <option value="AL">Alabama</option><option value="AK">Alaska</option><option value="AZ">Arizona</option>
+            <option value="AR">Arkansas</option><option value="CA">California</option><option value="CO">Colorado</option>
+            <option value="CT">Connecticut</option><option value="DE">Delaware</option><option value="FL">Florida</option>
+            <option value="GA">Georgia</option><option value="HI">Hawaii</option><option value="ID">Idaho</option>
+            <option value="IL">Illinois</option><option value="IN">Indiana</option><option value="IA">Iowa</option>
+            <option value="KS">Kansas</option><option value="KY">Kentucky</option><option value="LA">Louisiana</option>
+            <option value="ME">Maine</option><option value="MD">Maryland</option><option value="MA">Massachusetts</option>
+            <option value="MI">Michigan</option><option value="MN">Minnesota</option><option value="MS">Mississippi</option>
+            <option value="MO">Missouri</option><option value="MT">Montana</option><option value="NE">Nebraska</option>
+            <option value="NV">Nevada</option><option value="NH">New Hampshire</option><option value="NJ">New Jersey</option>
+            <option value="NM">New Mexico</option><option value="NY">New York</option><option value="NC">North Carolina</option>
+            <option value="ND">North Dakota</option><option value="OH">Ohio</option><option value="OK">Oklahoma</option>
+            <option value="OR">Oregon</option><option value="PA">Pennsylvania</option><option value="RI">Rhode Island</option>
+            <option value="SC">South Carolina</option><option value="SD">South Dakota</option><option value="TN">Tennessee</option>
+            <option value="TX">Texas</option><option value="UT">Utah</option><option value="VT">Vermont</option>
+            <option value="VA">Virginia</option><option value="WA">Washington</option><option value="WV">West Virginia</option>
+            <option value="WI">Wisconsin</option><option value="WY">Wyoming</option>
+            <option value="DC">DC</option>
+          </select>
+
           <button type="button" id="submit-btn"
                   class="w-full px-6 py-4 bg-stroke-1 text-secondary/40 rounded-lg cursor-not-allowed transition-colors text-tagline-1 font-medium"
                   disabled>
@@ -152,6 +176,7 @@ class SlideWizard {
       noticeType: '',
       issueText: '',
       email: '',
+      state: '',
     };
 
     // Hardcoded same as the previous wizard — used by /api/save-case body
@@ -287,6 +312,33 @@ class SlideWizard {
     document.getElementById('back-btn').addEventListener('click', () => {
       if (this.currentSlide > 1) this.advanceTo(this.currentSlide - 1);
     });
+
+    // State dropdown — capture changes; geolocation pre-fills it.
+    const stateSelect = document.getElementById('state-select');
+    stateSelect.addEventListener('change', () => {
+      this.formData.state = stateSelect.value || '';
+    });
+    this.detectStateInBackground();
+  }
+
+  async detectStateInBackground() {
+    try {
+      const resp = await fetch('https://ipapi.co/json/', { mode: 'cors' });
+      if (!resp.ok) return;
+      const data = await resp.json();
+      const code = (data.region_code || '').toUpperCase();
+      if (!code) return;
+      const sel = document.getElementById('state-select');
+      // Only pre-fill if user hasn't already picked a state
+      if (sel && !sel.value) {
+        sel.value = code;
+        this.formData.state = code;
+        const hint = document.getElementById('state-detected-hint');
+        if (hint) hint.classList.remove('hidden');
+      }
+    } catch (e) {
+      // Geolocation is best-effort — silent fallback to manual selection
+    }
   }
 
   selectNoticeType(value, btn) {
@@ -521,13 +573,14 @@ class SlideWizard {
       noticeType: this.formData.noticeType || '',
       issueText: this.formData.issueText || '',
       email: this.formData.email || '',
+      state: this.formData.state || '',
     });
     const casePayload = {
       token,
       createdAt: new Date().toISOString(),
       propertyType: '',
       role: '',
-      state: '',
+      state: this.formData.state || '',
       deadline: null,
       noticeType: this.formData.noticeType,
       issueText: this.formData.issueText,
@@ -568,7 +621,10 @@ class SlideWizard {
 
       sessionStorage.setItem('currentCaseToken', token);
       sessionStorage.setItem('caseData', JSON.stringify(casePayload));
-      window.location.href = 'quick-preview.html';
+      // Skip /quick-preview entirely — go straight to the AI-personalized
+      // preview page. The backend kicks off auto_generate_case_preview at
+      // save time so the page will poll until the AI is ready.
+      window.location.href = `case-preview.html?case=${encodeURIComponent(token)}`;
     } catch (err) {
       console.error('submit failed:', err);
       this.setSubmitting(false);
