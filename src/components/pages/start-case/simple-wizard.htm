@@ -27,7 +27,7 @@
            cards. Hidden until the first card is added. -->
       <div id="breadcrumbs-wrap" class="mb-6 hidden">
         <div id="breadcrumbs"
-             class="flex overflow-x-auto snap-x snap-mandatory gap-3 scroll-smooth no-scrollbar pb-1"></div>
+             class="flex overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar pb-1"></div>
         <div id="breadcrumb-dots" class="flex justify-center gap-1.5 mt-2"></div>
       </div>
 
@@ -380,7 +380,7 @@ class SlideWizard {
     dot.setAttribute('aria-label', `Go to card ${idx + 1}`);
     dot.className = 'breadcrumb-dot w-2 h-2 rounded-full bg-stroke-1 transition-all hover:scale-125';
     dot.addEventListener('click', () => {
-      track.scrollTo({ left: idx * track.clientWidth, behavior: 'smooth' });
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
     });
     dots.appendChild(dot);
 
@@ -395,7 +395,7 @@ class SlideWizard {
 
     // Scroll the new card into view (it's the latest)
     requestAnimationFrame(() => {
-      track.scrollTo({ left: idx * track.clientWidth, behavior: 'smooth' });
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
       this.setActiveDot(idx);
     });
 
