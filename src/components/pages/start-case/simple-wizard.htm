@@ -35,7 +35,7 @@
       <div data-slide="1" class="slide-panel">
         <div class="bg-white rounded-[20px] border border-stroke-1 p-6 lg:p-8">
           <h1 class="text-heading-4 lg:text-heading-3 mb-2">What kind of notice did you get?</h1>
-          <p class="text-tagline-1 text-secondary/70 mb-6">Pick the closest match — we'll dig into specifics next.</p>
+          <p class="text-tagline-1 text-secondary/70 mb-6">Pick the closest match. You can tell us more on the next step.</p>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <button type="button" data-notice="violation"
@@ -46,7 +46,7 @@
             <button type="button" data-notice="fine"
                     class="notice-btn text-left px-4 py-4 border-2 border-stroke-1 rounded-xl hover:border-ns-green hover:bg-ns-green/5 transition-all">
               <div class="text-tagline-1 font-medium">Fine or penalty</div>
-              <div class="text-tagline-2 text-secondary/60 mt-0.5">Charged for an alleged issue</div>
+              <div class="text-tagline-2 text-secondary/60 mt-0.5">They charged you for something</div>
             </button>
             <button type="button" data-notice="late-fee"
                     class="notice-btn text-left px-4 py-4 border-2 border-stroke-1 rounded-xl hover:border-ns-green hover:bg-ns-green/5 transition-all">
@@ -76,7 +76,7 @@
       <div data-slide="2" class="slide-panel hidden">
         <div class="bg-white rounded-[20px] border border-stroke-1 p-6 lg:p-8">
           <h1 class="text-heading-4 lg:text-heading-3 mb-2">What happened?</h1>
-          <p class="text-tagline-1 text-secondary/70 mb-4">One sentence is fine. Add detail if you have it.</p>
+          <p class="text-tagline-1 text-secondary/70 mb-4">One sentence works. Add more if you want.</p>
 
           <div class="flex flex-wrap gap-2 mb-3">
             <button type="button" data-chip="yard"
@@ -103,7 +103,7 @@
 
           <textarea id="issue-text" rows="4"
                     class="w-full px-4 py-3 border border-stroke-1 rounded-lg focus:outline-none focus:border-ns-green text-tagline-1"
-                    placeholder="The HOA said... e.g. They fined me for weeds in the front yard"></textarea>
+                    placeholder="What did the HOA say? Example: they fined me for weeds in my front yard"></textarea>
 
           <div class="flex justify-end mt-4">
             <button type="button" id="continue-2"
@@ -119,7 +119,7 @@
       <div data-slide="3" class="slide-panel hidden">
         <div class="bg-white rounded-[20px] border border-stroke-1 p-6 lg:p-8">
           <h1 class="text-heading-4 lg:text-heading-3 mb-2">Where should we send your preview?</h1>
-          <p class="text-tagline-1 text-secondary/70 mb-6">Free preview. No spam — just your case + a deadline reminder if you want one.</p>
+          <p class="text-tagline-1 text-secondary/70 mb-6">Free preview. No spam. We'll only email about your case, plus a deadline reminder if you want one.</p>
 
           <input type="email" id="email"
                  class="w-full px-4 py-3 border border-stroke-1 rounded-lg focus:outline-none focus:border-ns-green text-tagline-1 mb-2"
@@ -132,18 +132,7 @@
             Show me my preview →
           </button>
 
-          <div class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-tagline-3 text-secondary/60 mt-3">
-            <span class="flex items-center gap-1">
-              <svg class="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
-              </svg>
-              Free
-            </span>
-            <span>•</span>
-            <span>No spam</span>
-            <span>•</span>
-            <span>~30 seconds</span>
-          </div>
+          <p class="text-tagline-3 text-secondary/60 mt-3 text-center">Free. No spam. Takes about 30 seconds.</p>
         </div>
       </div>
 
@@ -195,48 +184,48 @@ class SlideWizard {
     this.noticeCards = {
       violation: {
         emoji: '📋',
-        title: 'Violation notices give 14–30 days to respond.',
-        body: "The wording you use matters. We'll show you what's enforceable and what's negotiable.",
+        title: 'You usually have 2 to 4 weeks to respond.',
+        body: "What you write matters more than people think. The free preview shows which parts of the rule are actually enforceable.",
       },
       fine: {
         emoji: '💰',
         title: 'Most fines under $500 can be appealed.',
-        body: "We'll show you which arguments tend to work — and which weaken your position.",
+        body: "Some arguments work, some make things worse. The preview will tell you which is which for your case.",
       },
       'late-fee': {
         emoji: '📊',
-        title: 'Late-fee disputes succeed when you have receipts.',
-        body: "We'll help you frame your timeline so the board has to engage with the facts.",
+        title: 'Got receipts? You have leverage.',
+        body: "Late-fee disputes go your way when the timeline is clear. The preview will help you put yours together.",
       },
       hearing: {
         emoji: '🗓️',
-        title: 'Hearings are usually a one-shot to make your case.',
-        body: "We'll prep what to say, what proof to bring, and how to frame your ask.",
+        title: 'You usually get one shot at a hearing.',
+        body: "We use yours to figure out what to say and what to bring.",
       },
       lien: {
         emoji: '⚠️',
-        title: 'These are serious — and our self-help tool may not be enough.',
-        body: "We'll flag if your situation needs an attorney instead of a letter, at no cost to you.",
+        title: 'This kind of letter is serious.',
+        body: "Our tool may not be the right fit. If you need an attorney instead, we'll point you to one for free.",
       },
       other: {
         emoji: '👋',
-        title: "No problem — describe it on the next step.",
-        body: "We've seen everything from pet rules to architectural denials. We'll figure out the right approach.",
+        title: "No problem.",
+        body: "Tell us about it on the next step. We've seen pet rules, architectural denials, and plenty of weird stuff.",
       },
     };
 
     this.issueCard = {
       emoji: '✅',
-      title: 'Most cases boil down to three response options.',
-      body: 'Dispute the facts, request more time, or comply with conditions. The free preview shows which fits.',
+      title: 'Almost every case has three options.',
+      body: 'Dispute the facts, ask for more time, or agree with conditions. The preview will tell you which one fits yours.',
     };
 
     this.chipPrefills = {
-      yard: 'The HOA fined me for an issue with my yard / lawn — ',
-      fence: 'The HOA cited a fence or shed issue — ',
-      trash: 'The HOA flagged something about my trash cans — ',
-      parking: 'The HOA gave me a parking violation — ',
-      latefee: 'The HOA hit me with a late fee or interest charge — ',
+      yard: 'The HOA fined me for something about my yard. ',
+      fence: 'The HOA cited my fence or shed. ',
+      trash: 'The HOA flagged my trash cans. ',
+      parking: 'The HOA gave me a parking violation. ',
+      latefee: 'The HOA hit me with a late fee. ',
     };
 
     this.init();
@@ -298,7 +287,7 @@ class SlideWizard {
     const prefix = this.chipPrefills[kind] || '';
     if (!ta.value.trim()) {
       ta.value = prefix;
-    } else if (!ta.value.includes(prefix.split(' — ')[0])) {
+    } else if (!ta.value.includes(prefix)) {
       ta.value = prefix + ta.value;
     }
     ta.focus();
