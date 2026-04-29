@@ -1,4 +1,4 @@
-<section class="xl:pt-[180px] lg:pt-[140px] pt-[100px] pb-16 lg:pb-24">
+<section class="xl:pt-[180px] lg:pt-[140px] pt-[100px] pb-32 lg:pb-24">
   <div class="main-container">
     <div id="error-state" class="hidden max-w-2xl mx-auto">
       <div class="bg-white rounded-[20px] border border-stroke-1 p-8 text-center">
@@ -64,6 +64,23 @@
             <ul id="risk-if-wrong-list" class="space-y-2 text-tagline-1 text-red-700">
               <!-- Will be populated by JS -->
             </ul>
+          </div>
+
+          <!-- Sharpen the response (optional notice paste) -->
+          <div id="sharpen-card" class="bg-blue-50 rounded-[20px] border border-blue-200 p-6 lg:p-8">
+            <h2 class="text-heading-5 text-blue-900 mb-2">Want a sharper letter?</h2>
+            <p class="text-tagline-1 text-blue-800/80 mb-4">Paste the actual text from your HOA notice and the response letter will quote the rule they cited and match their language. Optional, but it makes the letter much more accurate.</p>
+            <textarea id="paste-notice" rows="6"
+                      class="w-full px-4 py-3 border border-blue-200 rounded-lg focus:outline-none focus:border-blue-500 text-tagline-1 mb-3 bg-white"
+                      placeholder="Paste your HOA notice here..."></textarea>
+            <div class="flex items-center gap-3 flex-wrap">
+              <button id="save-notice-btn" type="button"
+                      class="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-tagline-1 font-medium disabled:opacity-50 disabled:cursor-not-allowed">
+                Save for unlock
+              </button>
+              <p id="paste-status" class="text-tagline-2 text-blue-700 hidden"></p>
+            </div>
+            <p class="text-tagline-3 text-blue-700/70 mt-3">You can also do this after unlocking. Either way, your letter will be regenerated with the new context.</p>
           </div>
 
           <!-- Why Handling This Yourself Can Backfire -->
@@ -379,6 +396,16 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Mobile sticky unlock CTA — shown only on small screens.
+       Hidden if the risk-screening gate replaced the unlock card. -->
+  <div id="mobile-unlock-bar"
+       class="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-stroke-1 px-4 py-3 z-40 shadow-[0_-4px_12px_rgba(0,0,0,0.06)]">
+    <button id="mobile-unlock-btn" type="button"
+            class="w-full px-6 py-3 bg-ns-green text-secondary rounded-lg hover:bg-ns-green/90 transition-colors font-medium">
+      Unlock for $29
+    </button>
   </div>
 </section>
 
@@ -743,6 +770,16 @@
       const card = document.getElementById('unlock-card');
       if (!card) return;
 
+      // Hide the mobile sticky unlock bar — risk-flagged cases get the
+      // legal-referral form instead, no $29 unlock CTA on mobile either.
+      const mobileBar = document.getElementById('mobile-unlock-bar');
+      if (mobileBar) mobileBar.classList.add('hidden');
+
+      // Hide the "sharpen your letter" paste prompt — the user is being
+      // routed to an attorney, not to the unlock flow.
+      const sharpen = document.getElementById('sharpen-card');
+      if (sharpen) sharpen.classList.add('hidden');
+
       const reasonsHtml = flags.map(f =>
         `<li class="flex items-start gap-2"><span class="text-red-500 mt-1">•</span><span>${this.escapeHtml(f.label || f.flag)}</span></li>`
       ).join('');
@@ -1070,9 +1107,63 @@
 
     bindEvents() {
       // Unlock button - go directly to checkout
-      document.getElementById('unlock-btn').addEventListener('click', () => {
-        this.proceedToCheckout();
-      });
+      const unlockBtn = document.getElementById('unlock-btn');
+      if (unlockBtn) unlockBtn.addEventListener('click', () => this.proceedToCheckout());
+
+      // Mobile sticky unlock — same flow as the desktop button
+      const mobileBtn = document.getElementById('mobile-unlock-btn');
+      if (mobileBtn) mobileBtn.addEventListener('click', () => this.proceedToCheckout());
+
+      // Paste-notice "save for unlock"
+      const saveNotice = document.getElementById('save-notice-btn');
+      if (saveNotice) saveNotice.addEventListener('click', () => this.saveNoticeText());
+    }
+
+    async saveNoticeText() {
+      const ta = document.getElementById('paste-notice');
+      const status = document.getElementById('paste-status');
+      const btn = document.getElementById('save-notice-btn');
+      const text = (ta?.value || '').trim();
+      if (!text) {
+        if (status) {
+          status.textContent = 'Paste your notice text first.';
+          status.classList.remove('hidden', 'text-blue-700', 'text-green-700');
+          status.classList.add('text-red-600');
+        }
+        return;
+      }
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+      try {
+        // Reuse the existing case payload, just merge in pastedText.
+        // /api/save-case does an upsert keyed by token.
+        const merged = Object.assign({}, this.caseData || {}, {
+          token: this.caseToken,
+          pastedText: text,
+        });
+        const resp = await fetch('https://dmhoa-246713e0bd92.herokuapp.com/api/save-case', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: this.caseToken, payload: merged }),
+        });
+        if (!resp.ok) throw new Error('save failed: ' + resp.status);
+        if (status) {
+          status.textContent = 'Saved. Your unlock letter will quote your exact notice.';
+          status.classList.remove('hidden', 'text-red-600');
+          status.classList.add('text-green-700');
+        }
+        btn.textContent = 'Saved';
+        ta.disabled = true;
+      } catch (e) {
+        console.error('paste save failed', e);
+        btn.disabled = false;
+        btn.textContent = 'Save for unlock';
+        if (status) {
+          status.textContent = 'Could not save. Try again or email support@disputemyhoa.com.';
+          status.classList.remove('hidden', 'text-blue-700', 'text-green-700');
+          status.classList.add('text-red-600');
+        }
+      }
     }
 
     showUnlockForm() {
