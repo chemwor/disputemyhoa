@@ -12,9 +12,9 @@
       <!-- Header -->
       <div class="text-center mb-8 lg:mb-12">
         <div class="text-center mb-4">
-          <h1 class="text-heading-3 lg:text-heading-2">Your Free Preview</h1>
+          <h1 class="text-heading-3 lg:text-heading-2">Your case preview</h1>
         </div>
-        <p class="text-tagline-1 text-secondary/80 mb-2">Your complete response package includes full drafts, checklist, and next steps.</p>
+        <p class="text-tagline-1 text-secondary/80 mb-2">Here's what we know so far. Add your notice text below to make the response letter quote the exact rule they cited.</p>
         <p class="text-tagline-2 text-secondary/60">Case ID: <span id="case-id" class="font-mono"></span></p>
         <div id="doc-status" class="text-tagline-2 text-secondary/60 mt-2 hidden">
           Documents: <span id="doc-count">0</span> processed (<span id="doc-status-text">processing</span>)
@@ -66,13 +66,29 @@
             </ul>
           </div>
 
-          <!-- Sharpen the response (optional notice paste) -->
+          <!-- Sharpen the response (optional notice paste OR upload) -->
           <div id="sharpen-card" class="bg-blue-50 rounded-[20px] border border-blue-200 p-6 lg:p-8">
             <h2 class="text-heading-5 text-blue-900 mb-2">Want a sharper letter?</h2>
-            <p class="text-tagline-1 text-blue-800/80 mb-4">Paste the actual text from your HOA notice and the response letter will quote the rule they cited and match their language. Optional, but it makes the letter much more accurate.</p>
-            <textarea id="paste-notice" rows="6"
+            <p class="text-tagline-1 text-blue-800/80 mb-4">Paste your HOA notice text, or upload it as a PDF or photo. The response letter will quote the exact rule they cited and match their language. Optional, but makes the letter much more accurate.</p>
+
+            <!-- Paste -->
+            <textarea id="paste-notice" rows="5"
                       class="w-full px-4 py-3 border border-blue-200 rounded-lg focus:outline-none focus:border-blue-500 text-tagline-1 mb-3 bg-white"
-                      placeholder="Paste your HOA notice here..."></textarea>
+                      placeholder="Paste your HOA notice text here..."></textarea>
+
+            <!-- Or upload -->
+            <div class="flex items-center gap-2 my-3">
+              <div class="flex-1 h-px bg-blue-200"></div>
+              <span class="text-tagline-3 text-blue-700/70 uppercase tracking-wider">or upload a file</span>
+              <div class="flex-1 h-px bg-blue-200"></div>
+            </div>
+
+            <label for="notice-upload"
+                   class="block w-full text-center px-4 py-3 border-2 border-dashed border-blue-300 rounded-lg cursor-pointer bg-white hover:border-blue-500 hover:bg-blue-50 transition-colors text-tagline-1 text-blue-700 mb-3">
+              <span id="upload-label">Choose a PDF or image (.pdf, .png, .jpg)</span>
+              <input id="notice-upload" type="file" accept=".pdf,.png,.jpg,.jpeg,.heic" class="hidden">
+            </label>
+
             <div class="flex items-center gap-3 flex-wrap">
               <button id="save-notice-btn" type="button"
                       class="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-tagline-1 font-medium disabled:opacity-50 disabled:cursor-not-allowed">
@@ -1114,48 +1130,108 @@
       const mobileBtn = document.getElementById('mobile-unlock-btn');
       if (mobileBtn) mobileBtn.addEventListener('click', () => this.proceedToCheckout());
 
-      // Paste-notice "save for unlock"
+      // Paste-or-upload "save for unlock"
       const saveNotice = document.getElementById('save-notice-btn');
       if (saveNotice) saveNotice.addEventListener('click', () => this.saveNoticeText());
+
+      // Update upload label when file selected
+      const upload = document.getElementById('notice-upload');
+      const uploadLabel = document.getElementById('upload-label');
+      if (upload && uploadLabel) {
+        upload.addEventListener('change', () => {
+          const f = upload.files && upload.files[0];
+          uploadLabel.textContent = f ? `Selected: ${f.name}` : 'Choose a PDF or image (.pdf, .png, .jpg)';
+        });
+      }
+    }
+
+    async uploadNoticeFile(file) {
+      const supabaseBucketUrl = 'https://yvdwrkhntyutpnklxsvz.supabase.co';
+      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2ZHdya2hudHl1dHBua2x4c3Z6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1MDY3NTQsImV4cCI6MjA4MjA4Mjc1NH0.dFkoPjA60c9MH6C_YWYChehG3nKHHK3VKmKj0w722SU';
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const storagePath = `${this.caseToken}/notice/${Date.now()}_${safeName}`;
+      const upResp = await fetch(`${supabaseBucketUrl}/storage/v1/object/dmhoa-docs/${storagePath}`, {
+        method: 'POST',
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': file.type,
+          'x-upsert': 'true',
+        },
+        body: file,
+      });
+      if (!upResp.ok) {
+        const t = await upResp.text();
+        throw new Error(`Upload failed: ${upResp.status} ${t.substring(0, 200)}`);
+      }
+      // Trigger extraction so the AI can use the file content
+      await fetch('https://dmhoa-246713e0bd92.herokuapp.com/api/doc-extract-start', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-doc-secret': 'dmhoa-extract-2025',
+        },
+        body: JSON.stringify({
+          token: this.caseToken,
+          storage_path: storagePath,
+          filename: safeName,
+          mime_type: file.type,
+        }),
+      });
+      return storagePath;
     }
 
     async saveNoticeText() {
       const ta = document.getElementById('paste-notice');
+      const fileInput = document.getElementById('notice-upload');
       const status = document.getElementById('paste-status');
       const btn = document.getElementById('save-notice-btn');
       const text = (ta?.value || '').trim();
-      if (!text) {
+      const file = fileInput?.files && fileInput.files[0];
+
+      if (!text && !file) {
         if (status) {
-          status.textContent = 'Paste your notice text first.';
+          status.textContent = 'Paste your notice text or pick a file first.';
           status.classList.remove('hidden', 'text-blue-700', 'text-green-700');
           status.classList.add('text-red-600');
         }
         return;
       }
+
       btn.disabled = true;
-      btn.textContent = 'Saving...';
+      btn.textContent = file ? 'Uploading...' : 'Saving...';
       try {
-        // Reuse the existing case payload, just merge in pastedText.
-        // /api/save-case does an upsert keyed by token.
-        const merged = Object.assign({}, this.caseData || {}, {
-          token: this.caseToken,
-          pastedText: text,
-        });
-        const resp = await fetch('https://dmhoa-246713e0bd92.herokuapp.com/api/save-case', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token: this.caseToken, payload: merged }),
-        });
-        if (!resp.ok) throw new Error('save failed: ' + resp.status);
+        // 1. If a file was picked, upload + kick off extraction
+        if (file) {
+          await this.uploadNoticeFile(file);
+        }
+
+        // 2. If paste text was provided, merge it into the case payload
+        if (text) {
+          const merged = Object.assign({}, this.caseData || {}, {
+            token: this.caseToken,
+            pastedText: text,
+          });
+          const resp = await fetch('https://dmhoa-246713e0bd92.herokuapp.com/api/save-case', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: this.caseToken, payload: merged }),
+          });
+          if (!resp.ok) throw new Error('save failed: ' + resp.status);
+        }
+
         if (status) {
-          status.textContent = 'Saved. Your unlock letter will quote your exact notice.';
+          status.textContent = file
+            ? "Got it. We're reading your notice now. Your unlock letter will use it."
+            : 'Saved. Your unlock letter will quote your exact notice.';
           status.classList.remove('hidden', 'text-red-600');
           status.classList.add('text-green-700');
         }
         btn.textContent = 'Saved';
-        ta.disabled = true;
+        if (ta) ta.disabled = true;
+        if (fileInput) fileInput.disabled = true;
       } catch (e) {
-        console.error('paste save failed', e);
+        console.error('paste/upload save failed', e);
         btn.disabled = false;
         btn.textContent = 'Save for unlock';
         if (status) {
