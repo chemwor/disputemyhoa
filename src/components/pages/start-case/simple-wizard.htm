@@ -78,28 +78,7 @@
           <h1 class="text-heading-4 lg:text-heading-3 mb-2">What happened?</h1>
           <p class="text-tagline-1 text-secondary/70 mb-4">One sentence works. Add more if you want.</p>
 
-          <div class="flex flex-wrap gap-2 mb-3">
-            <button type="button" data-chip="yard"
-                    class="chip px-3 py-1.5 text-tagline-2 bg-white text-secondary border border-secondary/20 rounded-full hover:bg-ns-green hover:border-ns-green transition-colors font-medium">
-              + yard / lawn
-            </button>
-            <button type="button" data-chip="fence"
-                    class="chip px-3 py-1.5 text-tagline-2 bg-white text-secondary border border-secondary/20 rounded-full hover:bg-ns-green hover:border-ns-green transition-colors font-medium">
-              + fence / shed
-            </button>
-            <button type="button" data-chip="trash"
-                    class="chip px-3 py-1.5 text-tagline-2 bg-white text-secondary border border-secondary/20 rounded-full hover:bg-ns-green hover:border-ns-green transition-colors font-medium">
-              + trash cans
-            </button>
-            <button type="button" data-chip="parking"
-                    class="chip px-3 py-1.5 text-tagline-2 bg-white text-secondary border border-secondary/20 rounded-full hover:bg-ns-green hover:border-ns-green transition-colors font-medium">
-              + parking
-            </button>
-            <button type="button" data-chip="latefee"
-                    class="chip px-3 py-1.5 text-tagline-2 bg-white text-secondary border border-secondary/20 rounded-full hover:bg-ns-green hover:border-ns-green transition-colors font-medium">
-              + late fee
-            </button>
-          </div>
+          <div id="chips-container" class="flex flex-wrap gap-2 mb-3"></div>
 
           <textarea id="issue-text" rows="4"
                     class="w-full px-4 py-3 border border-stroke-1 rounded-lg focus:outline-none focus:border-ns-green text-tagline-1"
@@ -220,12 +199,50 @@ class SlideWizard {
       body: 'Dispute the facts, ask for more time, or agree with conditions. The preview will tell you which one fits yours.',
     };
 
-    this.chipPrefills = {
-      yard: 'The HOA fined me for something about my yard. ',
-      fence: 'The HOA cited my fence or shed. ',
-      trash: 'The HOA flagged my trash cans. ',
-      parking: 'The HOA gave me a parking violation. ',
-      latefee: 'The HOA hit me with a late fee. ',
+    // Chip suggestions for slide 2, scoped to whichever notice type they
+    // picked on slide 1. Each chip pre-fills a starter sentence so the
+    // user can edit instead of staring at a blank textarea.
+    this.chipsByNotice = {
+      violation: [
+        { label: 'yard / lawn', prefill: 'The HOA cited me for something about my yard. ' },
+        { label: 'fence / shed', prefill: 'The HOA cited my fence or shed. ' },
+        { label: 'trash cans', prefill: 'The HOA flagged my trash cans. ' },
+        { label: 'parking', prefill: 'The HOA gave me a parking violation. ' },
+        { label: 'something else', prefill: 'The HOA cited me for ' },
+      ],
+      fine: [
+        { label: 'yard / lawn', prefill: 'They fined me for something about my yard. ' },
+        { label: 'architectural', prefill: 'They fined me for an architectural change. ' },
+        { label: 'pet rules', prefill: 'They fined me over my pet. ' },
+        { label: 'noise', prefill: 'They fined me over a noise complaint. ' },
+        { label: 'something else', prefill: 'They fined me for ' },
+      ],
+      'late-fee': [
+        { label: 'I paid on time', prefill: "I paid on time but they say I didn't. " },
+        { label: 'autopay issue', prefill: "My autopay didn't go through. " },
+        { label: 'wrong amount', prefill: 'The amount they say I owe is wrong. ' },
+        { label: "never got the bill", prefill: 'I never received the original bill. ' },
+        { label: 'something else', prefill: 'My late fee situation: ' },
+      ],
+      hearing: [
+        { label: 'contesting a violation', prefill: 'I got a violation and want to contest it at the hearing. ' },
+        { label: 'disputing a fine', prefill: "I'm disputing a fine and the board scheduled a hearing. " },
+        { label: 'I missed a deadline', prefill: 'I missed a response deadline and now have a hearing. ' },
+        { label: 'something else', prefill: 'My hearing is about ' },
+      ],
+      lien: [
+        { label: 'back assessments', prefill: 'They placed a lien for back assessments. ' },
+        { label: 'from a disputed fine', prefill: "I disputed a fine and now there's a lien. " },
+        { label: 'never got notice', prefill: 'I never received notice before the lien was placed. ' },
+        { label: 'foreclosure threat', prefill: 'They are threatening foreclosure. ' },
+        { label: 'something else', prefill: 'The lien is about ' },
+      ],
+      other: [
+        { label: 'pet rules', prefill: 'The HOA flagged something about my pet. ' },
+        { label: 'architectural denial', prefill: 'The HOA denied an architectural change. ' },
+        { label: 'harassment', prefill: 'The HOA has been harassing me about ' },
+        { label: 'something else', prefill: 'My situation: ' },
+      ],
     };
 
     this.init();
@@ -237,9 +254,12 @@ class SlideWizard {
       btn.addEventListener('click', () => this.selectNoticeType(btn.dataset.notice, btn));
     });
 
-    // Issue chips (slide 2)
-    document.querySelectorAll('.chip').forEach(btn => {
-      btn.addEventListener('click', () => this.applyChip(btn.dataset.chip));
+    // Issue chips (slide 2) — dynamically rendered after the user picks a
+    // notice type on slide 1, so we use event delegation on the container.
+    document.getElementById('chips-container').addEventListener('click', (e) => {
+      const btn = e.target.closest('.chip');
+      if (!btn) return;
+      this.applyChip(btn.dataset.prefill || '');
     });
 
     // Issue text input (slide 2)
@@ -277,14 +297,31 @@ class SlideWizard {
     // Card appears instantly on selection
     this.addBreadcrumb('notice', this.noticeCards[value]);
 
-    // Quick handoff to slide 2 — user can swipe back to the card if they
+    // Render chip suggestions matched to this notice type
+    this.renderChipsFor(value);
+
+    // Quick handoff to slide 2. User can swipe back to the card if they
     // want to re-read it.
     setTimeout(() => this.advanceTo(2), 400);
   }
 
-  applyChip(kind) {
+  renderChipsFor(noticeType) {
+    const container = document.getElementById('chips-container');
+    container.innerHTML = '';
+    const chips = this.chipsByNotice[noticeType] || this.chipsByNotice.other;
+    chips.forEach(c => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'chip px-3 py-1.5 text-tagline-2 bg-white text-secondary border border-secondary/20 rounded-full hover:bg-ns-green hover:border-ns-green transition-colors font-medium';
+      btn.dataset.prefill = c.prefill;
+      btn.textContent = `+ ${c.label}`;
+      container.appendChild(btn);
+    });
+  }
+
+  applyChip(prefix) {
+    if (!prefix) return;
     const ta = document.getElementById('issue-text');
-    const prefix = this.chipPrefills[kind] || '';
     if (!ta.value.trim()) {
       ta.value = prefix;
     } else if (!ta.value.includes(prefix)) {
