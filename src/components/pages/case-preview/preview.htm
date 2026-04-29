@@ -777,6 +777,54 @@
       // lawsuit, animal removal, etc.) replace the unlock card with a
       // legal-referral gate. The free analysis above stays visible.
       this.renderRiskGate();
+
+      // If the user saved notice text or uploaded a file in a previous
+      // visit, restore that state so they aren't greeted with an empty
+      // paste box.
+      this.restoreSavedNotice();
+    }
+
+    restoreSavedNotice() {
+      const saved = this.caseData && this.caseData.saved_pasted_text;
+      const uploads = (this.caseData && this.caseData.saved_uploads) || [];
+      const ta = document.getElementById('paste-notice');
+      const status = document.getElementById('paste-status');
+      const btn = document.getElementById('save-notice-btn');
+      const uploadLabel = document.getElementById('upload-label');
+
+      if (saved && ta) {
+        ta.value = saved;
+        // Disable save until they actually edit; show a "saved earlier" hint.
+        if (btn) {
+          btn.textContent = 'Saved';
+          btn.disabled = true;
+        }
+        if (status) {
+          status.textContent = 'You saved your notice earlier. Edit and re-save to update.';
+          status.classList.remove('hidden', 'text-red-600', 'text-green-700');
+          status.classList.add('text-blue-700');
+        }
+        // Re-enable save button when they edit
+        const onEdit = () => {
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = 'Save for unlock';
+          }
+          if (status) {
+            status.textContent = '';
+            status.classList.add('hidden');
+          }
+          ta.removeEventListener('input', onEdit);
+        };
+        ta.addEventListener('input', onEdit);
+      }
+
+      if (uploads.length > 0 && uploadLabel) {
+        const names = uploads.map(u => u.filename).filter(Boolean);
+        if (names.length) {
+          uploadLabel.textContent = `Uploaded earlier: ${names.join(', ')}`;
+        }
+      }
     }
 
     renderRiskGate() {
