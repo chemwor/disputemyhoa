@@ -285,11 +285,11 @@ class SlideWizard {
     document.querySelectorAll('.notice-btn').forEach(b => b.classList.remove('selected'));
     btn.classList.add('selected');
 
-    // Show reactive card after a brief pause (feels considered, not robotic)
-    setTimeout(() => this.addBreadcrumb('notice', this.noticeCards[value]), 300);
+    // Card appears instantly on selection
+    this.addBreadcrumb('notice', this.noticeCards[value]);
 
-    // Auto-advance to slide 2 — total ~1s of card-read time after card appears
-    setTimeout(() => this.advanceTo(2), 1300);
+    // Auto-advance to slide 2 after a beat so the card has time to be read
+    setTimeout(() => this.advanceTo(2), 1100);
   }
 
   applyChip(kind) {
