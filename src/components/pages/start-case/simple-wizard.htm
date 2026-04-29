@@ -74,23 +74,23 @@
 
           <div class="flex flex-wrap gap-2 mb-3">
             <button type="button" data-chip="yard"
-                    class="chip px-3 py-1.5 text-tagline-2 bg-ns-green/10 text-ns-green border border-ns-green/30 rounded-full hover:bg-ns-green/20 transition-colors">
+                    class="chip px-3 py-1.5 text-tagline-2 bg-white text-secondary border border-secondary/20 rounded-full hover:bg-ns-green hover:border-ns-green transition-colors font-medium">
               + yard / lawn
             </button>
             <button type="button" data-chip="fence"
-                    class="chip px-3 py-1.5 text-tagline-2 bg-ns-green/10 text-ns-green border border-ns-green/30 rounded-full hover:bg-ns-green/20 transition-colors">
+                    class="chip px-3 py-1.5 text-tagline-2 bg-white text-secondary border border-secondary/20 rounded-full hover:bg-ns-green hover:border-ns-green transition-colors font-medium">
               + fence / shed
             </button>
             <button type="button" data-chip="trash"
-                    class="chip px-3 py-1.5 text-tagline-2 bg-ns-green/10 text-ns-green border border-ns-green/30 rounded-full hover:bg-ns-green/20 transition-colors">
+                    class="chip px-3 py-1.5 text-tagline-2 bg-white text-secondary border border-secondary/20 rounded-full hover:bg-ns-green hover:border-ns-green transition-colors font-medium">
               + trash cans
             </button>
             <button type="button" data-chip="parking"
-                    class="chip px-3 py-1.5 text-tagline-2 bg-ns-green/10 text-ns-green border border-ns-green/30 rounded-full hover:bg-ns-green/20 transition-colors">
+                    class="chip px-3 py-1.5 text-tagline-2 bg-white text-secondary border border-secondary/20 rounded-full hover:bg-ns-green hover:border-ns-green transition-colors font-medium">
               + parking
             </button>
             <button type="button" data-chip="latefee"
-                    class="chip px-3 py-1.5 text-tagline-2 bg-ns-green/10 text-ns-green border border-ns-green/30 rounded-full hover:bg-ns-green/20 transition-colors">
+                    class="chip px-3 py-1.5 text-tagline-2 bg-white text-secondary border border-secondary/20 rounded-full hover:bg-ns-green hover:border-ns-green transition-colors font-medium">
               + late fee
             </button>
           </div>
@@ -307,11 +307,11 @@ class SlideWizard {
     if (valid) {
       cont.disabled = false;
       cont.classList.remove('bg-stroke-1', 'text-secondary/40', 'cursor-not-allowed');
-      cont.classList.add('bg-ns-green', 'text-white', 'hover:bg-ns-green/90', 'cursor-pointer');
+      cont.classList.add('bg-ns-green', 'text-secondary', 'hover:bg-ns-green/90', 'cursor-pointer');
     } else {
       cont.disabled = true;
       cont.classList.add('bg-stroke-1', 'text-secondary/40', 'cursor-not-allowed');
-      cont.classList.remove('bg-ns-green', 'text-white', 'hover:bg-ns-green/90', 'cursor-pointer');
+      cont.classList.remove('bg-ns-green', 'text-secondary', 'hover:bg-ns-green/90', 'cursor-pointer');
     }
 
     // Show issue card once they've typed enough to show real engagement
@@ -329,12 +329,12 @@ class SlideWizard {
     if (valid) {
       btn.disabled = false;
       btn.classList.remove('bg-stroke-1', 'text-secondary/40', 'cursor-not-allowed');
-      btn.classList.add('bg-ns-green', 'text-white', 'hover:bg-ns-green/90', 'cursor-pointer');
+      btn.classList.add('bg-ns-green', 'text-secondary', 'hover:bg-ns-green/90', 'cursor-pointer');
       document.getElementById('email-error').classList.add('hidden');
     } else {
       btn.disabled = true;
       btn.classList.add('bg-stroke-1', 'text-secondary/40', 'cursor-not-allowed');
-      btn.classList.remove('bg-ns-green', 'text-white', 'hover:bg-ns-green/90', 'cursor-pointer');
+      btn.classList.remove('bg-ns-green', 'text-secondary', 'hover:bg-ns-green/90', 'cursor-pointer');
     }
   }
 
