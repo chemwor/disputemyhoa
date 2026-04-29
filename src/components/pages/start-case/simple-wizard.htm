@@ -288,8 +288,9 @@ class SlideWizard {
     // Card appears instantly on selection
     this.addBreadcrumb('notice', this.noticeCards[value]);
 
-    // Auto-advance to slide 2 after a beat so the card has time to be read
-    setTimeout(() => this.advanceTo(2), 1100);
+    // Quick handoff to slide 2 — user can swipe back to the card if they
+    // want to re-read it.
+    setTimeout(() => this.advanceTo(2), 400);
   }
 
   applyChip(kind) {
