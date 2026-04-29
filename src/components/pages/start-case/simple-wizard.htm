@@ -22,8 +22,14 @@
         <span id="step-label" class="text-tagline-2 text-secondary/60">Step 1 of 3</span>
       </div>
 
-      <!-- Persistent breadcrumb cards (filled as user advances) -->
-      <div id="breadcrumbs" class="space-y-2 mb-6"></div>
+      <!-- Reactive cards — carousel: only the latest card is visible at a
+           time, user can swipe (or tap dots) to navigate back to earlier
+           cards. Hidden until the first card is added. -->
+      <div id="breadcrumbs-wrap" class="mb-6 hidden">
+        <div id="breadcrumbs"
+             class="flex overflow-x-auto snap-x snap-mandatory gap-3 scroll-smooth no-scrollbar pb-1"></div>
+        <div id="breadcrumb-dots" class="flex justify-center gap-1.5 mt-2"></div>
+      </div>
 
       <!-- Slide 1: notice type -->
       <div data-slide="1" class="slide-panel">
@@ -166,6 +172,8 @@
     border-color: rgb(34 197 94);
     background-color: rgba(34, 197, 94, 0.08);
   }
+  .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
 </style>
 
 <script>
@@ -344,9 +352,18 @@ class SlideWizard {
 
   addBreadcrumb(key, card) {
     if (document.getElementById(`breadcrumb-${key}`)) return;
+
+    const wrap = document.getElementById('breadcrumbs-wrap');
+    const track = document.getElementById('breadcrumbs');
+    const dots = document.getElementById('breadcrumb-dots');
+
+    const idx = track.children.length; // 0-based position in carousel
+
     const el = document.createElement('div');
     el.id = `breadcrumb-${key}`;
-    el.className = 'breadcrumb-card bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3';
+    el.dataset.cardIndex = idx;
+    // Each card takes the full carousel width and snap-aligns to start
+    el.className = 'breadcrumb-card snap-start flex-shrink-0 w-full bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3';
     el.innerHTML = `
       <span class="text-2xl flex-shrink-0">${card.emoji}</span>
       <div class="flex-1 min-w-0">
@@ -354,9 +371,60 @@ class SlideWizard {
         <p class="text-tagline-2 text-blue-800/80 mt-0.5">${card.body}</p>
       </div>
     `;
-    document.getElementById('breadcrumbs').appendChild(el);
-    // Trigger CSS reveal on next frame
+    track.appendChild(el);
+
+    // Add a dot for this card
+    const dot = document.createElement('button');
+    dot.type = 'button';
+    dot.dataset.dotIndex = idx;
+    dot.setAttribute('aria-label', `Go to card ${idx + 1}`);
+    dot.className = 'breadcrumb-dot w-2 h-2 rounded-full bg-stroke-1 transition-all hover:scale-125';
+    dot.addEventListener('click', () => {
+      track.scrollTo({ left: idx * track.clientWidth, behavior: 'smooth' });
+    });
+    dots.appendChild(dot);
+
+    // Hide the dots row when there's only one card (no nav needed)
+    dots.classList.toggle('hidden', track.children.length <= 1);
+
+    // Show the wrapper now that we have content
+    wrap.classList.remove('hidden');
+
+    // Reveal animation
     requestAnimationFrame(() => el.classList.add('revealed'));
+
+    // Scroll the new card into view (it's the latest)
+    requestAnimationFrame(() => {
+      track.scrollTo({ left: idx * track.clientWidth, behavior: 'smooth' });
+      this.setActiveDot(idx);
+    });
+
+    // Watch which card is in view as the user scrolls
+    if (!this._scrollListenerAttached) {
+      this._scrollListenerAttached = true;
+      let scrollTimeout;
+      track.addEventListener('scroll', () => {
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(() => {
+          const w = track.clientWidth || 1;
+          const current = Math.round(track.scrollLeft / w);
+          this.setActiveDot(current);
+        }, 80);
+      });
+    }
+  }
+
+  setActiveDot(activeIdx) {
+    document.querySelectorAll('.breadcrumb-dot').forEach(dot => {
+      const i = parseInt(dot.dataset.dotIndex, 10);
+      if (i === activeIdx) {
+        dot.classList.remove('bg-stroke-1');
+        dot.classList.add('bg-secondary', 'w-4');
+      } else {
+        dot.classList.add('bg-stroke-1');
+        dot.classList.remove('bg-secondary', 'w-4');
+      }
+    });
   }
 
   advanceTo(slide) {
