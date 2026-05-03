@@ -132,6 +132,46 @@
         var metaDesc = document.querySelector('meta[name="description"]');
         if (metaDesc) metaDesc.setAttribute('content', post.seo_description || post.excerpt || '');
 
+        // Open Graph + Twitter image (so social shares pick up the post image)
+        var pageUrl = 'https://disputemyhoa.com/blog/post.html?slug=' + encodeURIComponent(post.slug || '');
+        function setMeta(selector, attr, val) {
+          var el = document.querySelector(selector);
+          if (el && val) el.setAttribute(attr, val);
+        }
+        setMeta('meta[property="og:title"]', 'content', post.seo_title || post.title);
+        setMeta('meta[property="og:description"]', 'content', post.seo_description || post.excerpt || '');
+        setMeta('meta[property="og:image"]', 'content', post.image_url || '');
+        setMeta('meta[property="og:url"]', 'content', pageUrl);
+
+        // Article JSON-LD — Google's preferred schema for blog posts.
+        try {
+          var articleSchema = {
+            '@context': 'https://schema.org',
+            '@type': 'Article',
+            headline: post.title,
+            description: post.seo_description || post.excerpt || '',
+            image: post.image_url ? [post.image_url] : undefined,
+            datePublished: post.published_at,
+            dateModified: post.updated_at || post.published_at,
+            author: {'@type': 'Organization', name: post.author || 'Dispute My HOA'},
+            publisher: {
+              '@type': 'Organization',
+              name: 'Dispute My HOA',
+              logo: {'@type': 'ImageObject', url: 'https://disputemyhoa.com/images/webscreen.png'}
+            },
+            mainEntityOfPage: {'@type': 'WebPage', '@id': pageUrl},
+            keywords: (post.seo_keywords || post.tags || []).join(', ')
+          };
+          var script = document.createElement('script');
+          script.type = 'application/ld+json';
+          script.id = 'dmhoa-article-schema';
+          // Remove any old schema if rerendering
+          var prev = document.getElementById('dmhoa-article-schema');
+          if (prev) prev.remove();
+          script.textContent = JSON.stringify(articleSchema);
+          document.head.appendChild(script);
+        } catch (e) { /* schema rendering is best-effort */ }
+
         var content = parseContent(post.content);
 
         var html = '<header class="mb-12">' +
@@ -150,6 +190,7 @@
         if (post.image_url) {
           html += '<figure class="mb-12 rounded-2xl overflow-hidden">' +
             '<img src="' + post.image_url + '" alt="' + (post.image_alt || post.title) + '" class="w-full h-auto object-cover">' +
+            (post.image_credit ? '<figcaption class="text-tagline-3 text-secondary/40 mt-2 px-4">' + post.image_credit + '</figcaption>' : '') +
           '</figure>';
         }
 
