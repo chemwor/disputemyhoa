@@ -73,97 +73,157 @@
     <priority>0.4</priority>
   </url>
   <url>
-    <loc>https://disputemyhoa.com/blog/critical-hoa-deadlines-every-homeowner-must-know</loc>
+    <loc>https://disputemyhoa.com/blog</loc>
+    <lastmod>2026-05-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://disputemyhoa.com/blog/post.html?slug=how-to-write-an-hoa-fine-appeal-letter-with-template</loc>
+    <lastmod>2026-05-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://disputemyhoa.com/blog/post.html?slug=how-to-respond-to-an-hoa-violation-notice-and-protect-your-rights</loc>
+    <lastmod>2026-05-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://disputemyhoa.com/blog/post.html?slug=hoa-appeal-letter-sample-write-a-strong-response-that-gets-results</loc>
+    <lastmod>2026-05-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://disputemyhoa.com/blog/post.html?slug=how-to-fight-an-hoa-fine-a-step-by-step-guide-for-homeowners</loc>
+    <lastmod>2026-05-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://disputemyhoa.com/blog/post.html?slug=how-to-dispute-an-hoa-fine-a-step-by-step-guide-for-homeowners</loc>
+    <lastmod>2026-05-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://disputemyhoa.com/blog/post.html?slug=hoa-fine-appeal-letter-template-how-to-challenge-unfair-violations</loc>
+    <lastmod>2026-05-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://disputemyhoa.com/blog/post.html?slug=how-to-respond-to-an-hoa-violation-notice-a-step-by-step-guide</loc>
+    <lastmod>2026-05-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://disputemyhoa.com/blog/post.html?slug=hoa-appeal-letter-sample-how-to-write-an-effective-response-that-gets-results</loc>
+    <lastmod>2026-05-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://disputemyhoa.com/blog/post.html?slug=how-to-fight-an-hoa-fine-your-complete-defense-strategy-guide</loc>
+    <lastmod>2026-05-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://disputemyhoa.com/blog/post.html?slug=critical-hoa-deadlines-every-homeowner-must-know</loc>
     <lastmod>2026-04-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://disputemyhoa.com/blog/5-red-flags-before-buying-in-an-hoa-community</loc>
+    <loc>https://disputemyhoa.com/blog/post.html?slug=5-red-flags-before-buying-in-an-hoa-community</loc>
     <lastmod>2026-03-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://disputemyhoa.com/blog/hoa-technology-revolution-what-it-means-for-your-rights</loc>
+    <loc>https://disputemyhoa.com/blog/post.html?slug=hoa-technology-revolution-what-it-means-for-your-rights</loc>
     <lastmod>2026-03-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://disputemyhoa.com/blog/your-right-to-know-getting-hoa-financial-records-disclosed</loc>
+    <loc>https://disputemyhoa.com/blog/post.html?slug=your-right-to-know-getting-hoa-financial-records-disclosed</loc>
     <lastmod>2026-03-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://disputemyhoa.com/blog/solar-panel-wars-winning-against-hoa-architectural-restrictions</loc>
+    <loc>https://disputemyhoa.com/blog/post.html?slug=solar-panel-wars-winning-against-hoa-architectural-restrictions</loc>
     <lastmod>2026-03-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://disputemyhoa.com/blog/can-your-hoa-block-amenity-access-over-unpaid-assessments</loc>
+    <loc>https://disputemyhoa.com/blog/post.html?slug=can-your-hoa-block-amenity-access-over-unpaid-assessments</loc>
     <lastmod>2026-02-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://disputemyhoa.com/blog/how-to-respond-to-hoa-violation-letter</loc>
+    <loc>https://disputemyhoa.com/blog/post.html?slug=how-to-respond-to-hoa-violation-letter</loc>
     <lastmod>2026-02-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://disputemyhoa.com/blog/hoa-violation-response-letter-sample</loc>
+    <loc>https://disputemyhoa.com/blog/post.html?slug=hoa-violation-response-letter-sample</loc>
     <lastmod>2026-02-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://disputemyhoa.com/blog/fighting-hoa-violation-without-lawyer</loc>
+    <loc>https://disputemyhoa.com/blog/post.html?slug=fighting-hoa-violation-without-lawyer</loc>
     <lastmod>2026-02-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://disputemyhoa.com/blog/what-happens-if-you-ignore-hoa-violation</loc>
+    <loc>https://disputemyhoa.com/blog/post.html?slug=what-happens-if-you-ignore-hoa-violation</loc>
     <lastmod>2026-02-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://disputemyhoa.com/blog/common-hoa-violations</loc>
+    <loc>https://disputemyhoa.com/blog/post.html?slug=common-hoa-violations</loc>
     <lastmod>2026-02-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://disputemyhoa.com/blog/hoa-architectural-violation</loc>
+    <loc>https://disputemyhoa.com/blog/post.html?slug=hoa-architectural-violation</loc>
     <lastmod>2026-02-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://disputemyhoa.com/blog/missed-hoa-violation-deadline</loc>
+    <loc>https://disputemyhoa.com/blog/post.html?slug=missed-hoa-violation-deadline</loc>
     <lastmod>2026-02-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://disputemyhoa.com/blog/hoa-parking-violation</loc>
+    <loc>https://disputemyhoa.com/blog/post.html?slug=hoa-parking-violation</loc>
     <lastmod>2026-02-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://disputemyhoa.com/blog/understanding-hoa-ccrs</loc>
+    <loc>https://disputemyhoa.com/blog/post.html?slug=understanding-hoa-ccrs</loc>
     <lastmod>2026-02-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://disputemyhoa.com/blog/hoa-fine-without-notice</loc>
+    <loc>https://disputemyhoa.com/blog/post.html?slug=hoa-fine-without-notice</loc>
     <lastmod>2026-02-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
