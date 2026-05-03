@@ -63,7 +63,62 @@ Head links
 <meta name="geo.region" content="US" />
 <meta name="geo.placename" content="United States" />
 
-<link rel="canonical" href="https://disputemyhoa.com/" />
+<!-- Canonical URL — defaults to homepage; set per-page below to current path
+     so each URL has a self-canonical instead of all pointing at "/". -->
+<link rel="canonical" id="dmhoa-canonical" href="https://disputemyhoa.com/" />
+<script>
+  (function () {
+    try {
+      var c = document.getElementById('dmhoa-canonical');
+      if (!c) return;
+      // Strip trailing .html and any query/hash so canonical is clean.
+      var path = window.location.pathname.replace(/\.html$/i, '').replace(/\/index$/i, '/');
+      if (path.length > 1 && path.charAt(path.length - 1) === '/') {
+        path = path.replace(/\/+$/, '');
+      }
+      c.href = 'https://disputemyhoa.com' + (path || '/');
+    } catch (e) {}
+  })();
+</script>
+
+<!-- Organization JSON-LD (sitewide) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Dispute My HOA",
+  "alternateName": "DisputeMyHOA",
+  "url": "https://disputemyhoa.com",
+  "logo": "https://disputemyhoa.com/images/webscreen.png",
+  "description": "Self-help platform that drafts professional response letters to HOA violation notices. Free preview, $29 to unlock the full response package. Not a law firm.",
+  "areaServed": {
+    "@type": "Country",
+    "name": "United States"
+  },
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "email": "support@disputemyhoa.com",
+    "contactType": "customer support",
+    "availableLanguage": "English"
+  },
+  "sameAs": []
+}
+</script>
+
+<!-- WebSite JSON-LD -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Dispute My HOA",
+  "url": "https://disputemyhoa.com",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://disputemyhoa.com/blog?q={search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
 
 <!-- Additional SEO Meta Tags -->
 <meta name="rating" content="General" />

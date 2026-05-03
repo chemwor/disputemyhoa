@@ -1,0 +1,299 @@
+# Netlify _headers file — applies HTTP headers per path pattern.
+#
+# Two purposes:
+# 1. SEO: tag leftover template pages with X-Robots-Tag: noindex, nofollow
+#    so search engines don't index them and dilute our HOA-focused signal.
+#    These pages are unrelated AI-agency / SaaS template stubs that ship
+#    with the original theme but were never repurposed for DMHOA.
+# 2. Security headers (light, non-breaking).
+
+# === SEO: noindex leftover template pages ===
+/ai-*
+  X-Robots-Tag: noindex, nofollow
+
+/web3-*
+  X-Robots-Tag: noindex, nofollow
+
+/crypto-*
+  X-Robots-Tag: noindex, nofollow
+
+/finance-*
+  X-Robots-Tag: noindex, nofollow
+
+/food-*
+  X-Robots-Tag: noindex, nofollow
+
+/fitness-*
+  X-Robots-Tag: noindex, nofollow
+
+/gym-*
+  X-Robots-Tag: noindex, nofollow
+
+/restaurant-*
+  X-Robots-Tag: noindex, nofollow
+
+/portfolio-*
+  X-Robots-Tag: noindex, nofollow
+
+/loan-*
+  X-Robots-Tag: noindex, nofollow
+
+/insurance-*
+  X-Robots-Tag: noindex, nofollow
+
+/software-*
+  X-Robots-Tag: noindex, nofollow
+
+/saas-*
+  X-Robots-Tag: noindex, nofollow
+
+/tax-*
+  X-Robots-Tag: noindex, nofollow
+
+/telemedicine-*
+  X-Robots-Tag: noindex, nofollow
+
+/nft-*
+  X-Robots-Tag: noindex, nofollow
+
+/ott-*
+  X-Robots-Tag: noindex, nofollow
+
+/recipe-*
+  X-Robots-Tag: noindex, nofollow
+
+/dating-*
+  X-Robots-Tag: noindex, nofollow
+
+/chatbot-*
+  X-Robots-Tag: noindex, nofollow
+
+/gadget-*
+  X-Robots-Tag: noindex, nofollow
+
+/smart-*
+  X-Robots-Tag: noindex, nofollow
+
+/consulting-*
+  X-Robots-Tag: noindex, nofollow
+
+/construction-*
+  X-Robots-Tag: noindex, nofollow
+
+/cleaning-*
+  X-Robots-Tag: noindex, nofollow
+
+/biotech-*
+  X-Robots-Tag: noindex, nofollow
+
+/barbershop-*
+  X-Robots-Tag: noindex, nofollow
+
+/book-*
+  X-Robots-Tag: noindex, nofollow
+
+/business-*
+  X-Robots-Tag: noindex, nofollow
+
+/career-*
+  X-Robots-Tag: noindex, nofollow
+
+/cyber-*
+  X-Robots-Tag: noindex, nofollow
+
+/design-*
+  X-Robots-Tag: noindex, nofollow
+
+/ecommerce-*
+  X-Robots-Tag: noindex, nofollow
+
+/education-*
+  X-Robots-Tag: noindex, nofollow
+
+/email-*
+  X-Robots-Tag: noindex, nofollow
+
+/esports-*
+  X-Robots-Tag: noindex, nofollow
+
+/fashion-*
+  X-Robots-Tag: noindex, nofollow
+
+/game-*
+  X-Robots-Tag: noindex, nofollow
+
+/health-*
+  X-Robots-Tag: noindex, nofollow
+
+/home-security-*
+  X-Robots-Tag: noindex, nofollow
+
+/interior-*
+  X-Robots-Tag: noindex, nofollow
+
+/investment-*
+  X-Robots-Tag: noindex, nofollow
+
+/jewelry-*
+  X-Robots-Tag: noindex, nofollow
+
+/law-*
+  X-Robots-Tag: noindex, nofollow
+
+/lottery-*
+  X-Robots-Tag: noindex, nofollow
+
+/magazine-*
+  X-Robots-Tag: noindex, nofollow
+
+/marketing-*
+  X-Robots-Tag: noindex, nofollow
+
+/medical-*
+  X-Robots-Tag: noindex, nofollow
+
+/mobile-*
+  X-Robots-Tag: noindex, nofollow
+
+/movie-*
+  X-Robots-Tag: noindex, nofollow
+
+/music-*
+  X-Robots-Tag: noindex, nofollow
+
+/news-*
+  X-Robots-Tag: noindex, nofollow
+
+/nonprofit-*
+  X-Robots-Tag: noindex, nofollow
+
+/online-classes-*
+  X-Robots-Tag: noindex, nofollow
+
+/outsourcing-*
+  X-Robots-Tag: noindex, nofollow
+
+/payment-*
+  X-Robots-Tag: noindex, nofollow
+
+/photography-*
+  X-Robots-Tag: noindex, nofollow
+
+/podcast-*
+  X-Robots-Tag: noindex, nofollow
+
+/pos-*
+  X-Robots-Tag: noindex, nofollow
+
+/product-*
+  X-Robots-Tag: noindex, nofollow
+
+/programming-*
+  X-Robots-Tag: noindex, nofollow
+
+/project-*
+  X-Robots-Tag: noindex, nofollow
+
+/property-*
+  X-Robots-Tag: noindex, nofollow
+
+/push-*
+  X-Robots-Tag: noindex, nofollow
+
+/race-*
+  X-Robots-Tag: noindex, nofollow
+
+/real-estate-*
+  X-Robots-Tag: noindex, nofollow
+
+/risk-*
+  X-Robots-Tag: noindex, nofollow
+
+/safety-*
+  X-Robots-Tag: noindex, nofollow
+
+/salon-*
+  X-Robots-Tag: noindex, nofollow
+
+/search-engine-*
+  X-Robots-Tag: noindex, nofollow
+
+/seed-*
+  X-Robots-Tag: noindex, nofollow
+
+/seo-*
+  X-Robots-Tag: noindex, nofollow
+
+/service-*
+  X-Robots-Tag: noindex, nofollow
+
+/sport-*
+  X-Robots-Tag: noindex, nofollow
+
+/spa-*
+  X-Robots-Tag: noindex, nofollow
+
+/startup-*
+  X-Robots-Tag: noindex, nofollow
+
+/stock-*
+  X-Robots-Tag: noindex, nofollow
+
+/streaming-*
+  X-Robots-Tag: noindex, nofollow
+
+/teaching-*
+  X-Robots-Tag: noindex, nofollow
+
+/template-*
+  X-Robots-Tag: noindex, nofollow
+
+/themes-*
+  X-Robots-Tag: noindex, nofollow
+
+/toys-*
+  X-Robots-Tag: noindex, nofollow
+
+/trading-*
+  X-Robots-Tag: noindex, nofollow
+
+/travel-*
+  X-Robots-Tag: noindex, nofollow
+
+/truck-*
+  X-Robots-Tag: noindex, nofollow
+
+/video-*
+  X-Robots-Tag: noindex, nofollow
+
+/virtual-*
+  X-Robots-Tag: noindex, nofollow
+
+/warehouse-*
+  X-Robots-Tag: noindex, nofollow
+
+/wedding-*
+  X-Robots-Tag: noindex, nofollow
+
+/wellness-*
+  X-Robots-Tag: noindex, nofollow
+
+/work-*
+  X-Robots-Tag: noindex, nofollow
+
+/analytics-and-reporting-*
+  X-Robots-Tag: noindex, nofollow
+
+/application-*
+  X-Robots-Tag: noindex, nofollow
+
+/landing-page-templates*
+  X-Robots-Tag: noindex, nofollow
+
+/coming-soon*
+  X-Robots-Tag: noindex, nofollow
+
+# === Light security headers (sitewide) ===
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
