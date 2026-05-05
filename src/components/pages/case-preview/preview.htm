@@ -63,19 +63,21 @@
           </div>
 
           <!-- Tab navigation — three groups for the secondary content below
-               the always-visible hero (letter excerpt + outcomes). -->
-          <div class="border-b border-stroke-1 -mx-4 sm:mx-0 px-4 sm:px-0 overflow-x-auto">
-            <div class="flex gap-1 min-w-max">
+               the always-visible hero (letter excerpt + outcomes).
+               Mobile-first: each tab is 1/3 width via flex-1; labels wrap
+               to two lines on narrow screens. No horizontal scroll. -->
+          <div class="border-b border-stroke-1">
+            <div class="flex">
               <button data-tab="case" type="button"
-                      class="tab-btn px-4 py-3 text-tagline-1 font-medium text-secondary border-b-2 border-green-600 -mb-px whitespace-nowrap transition-colors">
+                      class="tab-btn flex-1 px-2 sm:px-4 py-3 text-tagline-2 sm:text-tagline-1 font-medium text-center leading-tight text-secondary border-b-2 border-green-600 -mb-px transition-colors">
                 Your case
               </button>
               <button data-tab="sharpen" type="button"
-                      class="tab-btn px-4 py-3 text-tagline-1 font-medium text-secondary/60 border-b-2 border-transparent -mb-px whitespace-nowrap hover:text-secondary transition-colors">
+                      class="tab-btn flex-1 px-2 sm:px-4 py-3 text-tagline-2 sm:text-tagline-1 font-medium text-center leading-tight text-secondary/60 border-b-2 border-transparent -mb-px hover:text-secondary transition-colors">
                 Sharpen the letter
               </button>
               <button data-tab="unlock" type="button"
-                      class="tab-btn px-4 py-3 text-tagline-1 font-medium text-secondary/60 border-b-2 border-transparent -mb-px whitespace-nowrap hover:text-secondary transition-colors">
+                      class="tab-btn flex-1 px-2 sm:px-4 py-3 text-tagline-2 sm:text-tagline-1 font-medium text-center leading-tight text-secondary/60 border-b-2 border-transparent -mb-px hover:text-secondary transition-colors">
                 What you unlock
               </button>
             </div>
