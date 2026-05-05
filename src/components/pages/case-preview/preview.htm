@@ -25,6 +25,34 @@
       <div class="grid lg:grid-cols-3 gap-6 lg:gap-8">
         <!-- Left Column - Results -->
         <div class="lg:col-span-2 space-y-6">
+          <!-- Letter Excerpt Card — the actual response letter, partial -->
+          <div id="letter-excerpt-card" class="bg-white rounded-[20px] border-2 border-ns-green p-6 lg:p-8 shadow-sm hidden">
+            <div class="flex items-center mb-4">
+              <svg class="w-6 h-6 text-ns-green mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+              <h2 class="text-heading-5">Your response letter (preview)</h2>
+            </div>
+            <div class="relative">
+              <div id="letter-excerpt-body" class="bg-secondary/3 rounded-lg p-4 lg:p-6 font-serif text-tagline-1 leading-relaxed whitespace-pre-line text-secondary/90">
+                <!-- letter_excerpt populated by JS -->
+              </div>
+              <div class="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-b from-transparent to-white rounded-b-lg pointer-events-none"></div>
+            </div>
+            <div class="mt-3 flex items-center gap-2 text-tagline-3 text-secondary/50">
+              <span class="border-t border-stroke-1 flex-1"></span>
+              <span>continued in unlocked version</span>
+              <span class="border-t border-stroke-1 flex-1"></span>
+            </div>
+            <p class="text-tagline-2 text-secondary/70 mt-4">
+              The full letter quotes the exact rule cited, includes evidence requests, and is formatted for certified mail or email delivery. Plus 2 letter variations and the evidence checklist.
+            </p>
+            <button id="excerpt-unlock-btn" type="button"
+                    class="mt-4 w-full lg:w-auto px-6 py-3 bg-ns-green text-white rounded-lg hover:bg-ns-green/90 transition-colors font-medium">
+              Unlock the full letter for $29
+            </button>
+          </div>
+
           <!-- Plain-English Summary Card -->
           <div class="bg-white rounded-[20px] border border-stroke-1 p-6 lg:p-8">
             <h2 class="text-heading-5 mb-4">Plain-English Summary</h2>
@@ -952,6 +980,9 @@
       // Update document status
       this.populateDocumentStatus();
 
+      // Letter excerpt — most prominent CTA, render first
+      this.populateLetterExcerpt();
+
       // Populate summary with new structure
       this.populateNewSummary();
 
@@ -999,6 +1030,16 @@
 
       // Populate next step
       this.populateNextStep();
+    }
+
+    populateLetterExcerpt() {
+      const excerpt = (this.caseData.letter_excerpt || '').trim();
+      if (!excerpt) return;
+      const card = document.getElementById('letter-excerpt-card');
+      const body = document.getElementById('letter-excerpt-body');
+      if (!card || !body) return;
+      body.textContent = excerpt;
+      card.classList.remove('hidden');
     }
 
     populateNewSummary() {
@@ -1192,6 +1233,10 @@
       // Mobile sticky unlock — same flow as the desktop button
       const mobileBtn = document.getElementById('mobile-unlock-btn');
       if (mobileBtn) mobileBtn.addEventListener('click', () => this.proceedToCheckout());
+
+      // Letter-excerpt card unlock — same checkout
+      const excerptBtn = document.getElementById('excerpt-unlock-btn');
+      if (excerptBtn) excerptBtn.addEventListener('click', () => this.proceedToCheckout());
 
       // Paste-or-upload "save for unlock"
       const saveNotice = document.getElementById('save-notice-btn');
