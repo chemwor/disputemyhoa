@@ -53,6 +53,15 @@
             </button>
           </div>
 
+          <!-- What Changes After You Send Card — outcome language, addresses
+               "yeah but does this actually do anything?" -->
+          <div id="outcomes-card" class="bg-white rounded-[20px] border border-stroke-1 p-6 lg:p-8 hidden">
+            <h2 class="text-heading-5 mb-4">What changes once you send this</h2>
+            <ul id="outcomes-list" class="space-y-3 text-tagline-1 text-secondary/85">
+              <!-- populated by JS -->
+            </ul>
+          </div>
+
           <!-- Plain-English Summary Card -->
           <div class="bg-white rounded-[20px] border border-stroke-1 p-6 lg:p-8">
             <h2 class="text-heading-5 mb-4">Plain-English Summary</h2>
@@ -983,6 +992,9 @@
       // Letter excerpt — most prominent CTA, render first
       this.populateLetterExcerpt();
 
+      // Outcomes (what changes after sending) — answers "does this work?"
+      this.populateOutcomes();
+
       // Populate summary with new structure
       this.populateNewSummary();
 
@@ -1039,6 +1051,47 @@
       const body = document.getElementById('letter-excerpt-body');
       if (!card || !body) return;
       body.textContent = excerpt;
+      card.classList.remove('hidden');
+    }
+
+    populateOutcomes() {
+      // The model occasionally returns a single string with all outcomes
+      // packed together instead of separate array items. Split on sentence
+      // boundaries to recover individual bullets.
+      const splitSentences = (s) => String(s || '')
+        .split(/(?<=[.!?])\s+(?=[A-Z])/)
+        .map(x => x.trim())
+        .filter(Boolean);
+
+      let raw = this.caseData.outcomes_after_sending;
+      let items = [];
+      if (Array.isArray(raw)) {
+        if (raw.length === 1 && typeof raw[0] === 'string' && raw[0].length > 220) {
+          items = splitSentences(raw[0]);
+        } else {
+          items = raw.map(x => String(x || '').trim()).filter(Boolean);
+        }
+      } else if (typeof raw === 'string') {
+        items = splitSentences(raw);
+      }
+      if (!items.length) return;
+
+      const card = document.getElementById('outcomes-card');
+      const list = document.getElementById('outcomes-list');
+      if (!card || !list) return;
+      list.innerHTML = '';
+      items.forEach(text => {
+        const li = document.createElement('li');
+        li.className = 'flex items-start';
+        li.innerHTML = `
+          <svg class="w-5 h-5 mr-3 text-ns-green mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+          </svg>
+          <span></span>
+        `;
+        li.querySelector('span').textContent = text;
+        list.appendChild(li);
+      });
       card.classList.remove('hidden');
     }
 
