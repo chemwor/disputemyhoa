@@ -21,6 +21,16 @@ to = "https://dmhoa-246713e0bd92.herokuapp.com/r/:splat"
 status = 200
 force = true
 
+# Memorable case URL: /your-case/<token> rewrites to the existing
+# case-preview page with the token as a query param. The page reads
+# both ?case=... (old format) and the rewritten URL identically, so
+# old links still work. Status 200 keeps the pretty URL visible in
+# the address bar after the rewrite.
+[[redirects]]
+from = "/your-case/:token"
+to = "/case-preview.html?case=:token"
+status = 200
+
 # Redirect rules for SPA-like behavior (optional)
 [[redirects]]
 from = "/*"

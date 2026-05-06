@@ -624,7 +624,7 @@ class SlideWizard {
       // Skip /quick-preview entirely — go straight to the AI-personalized
       // preview page. The backend kicks off auto_generate_case_preview at
       // save time so the page will poll until the AI is ready.
-      window.location.href = `case-preview.html?case=${encodeURIComponent(token)}`;
+      window.location.href = `/your-case/${encodeURIComponent(token)}`;
     } catch (err) {
       console.error('submit failed:', err);
       this.setSubmitting(false);

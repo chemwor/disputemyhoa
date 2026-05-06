@@ -852,7 +852,7 @@ class StartCaseWizard {
           if (result.status === 'ready') {
             this.showProcessingComplete();
             setTimeout(() => {
-              window.location.href = 'case-preview.html?case=' + encodeURIComponent(token);
+              window.location.href = '/your-case/' + encodeURIComponent(token);
             }, 1500);
             return;
           }
@@ -874,7 +874,7 @@ class StartCaseWizard {
           // Timeout - redirect anyway
           this.showProcessingTimeout();
           setTimeout(() => {
-            window.location.href = 'case-preview.html?case=' + encodeURIComponent(token);
+            window.location.href = '/your-case/' + encodeURIComponent(token);
           }, 2000);
         }
 
@@ -887,7 +887,7 @@ class StartCaseWizard {
         } else {
           this.showProcessingTimeout();
           setTimeout(() => {
-            window.location.href = 'case-preview.html?case=' + encodeURIComponent(token);
+            window.location.href = '/your-case/' + encodeURIComponent(token);
           }, 2000);
         }
       }
