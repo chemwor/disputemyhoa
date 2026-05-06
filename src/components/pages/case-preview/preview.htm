@@ -334,8 +334,20 @@
     }
 
     loadCaseFromURL() {
+      // Two URL formats are supported:
+      //   /case-preview.html?case=<token>     (legacy — emails sent before May 6 2026)
+      //   /your-case/<token>                   (new path-style — Netlify rewrites to the legacy URL
+      //                                         server-side but the browser still sees /your-case/<token>,
+      //                                         so window.location.search is empty in that case)
       const urlParams = new URLSearchParams(window.location.search);
       this.caseToken = urlParams.get('case');
+
+      if (!this.caseToken) {
+        const pathMatch = window.location.pathname.match(/^\/your-case\/([^/?#]+)/);
+        if (pathMatch) {
+          this.caseToken = decodeURIComponent(pathMatch[1]);
+        }
+      }
 
       // Add debugging
       console.log('=== DEBUG: Case Loading ===');
