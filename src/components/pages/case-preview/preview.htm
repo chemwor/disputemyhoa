@@ -9,6 +9,24 @@
     </div>
 
     <div id="main-content" class="max-w-6xl mx-auto">
+      <!-- Welcome-back banner — shown only when the case is more than
+           ~1 hour old (a returning visitor, not a fresh wizard submit). -->
+      <div id="welcome-back-banner" class="hidden mb-6 lg:mb-8">
+        <div class="bg-green-50 border border-green-200 rounded-xl px-4 py-3 lg:px-5 lg:py-4 flex items-start gap-3">
+          <svg class="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+          </svg>
+          <div class="flex-1">
+            <p id="welcome-back-text" class="text-tagline-1 text-green-900 font-medium">
+              Welcome back. Your case is saved.
+            </p>
+            <p class="text-tagline-2 text-green-800/80 mt-1">
+              Your letter excerpt is below. Paste your notice text or unlock the full letter to keep going.
+            </p>
+          </div>
+        </div>
+      </div>
+
       <!-- Header -->
       <div class="text-center mb-8 lg:mb-12">
         <div class="text-center mb-4">
@@ -829,6 +847,9 @@
       // Update document status
       this.populateDocumentStatus();
 
+      // Welcome-back banner for returning visitors
+      this.populateWelcomeBack();
+
       // Letter excerpt — most prominent CTA, render first
       this.populateLetterExcerpt();
 
@@ -882,6 +903,39 @@
 
       // Populate next step
       this.populateNextStep();
+    }
+
+    populateWelcomeBack() {
+      // Only show on a returning visit. Treat anything older than ~1 hour
+      // as a return — fresh wizard submissions are still in the polling
+      // loop or just landed seconds ago and shouldn't see "Welcome back".
+      const created = this.caseData.case_created_at;
+      if (!created) return;
+      const createdMs = new Date(created).getTime();
+      if (!createdMs || isNaN(createdMs)) return;
+      const ageMs = Date.now() - createdMs;
+      const ONE_HOUR = 60 * 60 * 1000;
+      if (ageMs < ONE_HOUR) return;
+
+      const banner = document.getElementById('welcome-back-banner');
+      const textEl = document.getElementById('welcome-back-text');
+      if (!banner || !textEl) return;
+
+      const firstName = (this.caseData.first_name || '').trim();
+      let dateLabel = '';
+      try {
+        dateLabel = new Date(created).toLocaleDateString('en-US', {
+          month: 'long',
+          day: 'numeric',
+        });
+      } catch (e) {
+        dateLabel = '';
+      }
+
+      const greet = firstName ? `Welcome back, ${firstName}.` : 'Welcome back.';
+      const dateClause = dateLabel ? ` Your case from ${dateLabel} is saved.` : ' Your case is saved.';
+      textEl.textContent = greet + dateClause;
+      banner.classList.remove('hidden');
     }
 
     populateLetterExcerpt() {
