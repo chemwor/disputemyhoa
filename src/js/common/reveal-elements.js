@@ -1,6 +1,15 @@
+// Treat any element whose top edge is already at or above the viewport bottom
+// on init as above-the-fold. ScrollTrigger occasionally fails to fire for such
+// elements (especially on slow paints), which leaves them stuck at opacity:0
+// with the blur filter applied — the symptom is a blank/blurred hero on load.
+const isAboveTheFold = (elem) => {
+  const rect = elem.getBoundingClientRect();
+  return rect.top < window.innerHeight;
+};
+
 const initRevealElements = () => {
   const elements = document.querySelectorAll('[data-ns-animate]');
-  const Springer = window.Springer.default;
+  const Springer = window.Springer && window.Springer.default;
   elements.forEach((elem) => {
     const duration = elem.getAttribute('data-duration')
       ? parseFloat(elem.getAttribute('data-duration'))
@@ -9,13 +18,16 @@ const initRevealElements = () => {
     const offset = elem.getAttribute('data-offset')
       ? parseFloat(elem.getAttribute('data-offset'))
       : 60;
-    const instant =
+    const explicitInstant =
       elem.hasAttribute('data-instant') && elem.getAttribute('data-instant') !== 'false';
+    // Above-the-fold elements play immediately instead of waiting for a
+    // ScrollTrigger that may never fire.
+    const instant = explicitInstant || isAboveTheFold(elem);
     const start = elem.getAttribute('data-start') || 'top 90%';
     const end = elem.getAttribute('data-end') || 'top 50%';
     const direction = elem.getAttribute('data-direction') || 'down';
     const useSpring = elem.hasAttribute('data-spring');
-    const spring = useSpring ? Springer(0.2, 0.8) : null;
+    const spring = useSpring && Springer ? Springer(0.2, 0.8) : null;
     const rotation = elem.getAttribute('data-rotation')
       ? parseFloat(elem.getAttribute('data-rotation'))
       : 0;
@@ -42,10 +54,12 @@ const initRevealElements = () => {
         animationProps.rotation = rotation;
       }
     } else {
-      // gsap.from() - animate FROM the specified values to normal
+      // gsap.from() - animate FROM the specified values to normal.
+      // Reduced blur from 16px → 6px so any mid-animation render is still
+      // readable; 16px obliterates hero text on slow connections.
       animationProps = {
         opacity: 0,
-        filter: 'blur(16px)',
+        filter: 'blur(6px)',
         duration: duration,
         delay: delay,
         ease: useSpring ? spring : 'power2.out',

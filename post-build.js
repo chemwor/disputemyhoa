@@ -49,16 +49,22 @@ function fixJavaScriptFile() {
       // Replace the old filename with main.js
       content = content.replace(new RegExp(jsFile, 'g'), 'main.js');
 
-      // Inject the main.js script tag if it's missing
-      if (content.includes('<!-- SCRIPT -->') && !content.includes('src="./assets/main.js"')) {
-        content = content.replace('<!-- SCRIPT -->', '<script src="./assets/main.js"></script>');
+      // Inject the main.js script tag if it's missing. Use an absolute path so
+      // pages served under nested pretty URLs (e.g. /your-case/<token>) resolve
+      // it from the site root instead of the nested directory.
+      if (
+        content.includes('<!-- SCRIPT -->') &&
+        !content.includes('src="/assets/main.js"') &&
+        !content.includes('src="./assets/main.js"')
+      ) {
+        content = content.replace('<!-- SCRIPT -->', '<script src="/assets/main.js"></script>');
       }
 
-      // Add CSS link if it's missing
-      if (!content.includes('href="./assets/main.css"')) {
+      // Add CSS link if it's missing (also absolute, same reason as above).
+      if (!content.includes('href="/assets/main.css"') && !content.includes('href="./assets/main.css"')) {
         content = content.replace(
           /(<link\s+href="https:\/\/fonts\.googleapis\.com\/css2[^>]*>\s*)/,
-          '$1<link rel="stylesheet" href="./assets/main.css" />\n'
+          '$1<link rel="stylesheet" href="/assets/main.css" />\n'
         );
       }
 

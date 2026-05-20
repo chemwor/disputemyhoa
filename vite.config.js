@@ -172,5 +172,9 @@ export default defineConfig({
       },
     },
   },
-  base: './',
+  // Absolute base — required so nested pretty URLs like /your-case/<token>
+  // (Netlify rewrite to /case-preview.html?case=...) resolve /assets/* against
+  // the site root, not the nested path. A relative base ('./') 404s the CSS
+  // and main.js bundle on those pages, leaving the unlock buttons dead.
+  base: '/',
 });
