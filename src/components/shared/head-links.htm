@@ -4,7 +4,7 @@ Head links
 
 <!-- Deferred Analytics - loads after page render for better LCP -->
 <script>
-  window.addEventListener('load', function() {
+  function loadAnalytics() {
     // Google tag (gtag.js)
     var gtagScript = document.createElement('script');
     gtagScript.src = 'https://www.googletagmanager.com/gtag/js?id=AW-17007905582';
@@ -23,7 +23,14 @@ Head links
         t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
     })(window, document, "clarity", "script", "uxuzbx2c71");
-  });
+  }
+
+  // Use requestIdleCallback for optimal deferral, with fallback
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(loadAnalytics, { timeout: 3000 });
+  } else {
+    setTimeout(loadAnalytics, 2000);
+  }
 </script>
 
 <meta charset="UTF-8" />
@@ -117,8 +124,9 @@ Head links
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<!-- Subset to only used weights for faster loading -->
 <link
-  href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&display=swap"
+  href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&display=swap"
   rel="stylesheet"
 />
 <link rel="stylesheet" href="/src/styles/main.css" />

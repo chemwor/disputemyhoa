@@ -4,6 +4,7 @@ import path from 'path';
 import { minify } from 'terser';
 import { defineConfig } from 'vite';
 import injectHTML from 'vite-plugin-html-inject';
+import viteImagemin from 'vite-plugin-imagemin';
 
 const getHtmlEntries = () => {
   const pagesDir = path.resolve(__dirname, '');
@@ -146,14 +147,59 @@ export default defineConfig({
     jsToBottomNoModule(),
     cssCrossOriginRemove(),
     vendorMinifier(),
+    // Image optimization - generates optimized images during build
+    viteImagemin({
+      gifsicle: {
+        optimizationLevel: 7,
+        interlaced: false,
+      },
+      optipng: {
+        optimizationLevel: 7,
+      },
+      mozjpeg: {
+        quality: 80,
+      },
+      pngquant: {
+        quality: [0.8, 0.9],
+        speed: 4,
+      },
+      webp: {
+        quality: 80,
+      },
+      svgo: {
+        plugins: [
+          { name: 'removeViewBox', active: false },
+          { name: 'removeEmptyAttrs', active: false },
+        ],
+      },
+    }),
   ],
   build: {
     rollupOptions: {
       input: getHtmlEntries(),
       output: {
         entryFileNames: 'assets/main.js',
+        chunkFileNames: 'assets/[name]-[hash].js',
         assetFileNames: (assetInfo) => {
           return `assets/${assetInfo.name || '[name].[ext]'}`;
+        },
+        // Manual chunk splitting for better caching and smaller initial bundle
+        manualChunks: (id) => {
+          // Vendor chunks - separate heavy libraries
+          if (id.includes('node_modules/swiper')) {
+            return 'vendor-swiper';
+          }
+          if (id.includes('node_modules/gsap') || id.includes('gsap')) {
+            return 'vendor-gsap';
+          }
+          // Animation modules chunk
+          if (id.includes('/js/animation/')) {
+            return 'animations';
+          }
+          // Blog functionality chunk
+          if (id.includes('/js/pages/blog') || id.includes('/js/services/blog')) {
+            return 'blog';
+          }
         },
       },
     },

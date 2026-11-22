@@ -4,15 +4,12 @@ Custom Icon FOnts styles
 =========================== */
 @font-face {
   font-family: 'next-sass';
-  src: url('/fonts/next-sass.eot?obdk3g');
-  src:
-    url('/fonts/next-sass.eot?obdk3g#iefix') format('embedded-opentype'),
+  src: url('/fonts/next-sass.woff?obdk3g') format('woff'),
     url('/fonts/next-sass.ttf?obdk3g') format('truetype'),
-    url('/fonts/next-sass.woff?obdk3g') format('woff'),
-    url('/fonts/next-sass.svg?obdk3g#next-sass') format('svg');
+    url('/fonts/next-sass.eot?obdk3g#iefix') format('embedded-opentype');
   font-weight: normal;
   font-style: normal;
-  font-display: block;
+  font-display: swap;
 }
 
 [class^='ns-'],
